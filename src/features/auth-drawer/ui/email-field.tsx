@@ -19,7 +19,7 @@ type Props = {
 };
 
 const INPUT =
-  "h-11 w-full rounded-none px-4 text-sm font-normal tracking-[0.01em] bg-transparent text-overlay-text border border-overlay-border/20 outline-none placeholder:text-overlay-subtle focus:border-overlay-border/50 transition-colors";
+  "h-11 w-full rounded-none px-4 text-sm font-normal tracking-[0.01em] bg-transparent text-overlay-text border border-overlay-border/20 outline-hidden placeholder:text-overlay-subtle focus:border-overlay-border/50 transition-colors";
 
 /**
  * Renders the email field with inline domain completion.
@@ -118,7 +118,7 @@ export function EmailField({
         autoComplete="email"
         aria-invalid={ariaInvalid || undefined}
         aria-describedby={ariaDescribedBy}
-        className={cn(INPUT, "relative z-[1]")}
+        className={cn(INPUT, "relative z-1")}
       />
     </div>
   );

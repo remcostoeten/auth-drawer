@@ -51,7 +51,7 @@ export function OauthButtons({
         return (
           <AuthButton
             key={item.id}
-            variant={item.id === "github" ? "primary" : "outline"}
+            variant={item.id === "github" ? "primary" : "outline-solid"}
             icon={<Icon />}
             isLoading={loadingAction === item.id}
             disabled={isLoading}

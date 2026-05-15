@@ -34,6 +34,9 @@ import { LoginForm } from "./login-form";
 type Props = {
   config?: AuthConfig;
   className?: string;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 type SettingsEvent = CustomEvent<MotionSettings>;
@@ -79,7 +82,13 @@ function parseEase(value: string) {
  * @param props - Optional feature config and trigger class name.
  * @returns Trigger button and drawer portal.
  */
-export function AuthDrawer({ config, className }: Props) {
+export function AuthDrawer({
+  config,
+  className,
+  open: controlledOpen,
+  defaultOpen = false,
+  onOpenChange,
+}: Props) {
   const resolved = useMemo<ResolvedAuthConfig>(
     () => ({
       ...DEFAULT_CONFIG,
@@ -89,7 +98,7 @@ export function AuthDrawer({ config, className }: Props) {
     [config],
   );
 
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const [portalEl, setPortal] = useState<HTMLElement | null>(null);
   const [motionSettings, setMotion] = useState<MotionSettings>(() =>
     resolved.motionSettings,
@@ -100,8 +109,19 @@ export function AuthDrawer({ config, className }: Props) {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const titleId = useId();
   const descId = useId();
+  const open = controlledOpen ?? uncontrolledOpen;
+  const setDrawerOpen = useCallback(
+    (nextOpen: boolean) => {
+      if (controlledOpen === undefined) {
+        setUncontrolledOpen(nextOpen);
+      }
 
-  const closeDrawer = useCallback(() => setOpen(false), []);
+      onOpenChange?.(nextOpen);
+    },
+    [controlledOpen, onOpenChange],
+  );
+
+  const closeDrawer = useCallback(() => setDrawerOpen(false), [setDrawerOpen]);
 
   const applySettings = useCallback(
     (settings: Partial<MotionSettings>) => {
@@ -156,8 +176,17 @@ export function AuthDrawer({ config, className }: Props) {
     else y.set(0);
 
     rawY.set(0);
-    setOpen(true);
-  }, [isMobile, rawY, vh, y]);
+    setDrawerOpen(true);
+  }, [isMobile, rawY, setDrawerOpen, vh, y]);
+
+  const toggleDrawer = useCallback(() => {
+    if (open) {
+      closeDrawer();
+      return;
+    }
+
+    openDrawer();
+  }, [closeDrawer, open, openDrawer]);
 
   useEffect(() => {
     if (!open || !portalEl) return;
@@ -185,13 +214,13 @@ export function AuthDrawer({ config, className }: Props) {
       if (event.key !== "Escape") return;
 
       event.stopPropagation();
-      setOpen(false);
+      setDrawerOpen(false);
     }
 
     document.addEventListener("keydown", handler);
 
     return () => document.removeEventListener("keydown", handler);
-  }, [open]);
+  }, [open, setDrawerOpen]);
 
   useEffect(() => {
     const element = document.getElementById(PORTAL_ID);
@@ -204,7 +233,7 @@ export function AuthDrawer({ config, className }: Props) {
   }, []);
 
   const rootClass = cn(
-    "relative z-10 flex w-full flex-col outline-none",
+    "relative z-10 flex w-full flex-col outline-hidden",
     isMobile
       ? "items-center justify-end pb-8"
       : motionSettings.displayMode === "drawer"
@@ -361,7 +390,7 @@ export function AuthDrawer({ config, className }: Props) {
             </motion.div>
 
             <div
-              className="pointer-events-none absolute left-0 right-0 top-full h-[100vh]"
+              className="pointer-events-none absolute left-0 right-0 top-full h-screen"
               style={{
                 background: hasDrawer ? "hsl(var(--surface-overlay))" : "transparent",
               }}
@@ -388,7 +417,7 @@ export function AuthDrawer({ config, className }: Props) {
           },
         }}
         type="button"
-        onClick={openDrawer}
+        onClick={toggleDrawer}
         aria-haspopup="dialog"
         aria-expanded={open}
         className={cn(
@@ -397,7 +426,7 @@ export function AuthDrawer({ config, className }: Props) {
           "text-overlay-text transition-all duration-200",
           "shadow-[0_8px_30px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.05)]",
           "hover:bg-overlay-surface/20 hover:border-overlay-border/20",
-          "focus-visible:ring-2 focus-visible:ring-overlay-border/20 focus-visible:outline-none",
+          "focus-visible:ring-2 focus-visible:ring-overlay-border/20 focus-visible:outline-hidden",
           "border-overlay-border/10",
           className,
         )}
@@ -414,7 +443,7 @@ export function AuthDrawer({ config, className }: Props) {
             Account
           </span>
           <span className="text-[10px] font-medium uppercase tracking-wide text-overlay-subtle transition-colors group-hover:text-overlay-muted">
-            Open
+            {open ? "Close" : "Open"}
           </span>
         </span>
       </motion.button>

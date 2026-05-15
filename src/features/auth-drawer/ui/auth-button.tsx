@@ -8,7 +8,7 @@ type Props = {
   onClick?: () => void;
   isLoading?: boolean;
   disabled?: boolean;
-  variant?: "primary" | "outline";
+  variant?: "primary" | "outline-solid";
   type?: "button" | "submit";
   icon?: ReactNode;
   ariaLabel?: string;
@@ -16,7 +16,7 @@ type Props = {
 };
 
 const BASE =
-  "auth-button-soft-hover h-11 w-full rounded-none flex items-center justify-center gap-3 border px-5 text-sm font-medium leading-none tracking-[0.01em] cursor-pointer outline-none focus-visible:border-overlay-border/80 focus-visible:ring-1 focus-visible:ring-overlay-border/40";
+  "auth-button-soft-hover h-11 w-full rounded-none flex items-center justify-center gap-3 border px-5 text-sm font-medium leading-none tracking-[0.01em] cursor-pointer outline-hidden focus-visible:border-overlay-border/80 focus-visible:ring-1 focus-visible:ring-overlay-border/40";
 
 const VARIANTS = {
   primary:

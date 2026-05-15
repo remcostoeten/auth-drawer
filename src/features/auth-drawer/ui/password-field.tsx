@@ -14,7 +14,7 @@ type Props = {
 };
 
 const INPUT =
-  "h-11 w-full rounded-none px-4 text-sm font-normal tracking-[0.01em] bg-transparent text-overlay-text border border-overlay-border/20 outline-none placeholder:text-overlay-subtle focus:border-overlay-border/50 transition-colors";
+  "h-11 w-full rounded-none px-4 text-sm font-normal tracking-[0.01em] bg-transparent text-overlay-text border border-overlay-border/20 outline-hidden placeholder:text-overlay-subtle focus:border-overlay-border/50 transition-colors";
 
 /**
  * Renders a password input with visibility toggle.
@@ -56,7 +56,7 @@ export function PasswordField({
       <button
         type="button"
         onClick={() => setVisible((next) => !next)}
-        className="absolute right-4 top-1/2 -translate-y-1/2 text-overlay-muted outline-none transition-colors hover:text-overlay-text focus-visible:text-overlay-text focus-visible:outline-none"
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-overlay-muted outline-hidden transition-colors hover:text-overlay-text focus-visible:text-overlay-text focus-visible:outline-hidden"
         aria-label={visible ? "Hide password" : "Show password"}
         aria-pressed={visible}
       >

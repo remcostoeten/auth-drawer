@@ -464,7 +464,7 @@ function Form({
             <button
               type="button"
               onClick={switchMode}
-              className="cursor-pointer rounded-sm px-1 text-overlay-text underline underline-offset-4 transition-colors hover:text-overlay-text/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-overlay-border/20"
+              className="cursor-pointer rounded-sm px-1 text-overlay-text underline underline-offset-4 transition-colors hover:text-overlay-text/80 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-overlay-border/20"
             >
               {isRegister ? "Sign in" : "Register"}
             </button>

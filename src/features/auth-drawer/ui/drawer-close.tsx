@@ -17,7 +17,7 @@ export function DrawerClose({ buttonRef, onClick }: Props) {
     <button
       ref={buttonRef}
       onClick={onClick}
-      className="absolute -top-12 right-0 rounded-none p-2 text-overlay-text outline-none transition-colors hover:text-overlay-muted focus-visible:text-overlay-muted focus-visible:outline-none"
+      className="absolute -top-12 right-0 rounded-none p-2 text-overlay-text outline-hidden transition-colors hover:text-overlay-muted focus-visible:text-overlay-muted focus-visible:outline-hidden"
       aria-label="Close sign in dialog"
       type="button"
     >

@@ -6,6 +6,7 @@ import {
   useState,
   type SyntheticEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   AuthDrawer,
   DEFAULT_CONFIG,
@@ -50,6 +51,110 @@ function isEditableTarget(target: EventTarget | null) {
 
 function stopLabEvent(event: SyntheticEvent) {
   event.stopPropagation();
+}
+
+function generateUsageCode(
+  providers: OAuthProvider[],
+  oauthLayout: "row" | "column",
+  displayMode: DrawerMode,
+  desktopPosition: DrawerPosition,
+  desktopWidth: string,
+): string {
+  const defaultProviders: OAuthProvider[] = ["github", "google"];
+  const configLines: string[] = [];
+
+  if (
+    JSON.stringify([...providers].sort()) !==
+    JSON.stringify([...defaultProviders].sort())
+  ) {
+    configLines.push(
+      `    providers: [${providers.map((p) => `"${p}"`).join(", ")}],`,
+    );
+  }
+
+  if (oauthLayout !== DEFAULT_CONFIG.oauthLayout) {
+    configLines.push(`    oauthLayout: "${oauthLayout}",`);
+  }
+
+  const motionLines: string[] = [];
+
+  if (displayMode !== DEFAULT_CONFIG.motionSettings.displayMode) {
+    motionLines.push(`      displayMode: "${displayMode}",`);
+  }
+
+  if (desktopPosition !== DEFAULT_CONFIG.motionSettings.desktopPosition) {
+    motionLines.push(`      desktopPosition: "${desktopPosition}",`);
+  }
+
+  if (desktopWidth !== DEFAULT_CONFIG.motionSettings.desktopWidth) {
+    motionLines.push(`      desktopWidth: "${desktopWidth}",`);
+  }
+
+  const formPaddingBottom =
+    displayMode === "modal"
+      ? 0
+      : DEFAULT_CONFIG.motionSettings.formPaddingBottom;
+
+  if (formPaddingBottom !== DEFAULT_CONFIG.motionSettings.formPaddingBottom) {
+    motionLines.push(`      formPaddingBottom: ${formPaddingBottom},`);
+  }
+
+  if (motionLines.length > 0) {
+    configLines.push("    motionSettings: {");
+    configLines.push(...motionLines);
+    configLines.push("    },");
+  }
+
+  if (configLines.length === 0) {
+    return "<AuthDrawer\n  open={open}\n  onOpenChange={setOpen}\n/>";
+  }
+
+  return [
+    "<AuthDrawer",
+    "  config={{",
+    ...configLines,
+    "  }}",
+    "  open={open}",
+    "  onOpenChange={setOpen}",
+    "/>",
+  ].join("\n");
+}
+
+function PropUsage({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    timeoutRef.current = setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="mt-3 border-t border-overlay-border/10 pt-3">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-overlay-subtle">
+          Usage
+        </span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="border border-overlay-border/10 bg-overlay-surface/30 px-2 py-0.5 text-[0.6rem] font-semibold text-overlay-muted transition-colors hover:border-overlay-border/20 hover:text-overlay-text"
+        >
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <pre className="overflow-x-auto rounded-none border border-overlay-border/10 bg-overlay-bg/40 p-3 text-[0.7rem] leading-relaxed text-overlay-muted">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
 }
 
 type SegmentProps<T extends string> = {
@@ -100,11 +205,11 @@ function InfoTip({ children }: InfoTipProps) {
       <span
         tabIndex={0}
         aria-label={children}
-        className="flex h-4 w-4 cursor-help items-center justify-center border border-overlay-border/15 text-[0.625rem] font-bold text-overlay-subtle outline-none transition-colors hover:border-overlay-border/30 hover:text-overlay-text focus-visible:border-overlay-border/40 focus-visible:text-overlay-text"
+        className="flex h-4 w-4 cursor-help items-center justify-center border border-overlay-border/15 text-[0.625rem] font-bold text-overlay-subtle outline-hidden transition-colors hover:border-overlay-border/30 hover:text-overlay-text focus-visible:border-overlay-border/40 focus-visible:text-overlay-text"
       >
         i
       </span>
-      <span className="pointer-events-none absolute bottom-full left-1/2 z-[130] mb-2 w-56 -translate-x-1/2 border border-overlay-border/10 bg-overlay-surface px-2.5 py-2 text-[0.7rem] font-medium leading-relaxed text-overlay-muted opacity-0 shadow-[0_14px_40px_rgba(0,0,0,0.18)] transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+      <span className="pointer-events-none absolute bottom-full left-1/2 z-130 mb-2 w-56 -translate-x-1/2 border border-overlay-border/10 bg-overlay-surface px-2.5 py-2 text-[0.7rem] font-medium leading-relaxed text-overlay-muted opacity-0 shadow-[0_14px_40px_rgba(0,0,0,0.18)] transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
         {children}
       </span>
     </span>
@@ -161,6 +266,7 @@ export function AuthDrawerLab() {
   const { resolvedTheme, setTheme } = useTheme();
   const lastRightShiftTime = useRef(0);
   const [isLabOpen, setLabOpen] = useState(true);
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [displayMode, setDisplayMode] = useState<DrawerMode>("drawer");
   const [oauthLayout, setOauthLayout] = useState<"row" | "column">("column");
   const [desktopPosition, setDesktopPosition] =
@@ -169,6 +275,19 @@ export function AuthDrawerLab() {
     useState<(typeof WIDTHS)[number]>("448px");
   const [providers, setProviders] = useState<OAuthProvider[]>(PROVIDERS);
   const [scenario, setScenario] = useState<AuthScenarioId>("success");
+  const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const node = document.createElement("div");
+    node.setAttribute("data-skip-inert", "");
+    node.className = "auth-drawer-lab-portal";
+    document.body.appendChild(node);
+    setPortalNode(node);
+    return () => {
+      document.body.removeChild(node);
+    };
+  }, []);
 
   const selectedScenario = AUTH_SCENARIOS.find((item) => item.id === scenario);
   const currentTheme = resolvedTheme ?? "dark";
@@ -219,6 +338,18 @@ export function AuthDrawerLab() {
     [desktopPosition, desktopWidth, displayMode, oauthLayout, providers, scenario],
   );
 
+  const usageCode = useMemo(
+    () =>
+      generateUsageCode(
+        providers,
+        oauthLayout,
+        displayMode,
+        desktopPosition,
+        desktopWidth,
+      ),
+    [providers, oauthLayout, displayMode, desktopPosition, desktopWidth],
+  );
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <div
@@ -235,160 +366,171 @@ export function AuthDrawerLab() {
             Open the drawer, then switch lab scenarios to verify validation,
             backend errors, OAuth failures, and modal/drawer variants.
           </p>
-          <AuthDrawer config={config} />
+          <AuthDrawer
+            config={config}
+            open={isDrawerOpen}
+            onOpenChange={setDrawerOpen}
+          />
         </div>
       </div>
 
-      {!isLabOpen && (
-        <button
-          type="button"
-          onPointerDown={stopLabEvent}
-          onMouseDown={stopLabEvent}
-          onClick={(event) => {
-            stopLabEvent(event);
-            setLabOpen(true);
-          }}
-          className="fixed bottom-4 left-4 z-[120] border border-overlay-border/10 bg-overlay-surface/85 px-3 py-2 text-xs font-semibold text-overlay-text shadow-[0_18px_70px_rgba(0,0,0,0.18)] backdrop-blur-2xl"
-          title="Open lab (`)"
-        >
-          Lab <kbd className="ml-1 text-overlay-subtle">`</kbd>
-        </button>
-      )}
-
-      {isLabOpen && (
-      <aside
-        onPointerDown={stopLabEvent}
-        onMouseDown={stopLabEvent}
-        onClick={stopLabEvent}
-        className="fixed bottom-4 left-4 z-[120] max-h-[calc(100vh-2rem)] w-[min(27rem,calc(100vw-2rem))] overflow-y-auto border border-overlay-border/10 bg-overlay-surface/85 p-3 text-overlay-text shadow-[0_18px_70px_rgba(0,0,0,0.22)] backdrop-blur-2xl dark:bg-overlay-surface/75"
-      >
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-display text-lg font-medium tracking-tight">
-                Auth drawer lab
-              </h1>
-              <InfoTip>
-                The lab stays above the active auth surface and only drives the public config API.
-              </InfoTip>
-            </div>
-            <p className="mt-0.5 text-xs leading-relaxed text-overlay-muted">
-              Toggle lab with <kbd className="text-overlay-text">`</kbd>. Toggle theme with double Right Shift.
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-1.5">
-            <ThemeToggle theme={currentTheme} onToggle={toggleTheme} />
+      {portalNode ? createPortal(
+        <>
+          {!isLabOpen && (
             <button
               type="button"
-              onClick={() => setLabOpen(false)}
-              className="h-9 border border-overlay-border/10 bg-overlay-surface/30 px-2.5 text-xs font-semibold text-overlay-muted transition-colors hover:border-overlay-border/20 hover:text-overlay-text"
-              title="Hide lab (`)"
+              onPointerDown={stopLabEvent}
+              onMouseDown={stopLabEvent}
+              onClick={(event) => {
+                stopLabEvent(event);
+                setLabOpen(true);
+              }}
+              className="fixed bottom-4 left-4 z-[120] border border-overlay-border/10 bg-overlay-surface/85 px-3 py-2 text-xs font-semibold text-overlay-text shadow-[0_18px_70px_rgba(0,0,0,0.18)] backdrop-blur-2xl"
+              title="Open lab (`)"
             >
-              Hide
+              Lab <kbd className="ml-1 text-overlay-subtle">`</kbd>
             </button>
-          </div>
-        </div>
+          )}
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Segment
-            label="Surface"
-            value={displayMode}
-            onChange={setDisplayMode}
-            options={[
-              { value: "drawer", label: "Drawer" },
-              { value: "modal", label: "Modal" },
-            ]}
-          />
-
-          <Segment
-            label="OAuth layout"
-            value={oauthLayout}
-            onChange={setOauthLayout}
-            options={[
-              { value: "column", label: "Column" },
-              { value: "row", label: "Row" },
-            ]}
-          />
-
-          <label className="block">
-            <FieldLabel info="Fake backend result. These errors pass through the same normalizer real providers use.">
-              Scenario
-            </FieldLabel>
-            <select
-              value={scenario}
-              onChange={(event) =>
-                setScenario(event.target.value as AuthScenarioId)
-              }
-              className="h-10 w-full rounded-none border border-overlay-border/10 bg-overlay-surface/30 px-3 text-xs font-medium text-overlay-text outline-none"
-            >
-              {AUTH_SCENARIOS.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block">
-            <FieldLabel info="Desktop auth surface width. Useful for catching wrapping and modal density issues.">
-              Width
-            </FieldLabel>
-            <select
-              value={desktopWidth}
-              onChange={(event) =>
-                setDesktopWidth(event.target.value as (typeof WIDTHS)[number])
-              }
-              className="h-10 w-full rounded-none border border-overlay-border/10 bg-overlay-surface/30 px-3 text-xs font-medium text-overlay-text outline-none"
-            >
-              {WIDTHS.map((width) => (
-                <option key={width} value={width}>
-                  {width}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <Segment
-            label="Position"
-            value={desktopPosition}
-            onChange={setDesktopPosition}
-            options={[
-              { value: "left", label: "Left" },
-              { value: "center", label: "Center" },
-              { value: "right", label: "Right" },
-            ]}
-          />
-
-          <div>
-            <span className="mb-2 block text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-overlay-subtle">
-              Providers
-            </span>
-            <div className="grid grid-cols-2 gap-1 rounded-none border border-overlay-border/10 bg-overlay-surface/30 p-1">
-              {PROVIDERS.map((provider) => (
+          {isLabOpen && (
+          <aside
+            onPointerDown={stopLabEvent}
+            onMouseDown={stopLabEvent}
+            onClick={stopLabEvent}
+            className="fixed bottom-4 left-4 z-[120] max-h-[calc(100vh-2rem)] w-[min(27rem,calc(100vw-2rem))] overflow-y-auto border border-overlay-border/10 bg-overlay-surface/85 p-3 text-overlay-text shadow-[0_18px_70px_rgba(0,0,0,0.22)] backdrop-blur-2xl dark:bg-overlay-surface/75"
+          >
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-display text-lg font-medium tracking-tight">
+                    Auth drawer lab
+                  </h1>
+                  <InfoTip>
+                    The lab stays above the active auth surface and only drives the public config API.
+                  </InfoTip>
+                </div>
+                <p className="mt-0.5 text-xs leading-relaxed text-overlay-muted">
+                  Toggle lab with <kbd className="text-overlay-text">`</kbd>. Toggle theme with double Right Shift.
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <ThemeToggle theme={currentTheme} onToggle={toggleTheme} />
                 <button
-                  key={provider}
                   type="button"
-                  onClick={() =>
-                    setProviders((current) => cycleProvider(current, provider))
-                  }
-                  className={
-                    providers.includes(provider)
-                      ? "h-8 rounded-none bg-overlay-text px-2 text-xs font-semibold text-overlay-bg"
-                      : "h-8 rounded-none px-2 text-xs font-medium text-overlay-muted transition-colors hover:text-overlay-text"
-                  }
+                  onClick={() => setLabOpen(false)}
+                  className="h-9 border border-overlay-border/10 bg-overlay-surface/30 px-2.5 text-xs font-semibold text-overlay-muted transition-colors hover:border-overlay-border/20 hover:text-overlay-text"
+                  title="Hide lab (`)"
                 >
-                  {labelForProvider(provider)}
+                  Hide
                 </button>
-              ))}
+              </div>
             </div>
-          </div>
-        </div>
 
-        <p className="mt-3 border-t border-overlay-border/10 pt-3 text-xs leading-relaxed text-overlay-muted">
-          {selectedScenario?.description}
-        </p>
-      </aside>
-      )}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Segment
+                label="Surface"
+                value={displayMode}
+                onChange={setDisplayMode}
+                options={[
+                  { value: "drawer", label: "Drawer" },
+                  { value: "modal", label: "Modal" },
+                ]}
+              />
+
+              <Segment
+                label="OAuth layout"
+                value={oauthLayout}
+                onChange={setOauthLayout}
+                options={[
+                  { value: "column", label: "Column" },
+                  { value: "row", label: "Row" },
+                ]}
+              />
+
+              <label className="block">
+                <FieldLabel info="Fake backend result. These errors pass through the same normalizer real providers use.">
+                  Scenario
+                </FieldLabel>
+                <select
+                  value={scenario}
+                  onChange={(event) =>
+                    setScenario(event.target.value as AuthScenarioId)
+                  }
+                  className="h-10 w-full rounded-none border border-overlay-border/10 bg-overlay-surface/30 px-3 text-xs font-medium text-overlay-text outline-hidden"
+                >
+                  {AUTH_SCENARIOS.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <FieldLabel info="Desktop auth surface width. Useful for catching wrapping and modal density issues.">
+                  Width
+                </FieldLabel>
+                <select
+                  value={desktopWidth}
+                  onChange={(event) =>
+                    setDesktopWidth(event.target.value as (typeof WIDTHS)[number])
+                  }
+                  className="h-10 w-full rounded-none border border-overlay-border/10 bg-overlay-surface/30 px-3 text-xs font-medium text-overlay-text outline-hidden"
+                >
+                  {WIDTHS.map((width) => (
+                    <option key={width} value={width}>
+                      {width}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <Segment
+                label="Position"
+                value={desktopPosition}
+                onChange={setDesktopPosition}
+                options={[
+                  { value: "left", label: "Left" },
+                  { value: "center", label: "Center" },
+                  { value: "right", label: "Right" },
+                ]}
+              />
+
+              <div>
+                <span className="mb-2 block text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-overlay-subtle">
+                  Providers
+                </span>
+                <div className="grid grid-cols-2 gap-1 rounded-none border border-overlay-border/10 bg-overlay-surface/30 p-1">
+                  {PROVIDERS.map((provider) => (
+                    <button
+                      key={provider}
+                      type="button"
+                      onClick={() =>
+                        setProviders((current) => cycleProvider(current, provider))
+                      }
+                      className={
+                        providers.includes(provider)
+                          ? "h-8 rounded-none bg-overlay-text px-2 text-xs font-semibold text-overlay-bg"
+                          : "h-8 rounded-none px-2 text-xs font-medium text-overlay-muted transition-colors hover:text-overlay-text"
+                      }
+                    >
+                      {labelForProvider(provider)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-3 border-t border-overlay-border/10 pt-3 text-xs leading-relaxed text-overlay-muted">
+              {selectedScenario?.description}
+            </p>
+
+            <PropUsage code={usageCode} />
+          </aside>
+          )}
+        </>,
+        portalNode
+      ) : null}
     </div>
   );
 }
