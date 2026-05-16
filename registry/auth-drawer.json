@@ -1,0 +1,123 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "auth-drawer",
+  "homepage": "https://github.com/remcostoeten/auth-component",
+  "items": [
+    {
+      "name": "auth-drawer",
+      "type": "registry:component",
+      "dependencies": [
+        "framer-motion",
+        "lucide-react",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "files": [
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/overlay-registry.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/types.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/constants.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/config.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/auth-errors.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/validation.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/hooks/use-draggable-drawer.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "src/hooks/use-remember-me.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "src/hooks/use-media-query.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "src/ui/auth-drawer.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/login-form.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/oauth-buttons.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/drawer-backdrop.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/drawer-close.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/drawer-handle.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/auth-button.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/email-field.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/password-field.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/confirm-password-field.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/remember-me.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/validation-message.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/kbd.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/github-icon.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/google-icon.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "styles/tokens.css",
+          "type": "registry:style"
+        }
+      ]
+    }
+  ]
+}
