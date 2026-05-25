@@ -1,7 +1,9 @@
 import "../styles/bundle.css";
 
 export { AuthDrawer } from "./ui/auth-drawer";
+export { AuthProvider, useAuth } from "./ui/auth-provider";
 export { DEFAULT_CONFIG } from "./config";
+export { createAdapter } from "./create-adapter";
 export {
   OAUTH_PROVIDER_IDS,
   OAUTH_PROVIDER_REGISTRY,
@@ -37,6 +39,9 @@ export type {
   AuthBackdropGradientConfig,
   AuthConfig,
   AuthConfigGroup,
+  AuthAdapter,
+  AuthResult,
+  AuthSessionState,
   AuthOAuthOverflowConfig,
   ResolvedAuthOAuthOverflowConfig,
   AuthUiConfig,
@@ -54,5 +59,8 @@ export type {
   AuthVisualConfig,
   ScrollOpenTriggerConfig,
   TriggerPolicy,
+  CredentialAuthInput,
+  ResetPasswordInput,
 } from "./types";
+export type { AuthProviderProps } from "./ui/auth-provider";
 export type { ScrollOpenTriggerOptions } from "./hooks/use-scroll-open-trigger";

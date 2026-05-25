@@ -8,6 +8,38 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./adapters/better-auth": {
+      "import": "./dist/adapters/better-auth.js",
+      "types": "./dist/adapters/better-auth.d.ts"
+    },
+    "./adapters/supabase": {
+      "import": "./dist/adapters/supabase.js",
+      "types": "./dist/adapters/supabase.d.ts"
+    },
+    "./adapters/next-auth": {
+      "import": "./dist/adapters/next-auth.js",
+      "types": "./dist/adapters/next-auth.d.ts"
+    },
+    "./adapters/clerk": {
+      "import": "./dist/adapters/clerk.js",
+      "types": "./dist/adapters/clerk.d.ts"
+    },
+    "./adapters/firebase": {
+      "import": "./dist/adapters/firebase.js",
+      "types": "./dist/adapters/firebase.d.ts"
+    },
+    "./adapters/custom-jwt": {
+      "import": "./dist/adapters/custom-jwt.js",
+      "types": "./dist/adapters/custom-jwt.d.ts"
+    },
+    "./adapters/passport": {
+      "import": "./dist/adapters/passport.js",
+      "types": "./dist/adapters/passport.d.ts"
+    },
+    "./adapters/mock": {
+      "import": "./dist/adapters/mock.js",
+      "types": "./dist/adapters/mock.d.ts"
+    },
     "./styles.css": "./dist/styles.css",
     "./styles/tailwind.css": "./styles/tailwind.css"
   },
