@@ -85,7 +85,12 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
   const errorBaseId = useId();
 
   const isRegister = mode === "register";
-  const formCopy = isRegister ? config.ui.copy.register : config.ui.copy.login;
+  const isResetPassword = mode === "resetPassword";
+  const formCopy = isResetPassword
+    ? config.ui.copy.resetPassword
+    : isRegister
+      ? config.ui.copy.register
+      : config.ui.copy.login;
   const title = formCopy.title;
   const subtitle = formCopy.subtitle;
   const emailErrorId = fieldErrorId(errorBaseId, "email");
@@ -163,13 +168,21 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
       setNotice("");
 
       try {
-        await config.onCredential({
-          mode,
-          email: email.trim(),
-          password,
-          rememberMe,
-        });
-        onSuccess();
+        if (mode === "resetPassword") {
+          await config.onResetPassword({ newPassword: password });
+          setMode("login");
+          setPassword("");
+          setConfirm("");
+          setNotice("Your password has been reset successfully. Please sign in.");
+        } else {
+          await config.onCredential({
+            mode,
+            email: email.trim(),
+            password,
+            rememberMe,
+          });
+          onSuccess();
+        }
       } catch (error) {
         const backendError = config.normalizeError(error, {
           fallbackTarget: "form",
@@ -333,11 +346,13 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
         </p>
       </motion.header>
 
-      {hasOAuthProviders ? (
+      {hasOAuthProviders && !isResetPassword ? (
         <>
           <OauthButtons
             providers={config.ui.auth.providers}
             layout={config.ui.auth.oauthLayout}
+            visibleCount={config.ui.auth.oauthOverflow.visibleCount}
+            showPreviewIcons={config.ui.auth.oauthOverflow.showPreviewIcons}
             loadingAction={loadingAction}
             isLoading={isLoading}
             copy={config.ui.copy.oauth}
@@ -365,23 +380,28 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
         noValidate
         variants={SLIDE_VIEW}
       >
-        <EmailField
-          id={`${titleId}-email`}
-          value={email}
-          onChange={changeEmail}
-          onSuggestionAccept={acceptEmail}
-          copy={config.ui.copy.fields.email}
-          ariaInvalid={!!emailError}
-          ariaDescribedBy={emailError ? emailErrorId : undefined}
-        />
-        <ValidationMessage id={emailErrorId} error={emailError?.message} />
+        {!isResetPassword && (
+          <>
+            <EmailField
+              id={`${titleId}-email`}
+              value={email}
+              onChange={changeEmail}
+              onSuggestionAccept={acceptEmail}
+              copy={config.ui.copy.fields.email}
+              ariaInvalid={!!emailError}
+              ariaDescribedBy={emailError ? emailErrorId : undefined}
+              autocompleteConfig={config.ui.auth.emailAutocomplete}
+            />
+            <ValidationMessage id={emailErrorId} error={emailError?.message} />
+          </>
+        )}
 
         <div>
           <PasswordField
             id={`${titleId}-password`}
             value={password}
             onChange={changePassword}
-            autoComplete={isRegister ? "new-password" : "current-password"}
+            autoComplete={isRegister || isResetPassword ? "new-password" : "current-password"}
             copy={config.ui.copy.fields.password}
             passwordToggle={config.ui.copy.passwordToggle}
             ariaInvalid={!!passwordError}
@@ -391,7 +411,7 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
         </div>
 
         <AnimatePresence>
-          {config.ui.auth.allowRegister && isRegister && (
+          {((config.ui.auth.allowRegister && isRegister) || isResetPassword) && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
@@ -421,30 +441,32 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
           )}
         </AnimatePresence>
 
-        <div className="mb-4 mt-1 flex items-center justify-between px-0.5">
-          {config.ui.auth.showRememberMe ? (
-            <RememberMe
-              checked={rememberMe}
-              onChange={setRememberMe}
-              label={config.ui.copy.rememberMe.label}
-            />
-          ) : (
-            <span />
-          )}
+        {!isResetPassword && (
+          <div className="mb-4 mt-1 flex items-center justify-between px-0.5">
+            {config.ui.auth.showRememberMe ? (
+              <RememberMe
+                checked={rememberMe}
+                onChange={setRememberMe}
+                label={config.ui.copy.rememberMe.label}
+              />
+            ) : (
+              <span />
+            )}
 
-          {!isRegister && config.ui.auth.showForgotPassword && (
-            <button
-              type="button"
-              onClick={resetPassword}
-              disabled={isLoading}
-              className="text-[0.8125rem] font-medium text-overlay-muted transition-colors hover:text-overlay-text disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loadingAction === "forgotPassword"
-                ? config.ui.copy.forgotPassword.loading
-                : config.ui.copy.forgotPassword.label}
-            </button>
-          )}
-        </div>
+            {!isRegister && config.ui.auth.showForgotPassword && (
+              <button
+                type="button"
+                onClick={resetPassword}
+                disabled={isLoading}
+                className="text-[0.8125rem] font-medium text-overlay-muted transition-colors hover:text-overlay-text disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {loadingAction === "forgotPassword"
+                  ? config.ui.copy.forgotPassword.loading
+                  : config.ui.copy.forgotPassword.label}
+              </button>
+            )}
+          </div>
+        )}
 
         <ValidationMessage id={formErrorId} error={formError?.message} />
         <ValidationMessage id={`${errorBaseId}-notice`} tone="success" error={notice} />
@@ -459,7 +481,7 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
           {formCopy.submit}
         </AuthButton>
 
-        {config.ui.auth.allowRegister && (
+        {(config.ui.auth.allowRegister || isResetPassword) && (
           <motion.p
             className="mt-4 flex w-full flex-wrap items-baseline justify-center gap-x-2 gap-y-1 text-center text-sm text-overlay-muted"
             variants={SLIDE_VIEW}
@@ -467,7 +489,7 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
             <span>{formCopy.switchPrompt}</span>
             <button
               type="button"
-              onClick={switchMode}
+              onClick={isResetPassword ? () => { setMode("login"); setErrors(EMPTY_AUTH_ERRORS); setNotice(""); } : switchMode}
               className="cursor-pointer rounded-sm px-1 text-overlay-text underline underline-offset-4 transition-colors hover:text-overlay-text/80 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-overlay-border/20"
             >
               {formCopy.switchAction}

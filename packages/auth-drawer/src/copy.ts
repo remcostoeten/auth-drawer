@@ -1,6 +1,11 @@
 import type { AuthErrorCode } from "./auth-errors";
+import {
+  OAUTH_PROVIDER_IDS,
+  type OAuthProvider,
+  defaultLabelForOAuthProvider,
+} from "./oauth-providers";
 
-export type AuthOAuthProvider = "github" | "google";
+export type AuthOAuthProvider = OAuthProvider;
 
 export type AuthFooterTextSegment = {
   type: "text";
@@ -42,6 +47,8 @@ export type AuthFieldsCopy = {
 export type AuthOAuthCopy = {
   divider?: string;
   continueWith?: string;
+  showAllSocial?: string;
+  hideAllSocial?: string;
   providers?: Partial<Record<AuthOAuthProvider, string>>;
 };
 
@@ -81,6 +88,7 @@ export type AuthValidationCopy = {
 export type AuthCopyConfig = {
   login?: AuthFormCopy;
   register?: AuthFormCopy;
+  resetPassword?: AuthFormCopy;
   fields?: AuthFieldsCopy;
   passwordToggle?: AuthPasswordToggleCopy;
   oauth?: AuthOAuthCopy;
@@ -114,6 +122,7 @@ export type ResolvedAuthValidationCopy = Required<AuthValidationCopy>;
 export type ResolvedAuthCopyConfig = {
   login: ResolvedAuthFormCopy;
   register: ResolvedAuthFormCopy;
+  resetPassword: ResolvedAuthFormCopy;
   fields: ResolvedAuthFieldsCopy;
   passwordToggle: ResolvedAuthPasswordToggleCopy;
   oauth: ResolvedAuthOAuthCopy;
@@ -172,6 +181,13 @@ export const DEFAULT_COPY: ResolvedAuthCopyConfig = {
     switchPrompt: "Already have an account?",
     switchAction: "Sign in",
   },
+  resetPassword: {
+    title: "Reset your password",
+    subtitle: "Choose a strong new password to secure your account",
+    submit: "Reset password",
+    switchPrompt: "Remembered your password?",
+    switchAction: "Sign in",
+  },
   fields: {
     email: { label: "Email", placeholder: "Email" },
     password: { label: "Password", placeholder: "Password" },
@@ -187,10 +203,11 @@ export const DEFAULT_COPY: ResolvedAuthCopyConfig = {
   oauth: {
     divider: "Or continue with email",
     continueWith: "Continue with {{provider}}",
-    providers: {
-      github: "GitHub",
-      google: "Google",
-    },
+    showAllSocial: "Show all social methods",
+    hideAllSocial: "Show fewer social methods",
+    providers: Object.fromEntries(
+      OAUTH_PROVIDER_IDS.map((id) => [id, defaultLabelForOAuthProvider(id)]),
+    ) as Record<AuthOAuthProvider, string>,
   },
   forgotPassword: {
     label: "Forgot password?",
@@ -238,6 +255,7 @@ export function resolveCopyGroup(config?: {
   return {
     login: { ...defaults.login, ...copy.login },
     register: { ...defaults.register, ...copy.register },
+    resetPassword: { ...defaults.resetPassword, ...copy.resetPassword },
     fields: {
       email: { ...defaults.fields.email, ...copy.fields?.email },
       password: { ...defaults.fields.password, ...copy.fields?.password },
@@ -250,10 +268,14 @@ export function resolveCopyGroup(config?: {
     oauth: {
       divider: copy.oauth?.divider ?? defaults.oauth.divider,
       continueWith: copy.oauth?.continueWith ?? defaults.oauth.continueWith,
-      providers: {
-        github: copy.oauth?.providers?.github ?? defaults.oauth.providers.github,
-        google: copy.oauth?.providers?.google ?? defaults.oauth.providers.google,
-      },
+      showAllSocial: copy.oauth?.showAllSocial ?? defaults.oauth.showAllSocial,
+      hideAllSocial: copy.oauth?.hideAllSocial ?? defaults.oauth.hideAllSocial,
+      providers: Object.fromEntries(
+        OAUTH_PROVIDER_IDS.map((id) => [
+          id,
+          copy.oauth?.providers?.[id] ?? defaults.oauth.providers[id],
+        ]),
+      ) as Record<AuthOAuthProvider, string>,
     },
     forgotPassword: { ...defaults.forgotPassword, ...copy.forgotPassword },
     rememberMe: { ...defaults.rememberMe, ...copy.rememberMe },

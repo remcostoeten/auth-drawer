@@ -19,12 +19,20 @@ export const DEFAULT_CONFIG: ResolvedAuthConfig = {
     auth: {
       providers: ["github", "google"],
       oauthLayout: "column",
+      oauthOverflow: {
+        visibleCount: 2,
+        showPreviewIcons: true,
+      },
       allowRegister: true,
       showRememberMe: true,
       initialMode: "login",
       showForgotPassword: true,
       showLivePasswordMatch: true,
       showFooter: true,
+      emailAutocomplete: {
+        enabled: true,
+        domains: ["gmail.com", "outlook.com", "hotmail.com", "icloud.com", "yahoo.com"],
+      },
     },
     copy: DEFAULT_COPY,
     visual: {
@@ -79,5 +87,6 @@ export const DEFAULT_CONFIG: ResolvedAuthConfig = {
   onCredential: noopAuthAction,
   onOAuth: noopAuthAction,
   onForgotPassword: noopAuthAction,
+  onResetPassword: noopAuthAction,
   normalizeError: normalizeAuthError,
 };

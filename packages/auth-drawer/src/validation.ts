@@ -23,7 +23,7 @@ export function getPasswordMatchFeedback(
   input: Pick<CredentialInput, "mode" | "password" | "confirmPassword">,
   copy: Pick<ResolvedAuthCopyConfig, "validation">,
 ): PasswordMatchFeedback {
-  if (input.mode !== "register") return null;
+  if (input.mode !== "register" && input.mode !== "resetPassword") return null;
   if (!input.password || !input.confirmPassword) return null;
 
   if (input.password === input.confirmPassword) {
@@ -44,29 +44,35 @@ export function validateCredentials(
   copy: ValidationCopy,
 ): AuthErrorState {
   const errors: AuthErrorState = { fields: {} };
-  const email = input.email.trim();
+  const email = input.email ? input.email.trim() : "";
 
-  if (!email) {
-    errors.fields.email = createAuthError("required", "email", {
-      message: copy.validation.emailRequired,
-    });
-  } else if (!EMAIL_PATTERN.test(email)) {
-    errors.fields.email = createAuthError("invalid_email", "email", {
-      message: copy.errors.invalid_email,
-    });
+  // Email validation is not required in resetPassword mode since we only collect password/confirm
+  if (input.mode !== "resetPassword") {
+    if (!email) {
+      errors.fields.email = createAuthError("required", "email", {
+        message: copy.validation.emailRequired,
+      });
+    } else if (!EMAIL_PATTERN.test(email)) {
+      errors.fields.email = createAuthError("invalid_email", "email", {
+        message: copy.errors.invalid_email,
+      });
+    }
   }
 
   if (!input.password) {
     errors.fields.password = createAuthError("required", "password", {
       message: copy.validation.passwordRequired,
     });
-  } else if (input.mode === "register" && input.password.length < MIN_PASSWORD_LENGTH) {
+  } else if (
+    (input.mode === "register" || input.mode === "resetPassword") &&
+    input.password.length < MIN_PASSWORD_LENGTH
+  ) {
     errors.fields.password = createAuthError("weak_password", "password", {
       message: copy.errors.weak_password,
     });
   }
 
-  if (input.mode === "register") {
+  if (input.mode === "register" || input.mode === "resetPassword") {
     if (!input.confirmPassword) {
       errors.fields.confirmPassword = createAuthError("required", "confirmPassword", {
         message: copy.validation.confirmRequired,

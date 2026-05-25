@@ -1,12 +1,9 @@
 import type { ComponentType, ReactNode } from "react";
 import type { AuthUiError } from "./auth-errors";
 import type { AuthCopyConfig, ResolvedAuthCopyConfig } from "./copy";
+import type { OAuthProvider } from "./oauth-providers";
 
-/**
- * Supported OAuth provider identifiers.
- * Extend this union when adding a provider definition.
- */
-export type OAuthProvider = "github" | "google";
+export type { OAuthProvider };
 
 /**
  * Supported desktop display strategies for the auth surface.
@@ -21,7 +18,7 @@ export type DrawerPosition = "center" | "left" | "right";
 /**
  * Supported credential form modes.
  */
-export type FormMode = "login" | "register";
+export type FormMode = "login" | "register" | "resetPassword";
 
 /**
  * Current loading target for auth actions.
@@ -29,20 +26,45 @@ export type FormMode = "login" | "register";
 export type LoadingAction = OAuthProvider | "email" | "forgotPassword" | null;
 
 /**
+ * Controls for collapsing extra OAuth providers behind a disclosure.
+ */
+export type AuthOAuthOverflowConfig = {
+  /**
+   * How many provider buttons stay visible before the disclosure appears.
+   * Minimum 1. Defaults to 2.
+   */
+  visibleCount?: number;
+  /**
+   * When true, stacked icon previews for hidden providers appear on the
+   * disclosure trigger. When false, only the label and chevron show.
+   */
+  showPreviewIcons?: boolean;
+};
+
+export type ResolvedAuthOAuthOverflowConfig = Required<AuthOAuthOverflowConfig>;
+
+/**
  * Frontend-facing auth controls grouped under the public `auth` config key.
  */
 export type AuthConfigGroup = {
   providers?: OAuthProvider[];
   oauthLayout?: "row" | "column";
+  oauthOverflow?: AuthOAuthOverflowConfig;
   allowRegister?: boolean;
   showRememberMe?: boolean;
   initialMode?: FormMode;
   showForgotPassword?: boolean;
   showLivePasswordMatch?: boolean;
   showFooter?: boolean;
+  emailAutocomplete?: {
+    enabled?: boolean;
+    domains?: string[];
+  };
 };
 
-export type ResolvedAuthConfigGroup = Required<AuthConfigGroup>;
+export type ResolvedAuthConfigGroup = Required<AuthConfigGroup> & {
+  emailAutocomplete: Required<NonNullable<AuthConfigGroup["emailAutocomplete"]>>;
+};
 
 /**
  * Gradient controls for the drawer backdrop.
@@ -342,12 +364,20 @@ export type CredentialAuthInput = {
 };
 
 /**
+ * Reset password parameters.
+ */
+export interface ResetPasswordInput {
+  newPassword: string;
+}
+
+/**
  * Backend-agnostic auth operation contract.
  */
 export type AuthHandlers = {
   onCredential?: (input: CredentialAuthInput) => Promise<void>;
   onOAuth?: (provider: OAuthProvider) => Promise<void>;
   onForgotPassword?: (email: string) => Promise<void>;
+  onResetPassword?: (input: ResetPasswordInput) => Promise<void>;
   normalizeError?: (
     error: unknown,
     context: { provider?: OAuthProvider; fallbackTarget?: AuthUiError["target"] },

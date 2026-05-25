@@ -16,10 +16,10 @@ import {
   SETTINGS_KEY,
 } from "../constants";
 import { DEFAULT_CONFIG } from "../config";
+import { resolveOAuthVisibleCount } from "../oauth-providers";
 import { resolveCopyGroup } from "../copy";
 import { normalizeAuthError } from "../auth-errors";
 import { useDraggableDrawer } from "../hooks/use-draggable-drawer";
-import { useMediaQuery } from "../hooks/use-media-query";
 import type {
   AuthBackdropConfig,
   AuthConfig,
@@ -69,6 +69,14 @@ function resolveAuthGroup(config?: AuthConfig) {
   return {
     providers: auth.providers ?? DEFAULT_CONFIG.ui.auth.providers,
     oauthLayout: auth.oauthLayout ?? DEFAULT_CONFIG.ui.auth.oauthLayout,
+    oauthOverflow: {
+      visibleCount: resolveOAuthVisibleCount(
+        auth.oauthOverflow?.visibleCount ?? DEFAULT_CONFIG.ui.auth.oauthOverflow.visibleCount,
+      ),
+      showPreviewIcons:
+        auth.oauthOverflow?.showPreviewIcons ??
+        DEFAULT_CONFIG.ui.auth.oauthOverflow.showPreviewIcons,
+    },
     allowRegister: auth.allowRegister ?? DEFAULT_CONFIG.ui.auth.allowRegister,
     showRememberMe: auth.showRememberMe ?? DEFAULT_CONFIG.ui.auth.showRememberMe,
     initialMode: auth.initialMode ?? DEFAULT_CONFIG.ui.auth.initialMode,
@@ -76,6 +84,10 @@ function resolveAuthGroup(config?: AuthConfig) {
     showLivePasswordMatch:
       auth.showLivePasswordMatch ?? DEFAULT_CONFIG.ui.auth.showLivePasswordMatch,
     showFooter: auth.showFooter ?? DEFAULT_CONFIG.ui.auth.showFooter,
+    emailAutocomplete: {
+      enabled: auth.emailAutocomplete?.enabled ?? DEFAULT_CONFIG.ui.auth.emailAutocomplete.enabled,
+      domains: auth.emailAutocomplete?.domains ?? DEFAULT_CONFIG.ui.auth.emailAutocomplete.domains,
+    },
   };
 }
 
@@ -222,7 +234,6 @@ export function AuthDrawer({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const isMobile = useMediaQuery("(max-width: 768px)");
   const titleId = useId();
   const descId = useId();
   const open = controlledOpen ?? uncontrolledOpen;
@@ -339,15 +350,11 @@ export function AuthDrawer({
 
   const { y, rawY, onDrag, onDragEnd } = useDraggableDrawer(closeDrawer, true, drawerMotion);
 
-  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
-
   const openDrawer = useCallback(() => {
-    if (isMobile) y.set(vh);
-    else y.set(0);
-
+    y.set(0);
     rawY.set(0);
     setDrawerOpen(true);
-  }, [isMobile, rawY, setDrawerOpen, vh, y]);
+  }, [rawY, setDrawerOpen, y]);
 
   const toggleDrawer = useCallback(() => {
     if (open) {
@@ -401,24 +408,22 @@ export function AuthDrawer({
 
   const rootClass = cn(
     "relative z-10 flex w-full flex-col outline-hidden",
-    isMobile
-      ? "items-center justify-end pb-8"
-      : drawerMotion.displayMode === "drawer"
-        ? cn(
-            "h-full justify-end pb-0",
-            drawerMotion.desktopPosition === "center" && "items-center",
-            drawerMotion.desktopPosition === "left" && "items-start",
-            drawerMotion.desktopPosition === "right" && "items-end",
-          )
-        : cn(
-            "h-full justify-center",
-            drawerMotion.desktopPosition === "center" && "items-center",
-            drawerMotion.desktopPosition === "left" && "items-start",
-            drawerMotion.desktopPosition === "right" && "items-end",
-          ),
+    drawerMotion.displayMode === "drawer"
+      ? cn(
+          "h-full justify-end pb-0",
+          drawerMotion.desktopPosition === "center" && "items-center",
+          drawerMotion.desktopPosition === "left" && "items-start",
+          drawerMotion.desktopPosition === "right" && "items-end",
+        )
+      : cn(
+          "h-full justify-center",
+          drawerMotion.desktopPosition === "center" && "items-center",
+          drawerMotion.desktopPosition === "left" && "items-start",
+          drawerMotion.desktopPosition === "right" && "items-end",
+        ),
   );
 
-  const hasDrawer = isMobile || drawerMotion.displayMode === "drawer";
+  const hasDrawer = drawerMotion.displayMode === "drawer";
   const dismissOnBackdropClick = !hasDrawer;
   const formAlign = drawerMotion.formAlign;
   const shouldOverridePosition = formAlign !== DEFAULT_CONFIG.ui.motion.formAlign;
@@ -467,63 +472,36 @@ export function AuthDrawer({
             onDrag={onDrag}
             onDragEnd={onDragEnd}
             onClick={dismissOnBackdropClick ? closeDrawer : undefined}
-            initial={
-              isMobile
-                ? { y: vh }
-                : {
-                    opacity: 0,
-                    scale: drawerMotion.displayMode === "drawer" ? 1 : drawerMotion.entryScale,
-                    y: drawerMotion.displayMode === "drawer" ? 100 : drawerMotion.entryY,
-                  }
-            }
-            animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1, y: 0 }}
-            exit={
-              isMobile
-                ? {
-                    y: vh,
-                    transition: {
-                      type: "spring",
-                      damping: drawerMotion.snapDamping,
-                      stiffness: drawerMotion.snapStiffness,
-                      mass: drawerMotion.snapMass,
-                      restDelta: 0.001,
-                    },
-                  }
-                : {
-                    opacity: 0,
-                    scale: drawerMotion.displayMode === "drawer" ? 1 : drawerMotion.exitScale,
-                    y: drawerMotion.displayMode === "drawer" ? 100 : drawerMotion.exitY,
-                    transition: {
-                      opacity: {
-                        duration: 0.18,
-                        ease: EASE_EXIT,
-                      },
-                      y: {
-                        duration: DUR_EXIT,
-                        ease: EASE_DRAWER,
-                      },
-                      scale: {
-                        duration: 0.22,
-                        ease: EASE_EXIT,
-                      },
-                    },
-                  }
-            }
-            transition={
-              isMobile
-                ? {
-                    type: "spring",
-                    damping: drawerMotion.snapDamping,
-                    stiffness: drawerMotion.snapStiffness,
-                    mass: drawerMotion.snapMass,
-                    restDelta: 0.001,
-                  }
-                : {
-                    duration: drawerMotion.entryDuration,
-                    delay: drawerMotion.entryDelay,
-                    ease: parseEase(drawerMotion.entryEase) as never,
-                  }
-            }
+            initial={{
+              opacity: 0,
+              scale: drawerMotion.displayMode === "drawer" ? 1 : drawerMotion.entryScale,
+              y: drawerMotion.displayMode === "drawer" ? 100 : drawerMotion.entryY,
+            }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{
+              opacity: 0,
+              scale: drawerMotion.displayMode === "drawer" ? 1 : drawerMotion.exitScale,
+              y: drawerMotion.displayMode === "drawer" ? 100 : drawerMotion.exitY,
+              transition: {
+                opacity: {
+                  duration: 0.18,
+                  ease: EASE_EXIT,
+                },
+                y: {
+                  duration: DUR_EXIT,
+                  ease: EASE_DRAWER,
+                },
+                scale: {
+                  duration: 0.22,
+                  ease: EASE_EXIT,
+                },
+              },
+            }}
+            transition={{
+              duration: drawerMotion.entryDuration,
+              delay: drawerMotion.entryDelay,
+              ease: parseEase(drawerMotion.entryEase) as never,
+            }}
           >
             {hasDrawer && <DrawerHandle />}
 
@@ -531,13 +509,13 @@ export function AuthDrawer({
               layout
               onClick={(event) => event.stopPropagation()}
               className={cn(
-                "relative p-4",
+                "relative w-full p-4",
                 hasDrawer
-                  ? "w-full"
-                  : "w-full rounded-none border border-overlay-border/20 bg-overlay-surface/88 shadow-[0_24px_80px_rgba(17,12,10,0.16)] backdrop-blur-2xl dark:border-overlay-border/10 dark:bg-overlay-surface/80 dark:shadow-2xl",
+                  ? undefined
+                  : "rounded-none border border-overlay-border/20 bg-overlay-surface/88 shadow-[0_24px_80px_rgba(17,12,10,0.16)] backdrop-blur-2xl dark:border-overlay-border/10 dark:bg-overlay-surface/80 dark:shadow-2xl",
               )}
               style={{
-                width: !isMobile ? drawerMotion.desktopWidth : "100%",
+                maxWidth: drawerMotion.desktopWidth,
               }}
             >
               <DrawerClose

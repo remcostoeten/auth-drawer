@@ -2,7 +2,7 @@ import { useCallback, useState, type ChangeEvent, type KeyboardEvent } from "rea
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
 import type { ResolvedAuthFieldCopy } from "../copy";
-import { DOMAINS } from "../constants";
+import { DOMAINS as DEFAULT_DOMAINS } from "../constants";
 import { Kbd } from "./kbd";
 
 type Props = {
@@ -13,6 +13,10 @@ type Props = {
   copy: ResolvedAuthFieldCopy;
   ariaInvalid?: boolean;
   ariaDescribedBy?: string;
+  autocompleteConfig?: {
+    enabled?: boolean;
+    domains?: string[];
+  };
 };
 
 const INPUT =
@@ -32,6 +36,7 @@ export function EmailField({
   copy,
   ariaInvalid,
   ariaDescribedBy,
+  autocompleteConfig,
 }: Props) {
   const [suggestion, setSuggestion] = useState("");
 
@@ -39,6 +44,12 @@ export function EmailField({
     (event: ChangeEvent<HTMLInputElement>) => {
       const next = event.target.value;
       onChange(next);
+
+      const enabled = autocompleteConfig?.enabled ?? true;
+      if (!enabled) {
+        setSuggestion("");
+        return;
+      }
 
       if (!next.includes("@")) {
         setSuggestion("");
@@ -51,10 +62,11 @@ export function EmailField({
         return;
       }
 
-      const match = DOMAINS.find((item) => item.startsWith(domain));
+      const list = autocompleteConfig?.domains ?? DEFAULT_DOMAINS;
+      const match = list.find((item) => item.startsWith(domain));
       setSuggestion(match && match !== domain ? `${local}@${match}` : "");
     },
-    [onChange],
+    [onChange, autocompleteConfig],
   );
 
   const acceptEmail = useCallback(

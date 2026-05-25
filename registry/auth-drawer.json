@@ -114,6 +114,22 @@
           "type": "registry:component"
         },
         {
+          "path": "src/oauth-providers.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/ui/apple-icon.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/discord-icon.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/ui/tiktok-icon.tsx",
+          "type": "registry:component"
+        },
+        {
           "path": "styles/tailwind.css",
           "type": "registry:style"
         }

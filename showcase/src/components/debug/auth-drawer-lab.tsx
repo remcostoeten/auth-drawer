@@ -18,6 +18,8 @@ import { createPortal } from "react-dom";
 import {
   AuthDrawer,
   DEFAULT_CONFIG,
+  OAUTH_PROVIDER_IDS,
+  defaultLabelForOAuthProvider,
   type AuthBackdropConfig,
   type AuthConfig,
   type AuthConfigGroup,
@@ -34,7 +36,7 @@ import { WindowsXpScene } from "@/components/debug/scenes/windows-xp";
 import { AUTH_SCENARIOS, type AuthScenarioId, createScenarioHandlers } from "./auth-scenarios";
 
 const WIDTHS = ["392px", "448px", "520px"] as const;
-const PROVIDERS: OAuthProvider[] = ["github", "google"];
+const PROVIDERS: OAuthProvider[] = [...OAUTH_PROVIDER_IDS];
 const EASE_OPTIONS = ["[0.23,1,0.32,1]", "easeOut", "easeInOut", "linear"] as const;
 const FORM_JUSTIFY_OPTIONS = ["center", "flex-start", "flex-end", "space-between"] as const;
 const FORM_ALIGN_OPTIONS = ["center", "flex-start", "flex-end", "stretch"] as const;
@@ -236,7 +238,7 @@ function sanitizeSnapshot(raw: Record<string, unknown>): LabUrlSnapshot {
 }
 
 function labelForProvider(provider: OAuthProvider) {
-  return provider === "github" ? "GitHub" : "Google";
+  return defaultLabelForOAuthProvider(provider);
 }
 
 function cycleProvider(providers: OAuthProvider[], provider: OAuthProvider): OAuthProvider[] {

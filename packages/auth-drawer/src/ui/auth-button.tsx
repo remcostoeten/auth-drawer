@@ -16,12 +16,12 @@ type Props = {
 };
 
 const BASE =
-  "auth-button-soft-hover h-11 w-full rounded-none flex items-center justify-center gap-3 border px-5 text-sm font-medium leading-none tracking-[0.01em] cursor-pointer outline-hidden focus-visible:border-overlay-border/80 focus-visible:ring-1 focus-visible:ring-overlay-border/40";
+  "auth-button-soft-hover h-11 w-full rounded-none flex items-center justify-center gap-3 border px-5 text-sm font-medium leading-none tracking-[0.01em] cursor-pointer outline-hidden focus-visible:outline-none focus-visible:border-overlay-border/80 focus-visible:ring-1 focus-visible:ring-overlay-border/40";
 
 const VARIANTS = {
   primary:
     "bg-overlay-surface/82 border-overlay-border/20 text-overlay-text hover:bg-overlay-surface/87 hover:border-overlay-border/26 hover:shadow-[0_10px_22px_rgba(26,20,17,0.055),inset_0_1px_0_rgba(255,255,255,0.42)] shadow-[0_8px_20px_rgba(26,20,17,0.05),inset_0_1px_0_rgba(255,255,255,0.38)] dark:bg-overlay-surface/50 dark:border-overlay-border/10 dark:hover:bg-overlay-surface/70 dark:hover:border-overlay-border/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]",
-  outline:
+  "outline-solid":
     "bg-overlay-surface/82 border-overlay-border/20 text-overlay-text hover:bg-overlay-surface/87 hover:border-overlay-border/26 hover:shadow-[0_10px_22px_rgba(26,20,17,0.055),inset_0_1px_0_rgba(255,255,255,0.42)] shadow-[0_8px_20px_rgba(26,20,17,0.05),inset_0_1px_0_rgba(255,255,255,0.38)] dark:bg-overlay-surface/30 dark:border-overlay-border/10 dark:hover:bg-overlay-surface/50 dark:hover:border-overlay-border/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]",
 } as const;
 

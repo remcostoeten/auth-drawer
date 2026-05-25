@@ -24,8 +24,8 @@ By wrapping adapters inside a React Context, we decouple session state from the 
 ### Context Implementation (`AuthProvider.tsx`)
 
 ```typescript
-import React, { createContext, useContext, useMemo } from "react";
-import type { AuthAdapter, AuthSessionState } from "./types";
+import { createContext, useContext, useMemo, useState, ReactNode } from "react";
+import type { AuthAdapter, AuthSessionState, AuthResult, AuthUiError } from "./types";
 
 /**
  * Interface representing the complete properties exposed by the useAuth hook.
@@ -43,6 +43,8 @@ interface AuthContextType {
   signIn: AuthAdapter["signIn"];
   /** Invokes credentials registration on the active adapter. */
   signUp: AuthAdapter["signUp"];
+  /** Invokes OAuth social sign-in on the active adapter. */
+  signInWithOAuth: AuthAdapter["signInWithOAuth"];
   /** Invokes session revocation on the active adapter. */
   signOut: () => Promise<void>;
   /** Triggers the Auth Drawer UI to open state. */
@@ -55,26 +57,34 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/**
- * Global React wrapper providing real-time session mapping and Drawer controller API.
- * 
- * @param props Props containing the active adapter instance and nested React children.
- */
-export const AuthProvider: React.FC<{
+interface AuthProviderProps {
   /** Any backend adapter conforming to the AuthAdapter interface (e.g., Supabase, Better Auth). */
   adapter: AuthAdapter;
   /** App structure children that can use useAuth context. */
-  children: React.ReactNode;
-}> = ({ adapter, children }) => {
-  // 1. Hook into adapter's reactive session hook
+  children: ReactNode;
+  /** Called after any successful auth action. */
+  onSuccess?: (action: "signIn" | "signUp" | "signOut" | "oauth") => void;
+  /** Called after any failed auth action. */
+  onError?: (error: AuthUiError, action: "signIn" | "signUp" | "signOut" | "oauth") => void;
+}
+
+/**
+ * Global React wrapper providing real-time session mapping and Drawer controller API.
+ *
+ * NOTE: This component calls `adapter.useSession()` internally, which is a React hook.
+ * The adapter's useSession method MUST follow the Rules of Hooks — it is called
+ * unconditionally at the top level of this component.
+ */
+export function AuthProvider({ adapter, children, onSuccess, onError }: AuthProviderProps) {
+  // Hook into adapter's reactive session hook (called unconditionally — Rules of Hooks)
   const { data, isPending, error } = adapter.useSession?.() ?? {
     data: null,
     isPending: false,
     error: null,
   };
 
-  // 2. Control Drawer visual open/close state globally
-  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  // Control Drawer visual open/close state globally
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const value = useMemo(() => ({
     user: data?.user ?? null,
@@ -82,33 +92,35 @@ export const AuthProvider: React.FC<{
     isPending,
     error,
     signIn: adapter.signIn,
-    signUp: adapter.signUp ?? (async () => ({ success: false, error: { code: "unknown", target: "form", message: "Not implemented" } })),
+    signUp: adapter.signUp,
+    signInWithOAuth: adapter.signInWithOAuth,
     signOut: async () => {
       if (adapter.signOut) {
         await adapter.signOut();
-      } else {
+        onSuccess?.("signOut");
+      } else if (typeof window !== "undefined") {
         window.location.reload();
       }
     },
     openDrawer: () => setIsDrawerOpen(true),
     closeDrawer: () => setIsDrawerOpen(false),
     isDrawerOpen,
-  }), [data, isPending, error, adapter, isDrawerOpen]);
+  }), [data, isPending, error, adapter, isDrawerOpen, onSuccess, onError]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+}
 
 /**
  * Consumes global auth state session variables, triggers, and drawer controls.
  * @throws Error if used outside of a configured AuthProvider.
  */
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
+}
 ```
 
 ---
@@ -118,6 +130,7 @@ export const useAuth = () => {
 To allow developers to design, build, and test UI styling or mock edge cases locally without connecting a database or cloud instance, package a first-party `mockAdapter`.
 
 ```typescript
+import { useState } from "react";
 import type { AuthAdapter, AuthResult } from "./types";
 import { createAdapterError } from "./errors";
 
@@ -202,7 +215,7 @@ export function mockAdapter(options: MockAdapterOptions = {}): AuthAdapter {
 
     // Return static reactive session mock
     useSession() {
-      const [isPending, setIsPending] = React.useState(false);
+      const [isPending, setIsPending] = useState(false);
       const data = isAuthenticated
         ? {
             user: { id: "mock-user-123", email: "admin@example.com", name: "Mock User" },
@@ -225,20 +238,20 @@ In modern React (React 19 / Next.js 15), instead of tracking local state like `c
 By returning promises from the adapter functions, the Drawer UI component handles loaders cleanly:
 
 ```tsx
-import React, { useTransition, useState } from "react";
+import { useTransition, useState, FormEvent } from "react";
 import { useAuth } from "./AuthProvider";
 
 /**
  * Standard email-password login form illustrating useTransition hook consumption.
  */
-export const CredentialForm: React.FC = () => {
+export function CredentialForm() {
   const { signIn } = useAuth();
   const [error, setError] = useState<string | null>(null);
   
   // React hook manages pending states during the Promise resolution
   const [isPending, startTransition] = useTransition();
 
-  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
@@ -266,7 +279,7 @@ export const CredentialForm: React.FC = () => {
       </button>
     </form>
   );
-};
+}
 ```
 
 ---
@@ -372,7 +385,9 @@ Developers can easily customize the styles inside their own stylesheets:
 #### Option 2: Inline React Theme Props
 By providing a simple `theme` configuration object, the package can map it to CSS custom properties dynamically using inline styling objects:
 
-```tsx
+```typescript
+import { CSSProperties } from "react";
+
 /**
  * Developer theme override configuration options.
  */
@@ -412,7 +427,7 @@ const themeStyles = theme ? {
   "--cad-primary": theme.primary,
   "--cad-background": theme.background,
   "--cad-input-border": theme.inputBorder,
-} as React.CSSProperties : {};
+} as CSSProperties : {};
 
 return (
   <div style={themeStyles} className="cad-theme-root">

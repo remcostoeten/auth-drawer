@@ -2,6 +2,14 @@ import "../styles/bundle.css";
 
 export { AuthDrawer } from "./ui/auth-drawer";
 export { DEFAULT_CONFIG } from "./config";
+export {
+  OAUTH_PROVIDER_IDS,
+  OAUTH_PROVIDER_REGISTRY,
+  OAUTH_VISIBLE_COUNT,
+  resolveOAuthProviders,
+  resolveOAuthVisibleCount,
+  defaultLabelForOAuthProvider,
+} from "./oauth-providers";
 export { DEFAULT_COPY, DEFAULT_LEGAL_FOOTER_SEGMENTS, formatCopy, resolveCopyGroup } from "./copy";
 export { useScrollOpenTrigger } from "./hooks/use-scroll-open-trigger";
 export { createAuthTriggerStore } from "./triggers/create-auth-trigger-store";
@@ -29,6 +37,8 @@ export type {
   AuthBackdropGradientConfig,
   AuthConfig,
   AuthConfigGroup,
+  AuthOAuthOverflowConfig,
+  ResolvedAuthOAuthOverflowConfig,
   AuthUiConfig,
   AuthTriggerEvent,
   AuthPresentationConfig,
