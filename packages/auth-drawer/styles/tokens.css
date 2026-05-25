@@ -1,0 +1,27 @@
+@layer base {
+  :root {
+    --surface-overlay: 34 12% 82%;
+    --surface-overlay-alpha-high: 0.98;
+    --surface-overlay-alpha-mid: 0.88;
+    --surface-overlay-alpha-fade: 0.62;
+    --surface-overlay-raised: 32 18% 97%;
+    --text-on-overlay: 24 18% 14%;
+    --text-on-overlay-muted: 24 12% 31%;
+    --text-on-overlay-subtle: 26 10% 46%;
+    --border-overlay: 28 12% 54%;
+    --error-on-overlay: 0 72% 45%;
+  }
+
+  .dark {
+    --surface-overlay: 0 0% 7.5%;
+    --surface-overlay-alpha-high: 0.95;
+    --surface-overlay-alpha-mid: 0.75;
+    --surface-overlay-alpha-fade: 0.4;
+    --surface-overlay-raised: 240 4% 11%;
+    --text-on-overlay: 0 0% 96%;
+    --text-on-overlay-muted: 0 0% 72%;
+    --text-on-overlay-subtle: 0 0% 48%;
+    --border-overlay: 0 0% 100%;
+    --error-on-overlay: 0 80% 75%;
+  }
+}

@@ -2,12 +2,15 @@ import { useState, type ChangeEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "../lib/utils";
+import type { ResolvedAuthFieldCopy, ResolvedAuthPasswordToggleCopy } from "../copy";
 import { EASE_OUT } from "../constants";
 
 type Props = {
   id: string;
   value: string;
   onChange: (value: string) => void;
+  copy: ResolvedAuthFieldCopy;
+  passwordToggle: ResolvedAuthPasswordToggleCopy;
   ariaInvalid?: boolean;
   ariaDescribedBy?: string;
 };
@@ -21,7 +24,15 @@ const INPUT =
  * @param props - Field id, value, and accessibility state.
  * @returns Confirm password field control.
  */
-export function ConfirmPasswordField({ id, value, onChange, ariaInvalid, ariaDescribedBy }: Props) {
+export function ConfirmPasswordField({
+  id,
+  value,
+  onChange,
+  copy,
+  passwordToggle,
+  ariaInvalid,
+  ariaDescribedBy,
+}: Props) {
   const [visible, setVisible] = useState(false);
 
   function changeValue(event: ChangeEvent<HTMLInputElement>) {
@@ -31,12 +42,12 @@ export function ConfirmPasswordField({ id, value, onChange, ariaInvalid, ariaDes
   return (
     <div className="relative">
       <label htmlFor={id} className="sr-only">
-        Confirm password
+        {copy.label}
       </label>
       <input
         id={id}
         type={visible ? "text" : "password"}
-        placeholder="Confirm password"
+        placeholder={copy.placeholder}
         value={value}
         onChange={changeValue}
         required
@@ -49,7 +60,7 @@ export function ConfirmPasswordField({ id, value, onChange, ariaInvalid, ariaDes
         type="button"
         onClick={() => setVisible((next) => !next)}
         className="absolute right-4 top-1/2 -translate-y-1/2 text-overlay-muted outline-hidden transition-colors hover:text-overlay-text focus-visible:text-overlay-text focus-visible:outline-hidden"
-        aria-label={visible ? "Hide password" : "Show password"}
+        aria-label={visible ? passwordToggle.hide : passwordToggle.show}
         aria-pressed={visible}
       >
         <AnimatePresence mode="wait" initial={false}>

@@ -5,6 +5,7 @@ import { useRememberMe } from "../hooks/use-remember-me";
 type Props = {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
+  label?: string;
 };
 
 /**
@@ -12,7 +13,7 @@ type Props = {
  *
  * @returns Self-contained remember-me control.
  */
-export function RememberMe({ checked, onChange }: Props) {
+export function RememberMe({ checked, onChange, label = "Remember me" }: Props) {
   const [storedChecked, setStoredChecked] = useRememberMe();
   const resolvedChecked = checked ?? storedChecked;
 
@@ -72,7 +73,7 @@ export function RememberMe({ checked, onChange }: Props) {
         </motion.div>
       </div>
       <span className="text-[0.8125rem] font-medium text-overlay-muted transition-colors group-hover:text-overlay-text">
-        Remember me
+        {label}
       </span>
     </label>
   );

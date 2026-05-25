@@ -12,6 +12,7 @@ import { EASE_OUT, MAX_STAGGER } from "../constants";
 import { useRememberMe } from "../hooks/use-remember-me";
 import { getPasswordMatchFeedback, validateCredentials } from "../validation";
 import { AuthButton } from "./auth-button";
+import { AuthFooter } from "./auth-footer";
 import { ConfirmPasswordField } from "./confirm-password-field";
 import { EmailField } from "./email-field";
 import { OauthButtons } from "./oauth-buttons";
@@ -84,10 +85,9 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
   const errorBaseId = useId();
 
   const isRegister = mode === "register";
-  const title = isRegister ? "Create your account" : "Welcome back";
-  const subtitle = isRegister
-    ? "Create an account to back up and sync your notes across devices"
-    : "Sign in to sync your notes anywhere while keeping local-first saves intact";
+  const formCopy = isRegister ? config.ui.copy.register : config.ui.copy.login;
+  const title = formCopy.title;
+  const subtitle = formCopy.subtitle;
   const emailErrorId = fieldErrorId(errorBaseId, "email");
   const passwordErrorId = fieldErrorId(errorBaseId, "password");
   const confirmErrorId = fieldErrorId(errorBaseId, "confirm");
@@ -99,11 +99,14 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
   const passwordError = errors.fields.password;
   const confirmError = errors.fields.confirmPassword;
   const confirmFeedback = config.ui.auth.showLivePasswordMatch
-    ? getPasswordMatchFeedback({
-        mode,
-        password,
-        confirmPassword: confirm,
-      })
+    ? getPasswordMatchFeedback(
+        {
+          mode,
+          password,
+          confirmPassword: confirm,
+        },
+        config.ui.copy,
+      )
     : null;
   const formError = errors.form;
   const oauthError = errors.oauth;
@@ -139,12 +142,15 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
     async (event: FormEvent) => {
       event.preventDefault();
 
-      const validation = validateCredentials({
-        mode,
-        email,
-        password,
-        confirmPassword: confirm,
-      });
+      const validation = validateCredentials(
+        {
+          mode,
+          email,
+          password,
+          confirmPassword: confirm,
+        },
+        config.ui.copy,
+      );
 
       if (hasAuthErrors(validation)) {
         setErrors(validation);
@@ -224,11 +230,14 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
   }, []);
 
   const resetPassword = useCallback(async () => {
-    const validation = validateCredentials({
-      mode: "login",
-      email,
-      password: "placeholder-password",
-    });
+    const validation = validateCredentials(
+      {
+        mode: "login",
+        email,
+        password: "placeholder-password",
+      },
+      config.ui.copy,
+    );
 
     if (validation.fields.email) {
       setErrors({ fields: { email: validation.fields.email } });
@@ -242,7 +251,7 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
 
     try {
       await config.onForgotPassword(email.trim());
-      setNotice("If an account exists, password reset instructions were sent.");
+      setNotice(config.ui.copy.forgotPassword.successNotice);
     } catch (error) {
       setErrors(
         errorForSubmit(
@@ -331,6 +340,7 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
             layout={config.ui.auth.oauthLayout}
             loadingAction={loadingAction}
             isLoading={isLoading}
+            copy={config.ui.copy.oauth}
             onAction={runOAuth}
           />
 
@@ -342,7 +352,7 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
           >
             <div className="h-px flex-1 bg-overlay-border/20" aria-hidden="true" />
             <span className="shrink-0 text-xs uppercase tracking-wide text-overlay-muted">
-              Or continue with email
+              {config.ui.copy.oauth.divider}
             </span>
             <div className="h-px flex-1 bg-overlay-border/20" aria-hidden="true" />
           </motion.div>
@@ -360,6 +370,7 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
           value={email}
           onChange={changeEmail}
           onSuggestionAccept={acceptEmail}
+          copy={config.ui.copy.fields.email}
           ariaInvalid={!!emailError}
           ariaDescribedBy={emailError ? emailErrorId : undefined}
         />
@@ -371,6 +382,8 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
             value={password}
             onChange={changePassword}
             autoComplete={isRegister ? "new-password" : "current-password"}
+            copy={config.ui.copy.fields.password}
+            passwordToggle={config.ui.copy.passwordToggle}
             ariaInvalid={!!passwordError}
             ariaDescribedBy={passwordError ? passwordErrorId : undefined}
           />
@@ -390,6 +403,8 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
                 id={`${titleId}-confirm`}
                 value={confirm}
                 onChange={changeConfirm}
+                copy={config.ui.copy.fields.confirmPassword}
+                passwordToggle={config.ui.copy.passwordToggle}
                 ariaInvalid={!!confirmError || confirmFeedback?.tone === "error"}
                 ariaDescribedBy={
                   confirmError ? confirmErrorId : confirmFeedback ? confirmLiveId : undefined
@@ -408,7 +423,11 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
 
         <div className="mb-4 mt-1 flex items-center justify-between px-0.5">
           {config.ui.auth.showRememberMe ? (
-            <RememberMe checked={rememberMe} onChange={setRememberMe} />
+            <RememberMe
+              checked={rememberMe}
+              onChange={setRememberMe}
+              label={config.ui.copy.rememberMe.label}
+            />
           ) : (
             <span />
           )}
@@ -420,7 +439,9 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
               disabled={isLoading}
               className="text-[0.8125rem] font-medium text-overlay-muted transition-colors hover:text-overlay-text disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loadingAction === "forgotPassword" ? "Sending..." : "Forgot password?"}
+              {loadingAction === "forgotPassword"
+                ? config.ui.copy.forgotPassword.loading
+                : config.ui.copy.forgotPassword.label}
             </button>
           )}
         </div>
@@ -435,7 +456,7 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
           isLoading={loadingAction === "email"}
           disabled={isLoading}
         >
-          {isRegister ? "Create account" : "Sign in"}
+          {formCopy.submit}
         </AuthButton>
 
         {config.ui.auth.allowRegister && (
@@ -443,32 +464,22 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
             className="mt-4 flex w-full flex-wrap items-baseline justify-center gap-x-2 gap-y-1 text-center text-sm text-overlay-muted"
             variants={SLIDE_VIEW}
           >
-            <span>{isRegister ? "Already have an account?" : "Don't have an account?"}</span>
+            <span>{formCopy.switchPrompt}</span>
             <button
               type="button"
               onClick={switchMode}
               className="cursor-pointer rounded-sm px-1 text-overlay-text underline underline-offset-4 transition-colors hover:text-overlay-text/80 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-overlay-border/20"
             >
-              {isRegister ? "Sign in" : "Register"}
+              {formCopy.switchAction}
             </button>
           </motion.p>
         )}
       </motion.form>
 
-      <motion.p
-        className="mx-auto mt-5 max-w-sm text-center text-[0.6875rem] leading-relaxed text-overlay-subtle"
-        variants={FADE_VIEW}
-      >
-        By creating an account or signing in, you agree to our{" "}
-        <a href="#" className="underline transition-colors hover:text-overlay-muted">
-          Terms
-        </a>{" "}
-        and{" "}
-        <a href="#" className="underline transition-colors hover:text-overlay-muted">
-          Privacy Policy
-        </a>
-        .
-      </motion.p>
+      {config.ui.auth.showFooter &&
+        (config.ui.footer ?? (
+          <AuthFooter segments={config.ui.copy.footer.segments} />
+        ))}
     </motion.div>
   );
 }

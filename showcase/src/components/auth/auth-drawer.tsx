@@ -1,8 +1,9 @@
-export { AuthDrawer, DEFAULT_CONFIG } from "@remcostoeten/auth-drawer";
+export { AuthDrawer, DEFAULT_CONFIG, DEFAULT_COPY } from "@remcostoeten/auth-drawer";
 export type {
   AuthBackdropConfig,
   AuthConfig,
   AuthConfigGroup,
+  AuthCopyConfig,
   AuthPresentationConfig,
   AuthTriggerStore,
   AuthTriggerConfig,
@@ -12,4 +13,5 @@ export type {
   DrawerPosition,
   MotionSettings,
   OAuthProvider,
+  ResolvedAuthCopyConfig,
 } from "@remcostoeten/auth-drawer";

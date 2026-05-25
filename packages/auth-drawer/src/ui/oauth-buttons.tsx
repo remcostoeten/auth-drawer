@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
+import { formatCopy } from "../copy";
+import type { ResolvedAuthOAuthCopy } from "../copy";
 import type { LoadingAction, OAuthProvider, ProviderDef } from "../types";
 import { AuthButton } from "./auth-button";
 import { GithubIcon } from "./github-icon";
@@ -10,10 +12,11 @@ type Props = {
   layout: "row" | "column";
   loadingAction: LoadingAction;
   isLoading: boolean;
+  copy: ResolvedAuthOAuthCopy;
   onAction: (provider: OAuthProvider) => void;
 };
 
-const PROVIDERS = new Map<OAuthProvider, ProviderDef>([
+const PROVIDER_ICONS = new Map<OAuthProvider, ProviderDef>([
   ["github", { id: "github", label: "GitHub", icon: GithubIcon }],
   ["google", { id: "google", label: "Google", icon: GoogleIcon }],
 ]);
@@ -24,7 +27,14 @@ const PROVIDERS = new Map<OAuthProvider, ProviderDef>([
  * @param props - Provider ids, layout, loading state, and action handler.
  * @returns OAuth button group.
  */
-export function OauthButtons({ providers, layout, loadingAction, isLoading, onAction }: Props) {
+export function OauthButtons({
+  providers,
+  layout,
+  loadingAction,
+  isLoading,
+  copy,
+  onAction,
+}: Props) {
   if (providers.length === 0) return null;
 
   return (
@@ -36,10 +46,12 @@ export function OauthButtons({ providers, layout, loadingAction, isLoading, onAc
       }}
     >
       {providers.map((provider) => {
-        const item = PROVIDERS.get(provider);
+        const item = PROVIDER_ICONS.get(provider);
         if (!item) return null;
 
         const Icon = item.icon;
+        const providerLabel = copy.providers[provider];
+        const continueLabel = formatCopy(copy.continueWith, { provider: providerLabel });
 
         return (
           <AuthButton
@@ -49,11 +61,11 @@ export function OauthButtons({ providers, layout, loadingAction, isLoading, onAc
             isLoading={loadingAction === item.id}
             disabled={isLoading}
             onClick={() => onAction(item.id)}
-            ariaLabel={`Continue with ${item.label}`}
+            ariaLabel={continueLabel}
             className={layout === "row" ? "gap-2 px-3" : undefined}
           >
             <span className="whitespace-nowrap">
-              {layout === "row" ? item.label : `Continue with ${item.label}`}
+              {layout === "row" ? providerLabel : continueLabel}
             </span>
           </AuthButton>
         );

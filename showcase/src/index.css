@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap")
-layer(base);
 @import "./styles/tokens.css" layer(base);
 
 @import "tailwindcss";
@@ -22,9 +20,9 @@ layer(base);
 }
 
 @theme {
-  --font-display: var(--font-display);
-  --font-body: var(--font-body);
-  --font-mono: var(--font-mono);
+  --font-display: "Geist Pixel Grid", "Geist Pixel Square", ui-monospace, monospace;
+  --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Pixel Square", "Geist Mono", ui-monospace, monospace;
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -117,11 +115,6 @@ layer(base);
     --ring: 0 0% 12%;
 
     --radius: 0.5rem;
-
-    /* Typography */
-    --font-display: "Geist Pixel Grid", "Geist Pixel Square", "Geist Mono", monospace;
-    --font-body: "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: "Geist Pixel Square", "Geist Mono", "Geist Pixel Grid", monospace;
   }
 
   .dark {
@@ -147,6 +140,33 @@ layer(base);
     --input: 0 0% 18%;
     --ring: 0 0% 90%;
   }
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-SemiBold.woff2")
+    format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -209,14 +229,37 @@ layer(base);
     -moz-osx-font-smoothing: grayscale;
   }
 
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring) / 0.15);
+    outline-offset: 2px;
+  }
+
   /* Pixel font rendering — keep pixel fonts razor sharp */
   .font-display,
   .font-mono,
   [class*="font-display"],
-  [class*="font-mono"] {
+  [class*="font-mono"],
+  .docs-root :is(h2, h3, h4),
+  .docs-eyebrow,
+  .docs-label {
     -webkit-font-smoothing: none;
     -moz-osx-font-smoothing: unset;
     font-smooth: never;
+  }
+
+  .docs-root :is(h2, h3, h4) {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+  }
+
+  .docs-eyebrow {
+    font-family: var(--font-mono);
+  }
+
+  .docs-label {
+    font-family: var(--font-mono);
+    letter-spacing: 0.14em;
   }
 
   /* Scan-line overlay for pixel feel */
@@ -293,4 +336,28 @@ layer(base);
 
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
+}
+
+@keyframes default-config-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes default-config-popover-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
 }

@@ -1,0 +1,32 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@source "../dist";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-overlay-bg: hsl(var(--surface-overlay));
+  --color-overlay-surface: hsl(var(--surface-overlay-raised));
+  --color-overlay-border: hsl(var(--border-overlay));
+  --color-overlay-text: hsl(var(--text-on-overlay));
+  --color-overlay-muted: hsl(var(--text-on-overlay-muted));
+  --color-overlay-subtle: hsl(var(--text-on-overlay-subtle));
+  --color-overlay-error: hsl(var(--error-on-overlay));
+
+  --font-display: ui-sans-serif, system-ui, sans-serif;
+
+  --animate-spinner: spinner 0.6s linear infinite;
+
+  @keyframes spinner {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+@utility auth-button-soft-hover {
+  transition-property: background-color, border-color, box-shadow, color;
+  transition-duration: 240ms;
+  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}

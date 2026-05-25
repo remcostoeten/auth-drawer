@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "../lib/utils";
+import type { ResolvedAuthFieldCopy, ResolvedAuthPasswordToggleCopy } from "../copy";
 import { EASE_OUT } from "../constants";
 
 type Props = {
@@ -9,6 +10,8 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   autoComplete: string;
+  copy: ResolvedAuthFieldCopy;
+  passwordToggle: ResolvedAuthPasswordToggleCopy;
   ariaInvalid?: boolean;
   ariaDescribedBy?: string;
 };
@@ -27,6 +30,8 @@ export function PasswordField({
   value,
   onChange,
   autoComplete,
+  copy,
+  passwordToggle,
   ariaInvalid,
   ariaDescribedBy,
 }: Props) {
@@ -39,12 +44,12 @@ export function PasswordField({
   return (
     <div className="relative">
       <label htmlFor={id} className="sr-only">
-        Password
+        {copy.label}
       </label>
       <input
         id={id}
         type={visible ? "text" : "password"}
-        placeholder="Password"
+        placeholder={copy.placeholder}
         value={value}
         onChange={changeValue}
         required
@@ -57,7 +62,7 @@ export function PasswordField({
         type="button"
         onClick={() => setVisible((next) => !next)}
         className="absolute right-4 top-1/2 -translate-y-1/2 text-overlay-muted outline-hidden transition-colors hover:text-overlay-text focus-visible:text-overlay-text focus-visible:outline-hidden"
-        aria-label={visible ? "Hide password" : "Show password"}
+        aria-label={visible ? passwordToggle.hide : passwordToggle.show}
         aria-pressed={visible}
       >
         <AnimatePresence mode="wait" initial={false}>

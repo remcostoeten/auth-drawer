@@ -1,6 +1,7 @@
 import { useCallback, useState, type ChangeEvent, type KeyboardEvent } from "react";
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
+import type { ResolvedAuthFieldCopy } from "../copy";
 import { DOMAINS } from "../constants";
 import { Kbd } from "./kbd";
 
@@ -9,6 +10,7 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   onSuggestionAccept: (value: string) => void;
+  copy: ResolvedAuthFieldCopy;
   ariaInvalid?: boolean;
   ariaDescribedBy?: string;
 };
@@ -27,6 +29,7 @@ export function EmailField({
   value,
   onChange,
   onSuggestionAccept,
+  copy,
   ariaInvalid,
   ariaDescribedBy,
 }: Props) {
@@ -69,7 +72,7 @@ export function EmailField({
   return (
     <div className="relative">
       <label htmlFor={id} className="sr-only">
-        Email
+        {copy.label}
       </label>
       {suggestion && suggestion.startsWith(value) && (
         <>
@@ -105,7 +108,7 @@ export function EmailField({
       <input
         id={id}
         type="email"
-        placeholder="Email"
+        placeholder={copy.placeholder}
         value={value}
         onChange={changeEmail}
         onKeyDown={acceptEmail}

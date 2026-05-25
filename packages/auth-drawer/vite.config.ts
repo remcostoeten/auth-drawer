@@ -10,6 +10,7 @@ export default defineConfig({
         index: resolve(__dirname, "src/index.ts"),
       },
       formats: ["es"],
+      cssFileName: "styles",
     },
     rollupOptions: {
       external: [

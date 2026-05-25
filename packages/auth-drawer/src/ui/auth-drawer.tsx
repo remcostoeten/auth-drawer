@@ -16,12 +16,13 @@ import {
   SETTINGS_KEY,
 } from "../constants";
 import { DEFAULT_CONFIG } from "../config";
+import { resolveCopyGroup } from "../copy";
+import { normalizeAuthError } from "../auth-errors";
 import { useDraggableDrawer } from "../hooks/use-draggable-drawer";
 import { useMediaQuery } from "../hooks/use-media-query";
 import type {
   AuthBackdropConfig,
   AuthConfig,
-  AuthConfigGroup,
   AuthPresentationConfig,
   AuthTriggerStore,
   MotionSettings,
@@ -62,7 +63,7 @@ function readSavedSettings(): Partial<MotionSettings> {
   }
 }
 
-function resolveAuthGroup(config?: AuthConfig): Required<AuthConfigGroup> {
+function resolveAuthGroup(config?: AuthConfig) {
   const auth = config?.ui?.auth ?? {};
 
   return {
@@ -74,6 +75,7 @@ function resolveAuthGroup(config?: AuthConfig): Required<AuthConfigGroup> {
     showForgotPassword: auth.showForgotPassword ?? DEFAULT_CONFIG.ui.auth.showForgotPassword,
     showLivePasswordMatch:
       auth.showLivePasswordMatch ?? DEFAULT_CONFIG.ui.auth.showLivePasswordMatch,
+    showFooter: auth.showFooter ?? DEFAULT_CONFIG.ui.auth.showFooter,
   };
 }
 
@@ -177,6 +179,7 @@ export function AuthDrawer({
   );
 
   const resolved = useMemo<ResolvedAuthConfig>(() => {
+    const copy = resolveCopyGroup(config);
     const auth = resolveAuthGroup(config);
     const backdrop = resolveBackdropGroup(config);
     const presentation = resolvePresentationGroup(config);
@@ -185,17 +188,28 @@ export function AuthDrawer({
     return {
       ...DEFAULT_CONFIG,
       ...config,
+      normalizeError: config?.normalizeError
+        ? config.normalizeError
+        : (error, context) => {
+            const normalized = normalizeAuthError(error, context);
+            return {
+              ...normalized,
+              message: copy.errors[normalized.code] ?? normalized.message,
+            };
+          },
       triggers: {
         ...DEFAULT_CONFIG.triggers,
         ...config?.triggers,
       },
       ui: {
         auth,
+        copy,
         presentation,
         visual: {
           backdrop,
         },
         motion,
+        footer: config?.ui?.footer,
       },
     };
   }, [config]);
@@ -405,6 +419,7 @@ export function AuthDrawer({
   );
 
   const hasDrawer = isMobile || drawerMotion.displayMode === "drawer";
+  const dismissOnBackdropClick = !hasDrawer;
   const formAlign = drawerMotion.formAlign;
   const shouldOverridePosition = formAlign !== DEFAULT_CONFIG.ui.motion.formAlign;
 
@@ -423,7 +438,10 @@ export function AuthDrawer({
             },
           }}
         >
-          <DrawerBackdrop settings={drawerMotion} onClick={closeDrawer} />
+          <DrawerBackdrop
+            settings={drawerMotion}
+            onClick={dismissOnBackdropClick ? closeDrawer : undefined}
+          />
 
           <motion.div
             ref={dialogRef}
@@ -448,7 +466,7 @@ export function AuthDrawer({
             dragElastic={{ top: 0.3, bottom: 0.5 }}
             onDrag={onDrag}
             onDragEnd={onDragEnd}
-            onClick={closeDrawer}
+            onClick={dismissOnBackdropClick ? closeDrawer : undefined}
             initial={
               isMobile
                 ? { y: vh }
@@ -522,7 +540,11 @@ export function AuthDrawer({
                 width: !isMobile ? drawerMotion.desktopWidth : "100%",
               }}
             >
-              <DrawerClose buttonRef={closeRef} onClick={closeDrawer} />
+              <DrawerClose
+                buttonRef={closeRef}
+                onClick={closeDrawer}
+                ariaLabel={resolved.ui.copy.close.ariaLabel}
+              />
 
               <LoginForm
                 onSuccess={closeDrawer}
@@ -584,10 +606,10 @@ export function AuthDrawer({
           </div>
           <span className="flex flex-col text-left leading-tight">
             <span className="text-xs font-semibold tracking-tight text-overlay-text transition-colors group-hover:text-overlay-text/90">
-              Account
+              {resolved.ui.copy.trigger.title}
             </span>
             <span className="text-[10px] font-medium uppercase tracking-wide text-overlay-subtle transition-colors group-hover:text-overlay-muted">
-              {open ? "Close" : "Open"}
+              {open ? resolved.ui.copy.trigger.close : resolved.ui.copy.trigger.open}
             </span>
           </span>
         </motion.button>

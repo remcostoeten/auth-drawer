@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { DEFAULT_COPY } from "../copy";
 import { OauthButtons } from "./oauth-buttons";
 
 describe("OauthButtons", () => {
@@ -10,6 +11,7 @@ describe("OauthButtons", () => {
         layout="column"
         loadingAction={null}
         isLoading={false}
+        copy={DEFAULT_COPY.oauth}
         onAction={() => {}}
       />,
     );

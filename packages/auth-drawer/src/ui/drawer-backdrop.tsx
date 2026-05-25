@@ -5,7 +5,7 @@ import type { MotionSettings } from "../types";
 
 type Props = {
   settings: MotionSettings;
-  onClick: () => void;
+  onClick?: () => void;
 };
 
 /**

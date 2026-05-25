@@ -43,8 +43,8 @@ const App = () => {
           onClick={() => setView("lab")}
           className={
             view === "lab"
-              ? "font-display bg-foreground/13 px-2.5 py-1 text-[0.68rem] font-semibold text-foreground"
-              : "px-2.5 py-1 text-[0.68rem] font-medium text-foreground/48 transition-colors hover:text-foreground/70"
+              ? "font-display bg-foreground/13 px-2.5 py-1 text-[0.68rem] font-normal text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
+              : "px-2.5 py-1 text-[0.68rem] font-medium text-foreground/48 transition-colors hover:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
           }
         >
           Playground
@@ -54,14 +54,14 @@ const App = () => {
           onClick={() => setView("docs")}
           className={
             view === "docs"
-              ? "font-display bg-foreground/13 px-2.5 py-1 text-[0.68rem] font-semibold text-foreground"
-              : "px-2.5 py-1 text-[0.68rem] font-medium text-foreground/48 transition-colors hover:text-foreground/70"
+              ? "font-display bg-foreground/13 px-2.5 py-1 text-[0.68rem] font-normal text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
+              : "px-2.5 py-1 text-[0.68rem] font-medium text-foreground/48 transition-colors hover:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
           }
         >
           Docs
         </button>
         <div className="flex-1" />
-        <span className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-foreground/28">
+        <span className="font-display text-[0.6rem] font-normal uppercase tracking-[0.14em] text-foreground/28">
           auth-drawer
         </span>
       </nav>

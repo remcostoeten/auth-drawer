@@ -114,7 +114,7 @@
           "type": "registry:component"
         },
         {
-          "path": "styles/tokens.css",
+          "path": "styles/tailwind.css",
           "type": "registry:style"
         }
       ]

@@ -1,5 +1,6 @@
 import type { ResolvedAuthConfig } from "./types";
 import { normalizeAuthError } from "./auth-errors";
+import { DEFAULT_COPY } from "./copy";
 
 async function noopAuthAction() {
   await new Promise((resolveDone) => setTimeout(resolveDone, 800));
@@ -23,7 +24,9 @@ export const DEFAULT_CONFIG: ResolvedAuthConfig = {
       initialMode: "login",
       showForgotPassword: true,
       showLivePasswordMatch: true,
+      showFooter: true,
     },
+    copy: DEFAULT_COPY,
     visual: {
       backdrop: {
         color: "#070708",

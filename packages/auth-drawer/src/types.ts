@@ -1,5 +1,6 @@
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 import type { AuthUiError } from "./auth-errors";
+import type { AuthCopyConfig, ResolvedAuthCopyConfig } from "./copy";
 
 /**
  * Supported OAuth provider identifiers.
@@ -38,7 +39,10 @@ export type AuthConfigGroup = {
   initialMode?: FormMode;
   showForgotPassword?: boolean;
   showLivePasswordMatch?: boolean;
+  showFooter?: boolean;
 };
+
+export type ResolvedAuthConfigGroup = Required<AuthConfigGroup>;
 
 /**
  * Gradient controls for the drawer backdrop.
@@ -80,6 +84,10 @@ export type AuthUiConfig = {
    */
   auth?: AuthConfigGroup;
   /**
+   * User-facing copy for labels, headings, buttons, and messages.
+   */
+  copy?: AuthCopyConfig;
+  /**
    * Drawer/modal presentation options.
    */
   presentation?: AuthPresentationConfig;
@@ -91,6 +99,10 @@ export type AuthUiConfig = {
    * Low-level motion and layout tuning.
    */
   motion?: Partial<MotionSettings>;
+  /**
+   * Fully custom footer below the form. Overrides copy.footer segments.
+   */
+  footer?: ReactNode;
 };
 
 /**
@@ -400,7 +412,8 @@ export type AuthConfig = {
  */
 export type ResolvedAuthConfig = Omit<Required<AuthConfig>, "ui" | "triggers"> & {
   ui: {
-    auth: Required<AuthConfigGroup>;
+    auth: ResolvedAuthConfigGroup;
+    copy: ResolvedAuthCopyConfig;
     presentation: Required<AuthPresentationConfig>;
     visual: {
       backdrop: Required<AuthBackdropConfig> & {
@@ -408,6 +421,7 @@ export type ResolvedAuthConfig = Omit<Required<AuthConfig>, "ui" | "triggers"> &
       };
     };
     motion: MotionSettings;
+    footer?: ReactNode;
   };
   triggers: AuthTriggerConfig;
 };
