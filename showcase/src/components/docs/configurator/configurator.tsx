@@ -355,9 +355,9 @@ export function Configurator({
                     </code>{" "}
                     uses internally. For the stock drawer,{" "}
                     <code className="font-mono text-[0.68rem]">
-                      &lt;AuthDrawer /&gt;
+                      &lt;AuthDrawer adapter=&#123;authAdapter&#125; /&gt;
                     </code>{" "}
-                    is enough; wire up handlers only when you integrate auth.
+                    is enough once you pass your auth adapter.
                   </p>
                 ) : (
                   <p className="text-xs leading-5 text-foreground/52">

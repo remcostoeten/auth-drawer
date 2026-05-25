@@ -21,6 +21,7 @@ import { buildConfig, DEFAULT_USAGE_CODE, initBackdrop, initCopy, initMotion } f
 import { DocsAssistant } from "./docs-assistant";
 import { DocsSidebarBrand, DocsSidebarNav } from "./docs-sidebar-nav";
 import { OAuthDocsSection } from "./oauth-docs-section";
+import { SdkDocsSection } from "./sdk-docs-section";
 import { TriggersDocsSection } from "./triggers-docs-section";
 import {
   AUTH_CONFIG_GROUP_PROPS,
@@ -210,6 +211,10 @@ export function DocsPage() {
             </p>
           </Section>
 
+          <Section id="sdk-adapters" title="SDK adapters" eyebrow="Provider setup">
+            <SdkDocsSection />
+          </Section>
+
           <Section id="oauth" title="OAuth" eyebrow="Social sign-in">
             <OAuthDocsSection
               onPreviewDefault={() => openDrawerPreview(null)}
@@ -241,7 +246,8 @@ export function DocsPage() {
               <div>
                 <h3 className="mb-1 text-sm">AuthDrawer props</h3>
                 <p className="mb-3 text-xs text-foreground/50">
-                  Top-level component props. All fields are optional.
+                  Top-level component props. The auth adapter is required; UI
+                  config and control props are optional.
                 </p>
                 <PropTable props={AUTH_DRAWER_PROPS} />
               </div>
@@ -273,7 +279,8 @@ function Shell({ adapter, children }) {
                 <p className="mb-3 text-xs text-foreground/50">
                   Passed to{" "}
                   <code className="font-mono text-[0.72rem]">config</code>.
-                  Groups UI controls, activation triggers, and auth handlers.
+                  Groups UI controls, activation triggers, and error
+                  normalization.
                 </p>
                 <PropTable props={CONFIG_PROPS} />
               </div>

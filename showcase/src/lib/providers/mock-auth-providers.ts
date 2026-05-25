@@ -24,7 +24,7 @@ export const MOCK_AUTH_PROVIDERS: MockAuthProvider[] = [
     name: "Supabase",
     label: "Database-backed auth",
     description:
-      "Mock Supabase flow for email/password, GitHub, and Google OAuth while the real backend is not wired yet.",
+      "Mock Supabase flow for email/password, GitHub, and Google OAuth using the same adapter contract as a real Supabase client.",
     env: ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
     callbacks: ["/auth/callback", "/examples/supabase"],
     config: {
@@ -46,7 +46,7 @@ export const MOCK_AUTH_PROVIDERS: MockAuthProvider[] = [
     serverNotes: [
       "Exchange OAuth code inside a route handler.",
       "Keep service role keys server-only.",
-      "Use Auth Drawer handlers to call Supabase client methods.",
+      "Use createSupabaseAdapter to route drawer actions into Supabase client methods.",
     ],
   },
   {
@@ -54,7 +54,7 @@ export const MOCK_AUTH_PROVIDERS: MockAuthProvider[] = [
     name: "Better Auth",
     label: "Framework-native auth",
     description:
-      "Mock Better Auth integration showing where credential and social provider handlers will attach.",
+      "Mock Better Auth integration showing how the drawer delegates credentials and social providers to a Better Auth client adapter.",
     env: ["BETTER_AUTH_SECRET", "BETTER_AUTH_URL"],
     callbacks: ["/api/auth/callback/:provider", "/examples/better-auth"],
     config: {
@@ -70,7 +70,7 @@ export const MOCK_AUTH_PROVIDERS: MockAuthProvider[] = [
     },
     serverNotes: [
       "Mount the Better Auth handler under a Next route.",
-      "Use Auth Drawer handlers to call signIn.email or social sign-in.",
+      "Use createBetterAuthAdapter to call signIn.email or social sign-in.",
       "Map backend validation errors into normalized drawer copy.",
     ],
   },
@@ -79,7 +79,7 @@ export const MOCK_AUTH_PROVIDERS: MockAuthProvider[] = [
     name: "Auth.js",
     label: "Provider-rich auth",
     description:
-      "Mock Auth.js provider setup with credential and OAuth examples prepared for a future real route handler.",
+      "Mock Auth.js provider setup with credential and OAuth examples that map to the NextAuth adapter.",
     env: ["AUTH_SECRET", "AUTH_URL", "GITHUB_ID", "GITHUB_SECRET"],
     callbacks: ["/api/auth/callback/github", "/api/auth/callback/google"],
     config: {
@@ -96,7 +96,7 @@ export const MOCK_AUTH_PROVIDERS: MockAuthProvider[] = [
     serverNotes: [
       "Keep provider secrets in server env vars.",
       "Use server-side callbacks to create sessions.",
-      "Call signIn from the drawer submit handlers.",
+      "Pass signIn, signOut, and useSession to createNextAuthAdapter.",
     ],
   },
   {

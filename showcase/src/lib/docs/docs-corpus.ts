@@ -19,8 +19,8 @@ export const docsCorpus: DocsSnippet[] = [
     body: "Install @remcostoeten/auth-drawer and render AuthDrawer. Styles ship with the component import. No Tailwind setup and no separate CSS file are required for consumers.",
   },
   {
-    id: "handlers",
-    title: "Auth handlers and adapters",
+    id: "adapters",
+    title: "Auth adapters",
     href: "/docs#start",
     body: "Use a typed AuthAdapter to route signIn, signUp, signOut, OAuth, forgot-password, and reset-password actions directly. Supported adapter factories include Better Auth, Supabase, NextAuth, Clerk, Firebase, Custom JWT, Passport, and the built-in mock adapter. AuthProvider and useAuth expose the same adapter-backed session state across the app.",
   },
@@ -29,6 +29,12 @@ export const docsCorpus: DocsSnippet[] = [
     title: "Default configuration",
     href: "/docs#showcase",
     body: "DEFAULT_CONFIG includes GitHub and Google OAuth, login and register tabs, remember-me, forgot-password, backdrop, drag behavior, trigger hooks, drawer and modal presentation, desktop width, position, and open trigger defaults.",
+  },
+  {
+    id: "sdk-adapters",
+    title: "SDK adapter setup",
+    href: "/docs#sdk-adapters",
+    body: "SDK adapter docs show complete frontend setup for Supabase, Better Auth, NextAuth/Auth.js, Clerk, Firebase Auth, Custom JWT/REST, Passport cookie sessions, and the Mock adapter. Each provider documents install commands, import paths, supported features, required client shape, AuthDrawer usage, AuthProvider compatibility, and adapter options.",
   },
   {
     id: "oauth",

@@ -13,6 +13,7 @@ export const NAV_ITEMS = [
   ["Start", "start"],
   ["Install", "installation"],
   ["Defaults", "showcase"],
+  ["SDK adapters", "sdk-adapters"],
   ["OAuth", "oauth"],
   ["Triggers", "triggers"],
   ["Configurator", "configurator"],
