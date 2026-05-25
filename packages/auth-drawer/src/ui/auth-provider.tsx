@@ -31,11 +31,7 @@ export interface AuthProviderProps {
  * Global React wrapper providing session state and drawer controls.
  */
 export function AuthProvider({ adapter, children, onSuccess, onError }: AuthProviderProps) {
-  const { data, isPending, error } = adapter.useSession?.() ?? {
-    data: null,
-    isPending: false,
-    error: null,
-  };
+  const { data, isPending, error } = adapter.useSession();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const value = useMemo<AuthContextType>(

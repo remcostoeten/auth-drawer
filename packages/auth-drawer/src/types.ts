@@ -395,8 +395,9 @@ export interface AuthSessionState {
 /**
  * Core interface for authentication adapters.
  *
- * All methods except `signIn` and `id` are optional. The drawer uses feature
- * detection to show/hide UI elements based on which methods are implemented.
+ * `id`, `signIn`, and `useSession` are required. The drawer uses feature
+ * detection to show/hide UI elements based on which optional methods are
+ * implemented.
  */
 export interface AuthAdapter {
   id: string;
@@ -416,7 +417,7 @@ export interface AuthAdapter {
    * from within a React component or custom hook (Rules of Hooks).
    * @hook
    */
-  useSession?: () => {
+  useSession: () => {
     data: AuthSessionState | null;
     isPending: boolean;
     error: any;
@@ -443,19 +444,10 @@ export interface AuthAdapter {
   ) => void;
 }
 
-/**
- * Backend-agnostic auth operation contract.
- */
-export type AuthHandlers = {
-  onCredential?: (input: CredentialAuthInput) => Promise<void>;
-  onOAuth?: (provider: OAuthProvider) => Promise<void>;
-  onForgotPassword?: (email: string) => Promise<void>;
-  onResetPassword?: (input: ResetPasswordInput) => Promise<void>;
-  normalizeError?: (
-    error: unknown,
-    context: { provider?: OAuthProvider; fallbackTarget?: AuthUiError["target"] },
-  ) => AuthUiError;
-};
+export type AuthErrorNormalizer = (
+  error: unknown,
+  context: { provider?: OAuthProvider; fallbackTarget?: AuthUiError["target"] },
+) => AuthUiError;
 
 /**
  * Motion and layout contract consumed by AuthDrawer and the motion studio.
@@ -508,7 +500,8 @@ export type AuthConfig = {
    * Activation rules that can open the auth surface.
    */
   triggers?: AuthTriggerConfig;
-} & AuthHandlers;
+  normalizeError?: AuthErrorNormalizer;
+};
 
 /**
  * Fully resolved config used inside the drawer after defaults merge.

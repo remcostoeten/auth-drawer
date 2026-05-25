@@ -70,16 +70,14 @@ export function createNextAuthAdapter(options: NextAuthAdapterOptions): AuthAdap
       if (response?.error) return { success: false, error: mapNextAuthError(response.error) };
       return new Promise<AuthResult>(() => undefined);
     },
-    useSession: client.useSession
-      ? () => {
-          const session = client.useSession?.();
-          return {
-            data: mapSession(session?.data),
-            isPending: session?.status === "loading",
-            error: null,
-          };
-        }
-      : undefined,
+    useSession: () => {
+      const session = client.useSession?.();
+      return {
+        data: mapSession(session?.data),
+        isPending: session?.status === "loading",
+        error: null,
+      };
+    },
     normalizeError: mapNextAuthError,
   };
 }

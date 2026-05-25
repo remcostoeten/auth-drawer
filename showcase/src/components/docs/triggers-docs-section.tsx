@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { CodeBlock } from "../code/server-code-block";
 
 const PAGE_LOAD_SNIPPET = `const triggerStore = createAuthTriggerStore();
+const authAdapter = createYourAuthAdapter();
 
 const config: AuthConfig = {
   triggers: {
@@ -13,9 +14,10 @@ const config: AuthConfig = {
   },
 };
 
-<AuthDrawer config={config} triggerStore={triggerStore} />`;
+<AuthDrawer adapter={authAdapter} config={config} triggerStore={triggerStore} />`;
 
 const CLICK_SNIPPET = `const triggerStore = createAuthTriggerStore();
+const authAdapter = createYourAuthAdapter();
 
 const config: AuthConfig = {
   triggers: {
@@ -30,9 +32,10 @@ const config: AuthConfig = {
   Sign in
 </button>
 
-<AuthDrawer config={config} triggerStore={triggerStore} hideTrigger />`;
+<AuthDrawer adapter={authAdapter} config={config} triggerStore={triggerStore} hideTrigger />`;
 
 const SCROLL_SNIPPET = `const triggerStore = createAuthTriggerStore();
+const authAdapter = createYourAuthAdapter();
 const articleRef = useRef<HTMLDivElement>(null);
 
 const config: AuthConfig = {
@@ -60,9 +63,10 @@ useScrollOpenTrigger({
   },
 });
 
-<AuthDrawer config={config} triggerStore={triggerStore} hideTrigger />`;
+<AuthDrawer adapter={authAdapter} config={config} triggerStore={triggerStore} hideTrigger />`;
 
 const STATE_SNIPPET = `const triggerStore = createAuthTriggerStore();
+const authAdapter = createYourAuthAdapter();
 
 const config: AuthConfig = {
   triggers: {
@@ -85,9 +89,10 @@ async function fetchProtectedResource() {
   }
 }
 
-<AuthDrawer config={config} triggerStore={triggerStore} hideTrigger />`;
+<AuthDrawer adapter={authAdapter} config={config} triggerStore={triggerStore} hideTrigger />`;
 
 const IDLE_SNIPPET = `const triggerStore = createAuthTriggerStore();
+const authAdapter = createYourAuthAdapter();
 
 const config: AuthConfig = {
   triggers: {
@@ -106,9 +111,10 @@ function onIdleDetected(idleMs: number) {
   });
 }
 
-<AuthDrawer config={config} triggerStore={triggerStore} hideTrigger />`;
+<AuthDrawer adapter={authAdapter} config={config} triggerStore={triggerStore} hideTrigger />`;
 
 const CUSTOM_SNIPPET = `const triggerStore = createAuthTriggerStore();
+const authAdapter = createYourAuthAdapter();
 
 const config: AuthConfig = {
   triggers: {
@@ -128,7 +134,7 @@ function onCanvasBlockerHit() {
   });
 }
 
-<AuthDrawer config={config} triggerStore={triggerStore} hideTrigger />`;
+<AuthDrawer adapter={authAdapter} config={config} triggerStore={triggerStore} hideTrigger />`;
 
 type TriggerExampleCardProps = {
   title: ReactNode;

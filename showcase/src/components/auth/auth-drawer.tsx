@@ -23,7 +23,7 @@ export {
 
 export type AuthDrawerProps = {
   config?: AuthConfig;
-  adapter?: AuthAdapter;
+  adapter: AuthAdapter;
   className?: string;
   hideTrigger?: boolean;
   open?: boolean;
@@ -38,7 +38,7 @@ export const DEFAULT_COPY = PACKAGE_DEFAULT_COPY as unknown as ResolvedAuthCopyC
 export const OAUTH_PROVIDER_IDS = PACKAGE_OAUTH_PROVIDER_IDS as unknown as readonly OAuthProvider[];
 
 export type { AuthCopyConfig } from "../../../../packages/auth-drawer/src/copy";
-export type { AuthConfig, AuthTriggerStore, OAuthProvider, ResolvedAuthCopyConfig };
+export type { AuthAdapter, AuthConfig, AuthTriggerStore, OAuthProvider, ResolvedAuthCopyConfig };
 export type {
   AuthBackdropConfig,
   AuthConfigGroup,

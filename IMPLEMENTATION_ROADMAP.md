@@ -80,7 +80,7 @@ export interface AuthAdapter {
    * from within a React component or custom hook (Rules of Hooks).
    * @hook
    */
-  useSession?: () => {
+  useSession: () => {
     data: AuthSessionState | null;
     isPending: boolean;
     error: any;
@@ -241,8 +241,8 @@ Add tree-shakeable entries to exports object for all adapters:
 ## 4. Phase 3: Drawer Component Refactoring
 
 ### Task 3.1: Modify `packages/auth-drawer/src/ui/auth-drawer.tsx`
-*   Add `adapter?: AuthAdapter` and optional `onSuccess` / `onError` callbacks directly to the `AuthDrawer` component props.
-*   **Automatic UI Feature Overrides:** If `adapter` is present, override visual configuration options dynamically:
+*   Add required `adapter: AuthAdapter` and optional `onSuccess` / `onError` callbacks directly to the `AuthDrawer` component props.
+*   **Automatic UI Feature Overrides:** Override visual configuration options dynamically:
     *   If `adapter.signUp === undefined`, set `allowRegister = false` (disable and hide register toggle).
     *   If `adapter.requestPasswordReset === undefined`, set `showForgotPassword = false` (hide forgot password email trigger).
     *   If `adapter.signInWithOAuth === undefined`, set `providers = []` (hide all social sign-in buttons).

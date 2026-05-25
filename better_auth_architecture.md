@@ -80,8 +80,8 @@ export interface AuthAdapter {
   requestPasswordReset?: (email: string) => Promise<AuthResult>;
   resetPassword?: (input: ResetPasswordInput) => Promise<AuthResult>;
 
-  // Reactive Session Hook (optional - enables the drawer to show logged-in state/user profile)
-  useSession?: () => {
+  // Reactive Session Hook (required; return an empty session when unauthenticated)
+  useSession: () => {
     data: AuthSessionState | null;
     isPending: boolean;
     error: any;

@@ -77,11 +77,7 @@ interface AuthProviderProps {
  */
 export function AuthProvider({ adapter, children, onSuccess, onError }: AuthProviderProps) {
   // Hook into adapter's reactive session hook (called unconditionally — Rules of Hooks)
-  const { data, isPending, error } = adapter.useSession?.() ?? {
-    data: null,
-    isPending: false,
-    error: null,
-  };
+  const { data, isPending, error } = adapter.useSession();
 
   // Control Drawer visual open/close state globally
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

@@ -106,31 +106,31 @@ export function createFirebaseAdapter(options: FirebaseAdapterOptions): AuthAdap
           }
         }
       : undefined,
-    useSession: auth.onAuthStateChanged
-      ? () => {
-          const [sessionState, setSessionState] = useState<AuthSessionState | null>(
-            auth.currentUser ? mapUser(auth.currentUser) : null,
-          );
-          const [isPending, setIsPending] = useState(true);
-          const [error, setError] = useState<unknown>(null);
+    useSession: () => {
+      const [sessionState, setSessionState] = useState<AuthSessionState | null>(
+        auth.currentUser ? mapUser(auth.currentUser) : null,
+      );
+      const [isPending, setIsPending] = useState(Boolean(auth.onAuthStateChanged));
+      const [error, setError] = useState<unknown>(null);
 
-          useEffect(() => {
-            const unsubscribe = auth.onAuthStateChanged?.(
-              (user) => {
-                setSessionState(user ? mapUser(user) : null);
-                setIsPending(false);
-              },
-              (authError) => {
-                setError(authError);
-                setIsPending(false);
-              },
-            );
-            return () => unsubscribe?.();
-          }, []);
+      useEffect(() => {
+        if (!auth.onAuthStateChanged) return;
 
-          return { data: sessionState, isPending, error };
-        }
-      : undefined,
+        const unsubscribe = auth.onAuthStateChanged(
+          (user) => {
+            setSessionState(user ? mapUser(user) : null);
+            setIsPending(false);
+          },
+          (authError) => {
+            setError(authError);
+            setIsPending(false);
+          },
+        );
+        return () => unsubscribe?.();
+      }, []);
+
+      return { data: sessionState, isPending, error };
+    },
     normalizeError: mapFirebaseError,
   };
 }

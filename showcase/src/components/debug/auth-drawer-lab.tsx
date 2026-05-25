@@ -33,7 +33,7 @@ import {
 import { createAuthTriggerStore } from "@remcostoeten/auth-drawer";
 import { MediumPaywallScene } from "@/components/debug/scenes/medium-paywall";
 import { WindowsXpScene } from "@/components/debug/scenes/windows-xp";
-import { AUTH_SCENARIOS, type AuthScenarioId, createScenarioHandlers } from "./auth-scenarios";
+import { AUTH_SCENARIOS, type AuthScenarioId, createScenarioAdapter } from "./auth-scenarios";
 
 const WIDTHS = ["392px", "448px", "520px"] as const;
 const PROVIDERS: OAuthProvider[] = [...OAUTH_PROVIDER_IDS];
@@ -1102,6 +1102,7 @@ export function AuthDrawerLab() {
   const [scene, setScene] = useState<LabScene>(() => initialUrlState.scene ?? "windows");
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
   const triggerStore = useMemo(() => createAuthTriggerStore(), []);
+  const adapter = useMemo(() => createScenarioAdapter(scenario), [scenario]);
 
   function updateAuthFlag<Key extends keyof LabAuthFlags>(key: Key, value: LabAuthFlags[Key]) {
     setAuthFlags((current) => ({
@@ -1250,7 +1251,6 @@ export function AuthDrawerLab() {
           formPaddingBottom: resolvedDisplayMode === "modal" ? 0 : motion.formPaddingBottom,
         },
       },
-      ...createScenarioHandlers(scenario),
       triggers,
     };
   }, [
@@ -1263,7 +1263,6 @@ export function AuthDrawerLab() {
     motion,
     oauthLayout,
     providers,
-    scenario,
     scene,
     triggerDraft,
   ]);
@@ -1331,6 +1330,7 @@ export function AuthDrawerLab() {
         triggerStore={triggerStore}
       >
         <AuthDrawer
+          adapter={adapter}
           config={config}
           triggerStore={triggerStore}
           hideTrigger={scene === "medium" || scene === "windows"}

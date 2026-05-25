@@ -1,7 +1,7 @@
 "use client";
 
 import { Play, SlidersHorizontal } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CodeBlock } from "../code/server-code-block";
 import {
   TabbedCodeBlock,
@@ -10,9 +10,11 @@ import {
 import {
   AuthDrawer,
   DEFAULT_CONFIG,
+  type AuthAdapter,
   type AuthConfig,
   type AuthConfigGroup,
 } from "@/components/auth/auth-drawer";
+import { createMockAdapter } from "@remcostoeten/auth-drawer/adapters/mock";
 import { Configurator } from "./configurator/configurator";
 import { OAUTH_OVERFLOW_PROVIDERS } from "./configurator/constants";
 import { buildConfig, DEFAULT_USAGE_CODE, initBackdrop, initCopy, initMotion } from "./configurator/helpers";
@@ -65,6 +67,7 @@ export function DocsPage() {
       motion: initMotion(),
     }),
   );
+  const adapter = useMemo(() => createMockAdapter() as AuthAdapter, []);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -468,6 +471,7 @@ function Shell({ adapter, children }) {
       ) : null}
 
       <AuthDrawer
+        adapter={adapter}
         config={config}
         hideTrigger
         open={isOpen}

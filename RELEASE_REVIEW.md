@@ -195,7 +195,7 @@ type OAuthProviderConfig = {
 };
 ```
 
-Then make `onOAuth` receive the provider id or full provider object.
+Then make `adapter.signInWithOAuth` receive the provider id or full provider object.
 
 ### 5. Layout Slots Are Missing
 
@@ -343,12 +343,12 @@ Evidence:
 - `showcase/src/components/debug/auth-drawer-lab.tsx:1056-1057`
 - `showcase/src/components/debug/auth-drawer-lab.tsx:1074-1081`
 
-Impact: copied code looks complete but will fall back to the package's noop handlers unless users manually add real auth handlers.
+Impact: copied code looks complete but cannot authenticate unless users pass a real auth adapter.
 
 Recommended fix:
 
-- Include handler stubs in generated code.
-- Add a warning when copied code omits `onCredential`, `onOAuth`, and `onForgotPassword`.
+- Include adapter setup in generated code.
+- Add a warning when copied code omits `adapter={authAdapter}`.
 
 ## Missing Release Documentation
 

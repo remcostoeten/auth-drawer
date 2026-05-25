@@ -143,18 +143,16 @@ export function createBetterAuthAdapter(options: BetterAuthAdapterOptions): Auth
       });
       return result(response?.data, response?.error);
     },
-    useSession: client.useSession
-      ? () => {
-          const session = client.useSession?.();
-          return {
-            data: session?.data
-              ? { user: session.data.user ?? null, session: session.data.session ?? session.data }
-              : null,
-            isPending: Boolean(session?.isPending),
-            error: session?.error ?? null,
-          };
-        }
-      : undefined,
+    useSession: () => {
+      const session = client.useSession?.();
+      return {
+        data: session?.data
+          ? { user: session.data.user ?? null, session: session.data.session ?? session.data }
+          : null,
+        isPending: Boolean(session?.isPending),
+        error: session?.error ?? null,
+      };
+    },
     normalizeError: mapBetterAuthError,
   };
 

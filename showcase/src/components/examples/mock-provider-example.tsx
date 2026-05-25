@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import {
   AuthDrawer,
   DEFAULT_CONFIG,
+  type AuthAdapter,
   type AuthConfig,
 } from "@/components/auth/auth-drawer";
 import { createMockAdapter } from "@remcostoeten/auth-drawer/adapters/mock";
@@ -49,7 +50,7 @@ export function MockProviderExample({ provider }: MockProviderExampleProps) {
   const [open, setOpen] = useState(false);
   const adapter = useMemo(
     () =>
-      createMockAdapter(),
+      createMockAdapter() as AuthAdapter,
     [],
   );
   const config = useMemo<AuthConfig>(

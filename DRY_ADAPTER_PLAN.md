@@ -112,9 +112,7 @@ The `useSession` method on `AuthAdapter` is a **React hook**. This has important
 ```typescript
 // ✅ Correct: called at the top level of a component
 export function AuthProvider({ adapter, children }: AuthProviderProps) {
-  const { data, isPending, error } = adapter.useSession?.() ?? {
-    data: null, isPending: false, error: null,
-  };
+  const { data, isPending, error } = adapter.useSession();
   // ...
 }
 

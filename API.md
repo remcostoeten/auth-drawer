@@ -34,6 +34,7 @@ Internally that re-exports from `@remcostoeten/auth-drawer`.
 
 ```tsx
 <AuthDrawer
+  adapter={authAdapter}
   config={config}
   className="..."
   hideTrigger={false}
@@ -48,7 +49,7 @@ Internally that re-exports from `@remcostoeten/auth-drawer`.
 
 ```typescript
 type AuthDrawerProps = {
-  adapter?: AuthAdapter;
+  adapter: AuthAdapter;
   config?: AuthConfig;
   className?: string;
   hideTrigger?: boolean;
@@ -63,8 +64,8 @@ type AuthDrawerProps = {
 
 | Prop | Type | Default | Description & Integration Tooltip |
 | :--- | :--- | :--- | :--- |
-| **`adapter`** | `AuthAdapter` | `undefined` | **The authentication client bridge.** Connects the UI to engines like Supabase, Better Auth, Clerk, NextAuth, Firebase, or custom JWT/REST. Automatically overrides layout flags based on supported adapter features (e.g. hides the Register tab if the adapter doesn't implement `signUp`). |
-| **`config`** | `AuthConfig` | `DEFAULT_CONFIG` | **Behavioral & visual theme configuration.** Customizes layout styles, Framer Motion properties, label/error copy, active triggers (scroll, delay, idle), and local handlers. |
+| **`adapter`** | `AuthAdapter` | Required | **The authentication client bridge.** Connects the UI to engines like Supabase, Better Auth, Clerk, NextAuth, Firebase, or custom JWT/REST. Automatically overrides layout flags based on supported adapter features (e.g. hides the Register tab if the adapter doesn't implement `signUp`). |
+| **`config`** | `AuthConfig` | `DEFAULT_CONFIG` | **Behavioral & visual theme configuration.** Customizes layout styles, Framer Motion properties, label/error copy, and active triggers (scroll, delay, idle). |
 | **`className`** | `string` | `""` | CSS classes applied directly to the default built-in floating/inline trigger button. |
 | **`hideTrigger`** | `boolean` | `false` | **Hides the built-in trigger button.** Enable this if you want to open the drawer exclusively from your own custom elements (e.g., custom header, route guards, paywall blockers, or CTA buttons). |
 | **`open`** | `boolean` | `undefined` | **Controlled state driver.** Drives the drawer's visual status from the host application. If provided, you must manage its state manually using the `onOpenChange` callback. |
@@ -80,7 +81,8 @@ type AuthDrawerProps = {
 type AuthConfig = {
   ui?: AuthUiConfig;
   triggers?: AuthTriggerConfig;
-} & AuthHandlers;
+  normalizeError?: AuthErrorNormalizer;
+};
 ```
 
 Use `ui.*` for everything that changes how the auth surface renders. Use `triggers.*` for rules that open the surface.
@@ -136,29 +138,45 @@ Current defaults:
 }
 ```
 
-## Auth Handlers
+## Auth Adapter
 
 ```ts
-type AuthHandlers = {
-  onCredential?: (input: CredentialAuthInput) => Promise<void>;
-  onOAuth?: (provider: OAuthProvider) => Promise<void>;
-  onForgotPassword?: (email: string) => Promise<void>;
-  onResetPassword?: (input: ResetPasswordInput) => Promise<void>;
-  normalizeError?: (
-    error: unknown,
-    context: {
-      provider?: OAuthProvider;
-      fallbackTarget?: AuthUiError["target"];
-    },
-  ) => AuthUiError;
+type AuthAdapter = {
+  id: string;
+  providers?: OAuthProvider[];
+  requiresName?: boolean;
+  signIn: (input: CredentialAuthInput) => Promise<AuthResult>;
+  signUp?: (input: CredentialAuthInput & { name: string }) => Promise<AuthResult>;
+  signOut?: () => Promise<AuthResult>;
+  signInWithOAuth?: (provider: string) => Promise<AuthResult>;
+  requestPasswordReset?: (email: string) => Promise<AuthResult>;
+  resetPassword?: (input: ResetPasswordInput) => Promise<AuthResult>;
+  useSession: () => {
+    data: AuthSessionState | null;
+    isPending: boolean;
+    error: unknown;
+  };
+  normalizeError?: (error: unknown) => AuthUiError;
+  onSuccess?: (action: "signIn" | "signUp" | "signOut" | "oauth") => void;
+  onError?: (
+    error: AuthUiError,
+    action: "signIn" | "signUp" | "signOut" | "oauth",
+  ) => void;
 };
+
+type AuthErrorNormalizer = (
+  error: unknown,
+  context: {
+    provider?: OAuthProvider;
+    fallbackTarget?: AuthUiError["target"];
+  },
+) => AuthUiError;
 ```
 
-Credential submit receives:
+Credential sign-in receives:
 
 ```ts
 type CredentialAuthInput = {
-  mode: "login" | "register" | "resetPassword";
   email: string;
   password: string;
   rememberMe: boolean;
@@ -175,12 +193,15 @@ type ResetPasswordInput = {
 
 Current behavior:
 
-- `onCredential` runs after local email/password validation passes.
-- `onOAuth` receives the selected provider.
-- `onForgotPassword` receives the trimmed email.
-- `onResetPassword` receives a `ResetPasswordInput` with the new password.
-- Any thrown error is passed through `normalizeError`.
-- On success, the drawer closes.
+- `adapter.signIn` runs after local email/password validation passes.
+- `adapter.signUp` is required to show registration.
+- `adapter.signInWithOAuth` is required to show OAuth provider buttons.
+- `adapter.requestPasswordReset` is required to show the forgot-password action.
+- `adapter.resetPassword` receives a `ResetPasswordInput` with the new password.
+- `adapter.useSession` is called once at the top of the drawer to suppress prompts for authenticated users.
+- Adapter action failures should return `{ success: false, error }`.
+- Thrown errors are passed through `adapter.normalizeError` or `config.normalizeError`.
+- On successful sign-in, sign-up, or OAuth, the drawer closes.
 - When `ui.auth.providers` is empty, the OAuth button group and divider are omitted.
 
 ## Error Shape

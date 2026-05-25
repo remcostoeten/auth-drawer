@@ -24,7 +24,7 @@ type Props = {
   onSuccess: () => void;
   onAdapterSuccess?: NonNullable<AuthAdapter["onSuccess"]>;
   onAdapterError?: NonNullable<AuthAdapter["onError"]>;
-  adapter?: AuthAdapter;
+  adapter: AuthAdapter;
   titleId: string;
   descId: string;
   config: ResolvedAuthConfig;
@@ -116,7 +116,7 @@ function Form({
   const formErrorId = fieldErrorId(errorBaseId, "form");
   const oauthErrorId = fieldErrorId(errorBaseId, "oauth");
   const hasOAuthProviders = config.ui.auth.providers.length > 0;
-  const requiresName = Boolean(adapter?.requiresName && isRegister);
+  const requiresName = Boolean(adapter.requiresName && isRegister);
   const emailError = errors.fields.email;
   const passwordError = errors.fields.password;
   const confirmError = errors.fields.confirmPassword;
@@ -136,7 +136,7 @@ function Form({
 
   const handleAdapterError = useCallback(
     (error: AuthUiError, action: AuthAction) => {
-      adapter?.onError?.(error, action);
+      adapter.onError?.(error, action);
       onAdapterError?.(error, action);
     },
     [adapter, onAdapterError],
@@ -144,7 +144,7 @@ function Form({
 
   const handleAdapterSuccess = useCallback(
     (action: AuthAction) => {
-      adapter?.onSuccess?.(action);
+      adapter.onSuccess?.(action);
       onAdapterSuccess?.(action);
     },
     [adapter, onAdapterSuccess],
@@ -158,27 +158,23 @@ function Form({
 
       startTransition(async () => {
         try {
-          if (adapter) {
-            const result = await adapter.signInWithOAuth?.(provider);
-            if (!result?.success) {
-              const error =
-                result?.error ??
-                config.normalizeError(new Error("OAuth provider unavailable."), {
-                  provider,
-                  fallbackTarget: "oauth",
-                });
-              handleAdapterError(error, "oauth");
-              setErrors(errorForSubmit(error));
-              return;
-            }
-            handleAdapterSuccess("oauth");
-          } else {
-            await config.onOAuth(provider);
+          const result = await adapter.signInWithOAuth?.(provider);
+          if (!result?.success) {
+            const error =
+              result?.error ??
+              config.normalizeError(new Error("OAuth provider unavailable."), {
+                provider,
+                fallbackTarget: "oauth",
+              });
+            handleAdapterError(error, "oauth");
+            setErrors(errorForSubmit(error));
+            return;
           }
+          handleAdapterSuccess("oauth");
 
           onSuccess();
         } catch (error) {
-          const normalized = adapter?.normalizeError
+          const normalized = adapter.normalizeError
             ? adapter.normalizeError(error)
             : config.normalizeError(error, { provider, fallbackTarget: "oauth" });
           handleAdapterError(normalized, "oauth");
@@ -218,73 +214,56 @@ function Form({
 
       startTransition(async () => {
         try {
-          if (adapter) {
-            if (mode === "resetPassword") {
-              const result = await adapter.resetPassword?.({ newPassword: password });
-              if (!result?.success) {
-                const error =
-                  result?.error ??
-                  config.normalizeError(new Error("Password reset is unavailable."), {
-                    fallbackTarget: "form",
-                  });
-                handleAdapterError(error, "signIn");
-                setErrors(mergeAuthErrors(validation, errorForSubmit(error)));
-                return;
-              }
-              setMode("login");
-              setPassword("");
-              setConfirm("");
-              setNotice("Your password has been reset successfully. Please sign in.");
-              return;
-            }
-
-            const action = mode === "register" ? "signUp" : "signIn";
-            const result =
-              action === "signUp"
-                ? await adapter.signUp?.({
-                    email: email.trim(),
-                    password,
-                    rememberMe,
-                    name: name.trim(),
-                  })
-                : await adapter.signIn({
-                    email: email.trim(),
-                    password,
-                    rememberMe,
-                  });
-
+          if (mode === "resetPassword") {
+            const result = await adapter.resetPassword?.({ newPassword: password });
             if (!result?.success) {
               const error =
                 result?.error ??
-                config.normalizeError(new Error("Authentication action unavailable."), {
+                config.normalizeError(new Error("Password reset is unavailable."), {
                   fallbackTarget: "form",
                 });
-              handleAdapterError(error, action);
+              handleAdapterError(error, "signIn");
               setErrors(mergeAuthErrors(validation, errorForSubmit(error)));
               return;
             }
-
-            handleAdapterSuccess(action);
-            onSuccess();
-            return;
-          }
-
-          if (mode === "resetPassword") {
-            await config.onResetPassword({ newPassword: password });
             setMode("login");
             setPassword("");
             setConfirm("");
             setNotice("Your password has been reset successfully. Please sign in.");
-          } else {
-            await config.onCredential({
-              email: email.trim(),
-              password,
-              rememberMe,
-            });
-            onSuccess();
+            return;
           }
+
+          const action = mode === "register" ? "signUp" : "signIn";
+          const result =
+            action === "signUp"
+              ? await adapter.signUp?.({
+                  email: email.trim(),
+                  password,
+                  rememberMe,
+                  name: name.trim(),
+                })
+              : await adapter.signIn({
+                  email: email.trim(),
+                  password,
+                  rememberMe,
+                });
+
+          if (!result?.success) {
+            const error =
+              result?.error ??
+              config.normalizeError(new Error("Authentication action unavailable."), {
+                fallbackTarget: "form",
+              });
+            handleAdapterError(error, action);
+            setErrors(mergeAuthErrors(validation, errorForSubmit(error)));
+            return;
+          }
+
+          handleAdapterSuccess(action);
+          onSuccess();
+          return;
         } catch (error) {
-          const backendError = adapter?.normalizeError
+          const backendError = adapter.normalizeError
             ? adapter.normalizeError(error)
             : config.normalizeError(error, { fallbackTarget: "form" });
           handleAdapterError(backendError, mode === "register" ? "signUp" : "signIn");
@@ -389,25 +368,21 @@ function Form({
 
     startTransition(async () => {
       try {
-        if (adapter) {
-          const result = await adapter.requestPasswordReset?.(email.trim());
-          if (!result?.success) {
-            const error =
-              result?.error ??
-              config.normalizeError(new Error("Password reset is unavailable."), {
-                fallbackTarget: "form",
-              });
-            handleAdapterError(error, "signIn");
-            setErrors(errorForSubmit(error));
-            return;
-          }
-        } else {
-          await config.onForgotPassword(email.trim());
+        const result = await adapter.requestPasswordReset?.(email.trim());
+        if (!result?.success) {
+          const error =
+            result?.error ??
+            config.normalizeError(new Error("Password reset is unavailable."), {
+              fallbackTarget: "form",
+            });
+          handleAdapterError(error, "signIn");
+          setErrors(errorForSubmit(error));
+          return;
         }
 
         setNotice(config.ui.copy.forgotPassword.successNotice);
       } catch (error) {
-        const normalized = adapter?.normalizeError
+        const normalized = adapter.normalizeError
           ? adapter.normalizeError(error)
           : config.normalizeError(error, { fallbackTarget: "form" });
         handleAdapterError(normalized, "signIn");

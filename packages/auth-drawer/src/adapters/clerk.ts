@@ -93,26 +93,24 @@ export function createClerkAdapter(options: ClerkAdapterOptions): AuthAdapter {
         return { success: false, error: mapClerkError(error) };
       }
     },
-    useSession: clerk.useUser
-      ? () => {
-          const { user, isLoaded } = clerk.useUser?.() ?? {};
-          return {
-            data: user
-              ? {
-                  user: {
-                    id: user.id,
-                    email: user.primaryEmailAddress?.emailAddress ?? user.email ?? "",
-                    name: user.fullName ?? user.firstName,
-                    image: user.imageUrl,
-                  },
-                  session: user,
-                }
-              : null,
-            isPending: !isLoaded,
-            error: null,
-          };
-        }
-      : undefined,
+    useSession: () => {
+      const { user, isLoaded } = clerk.useUser?.() ?? {};
+      return {
+        data: user
+          ? {
+              user: {
+                id: user.id,
+                email: user.primaryEmailAddress?.emailAddress ?? user.email ?? "",
+                name: user.fullName ?? user.firstName,
+                image: user.imageUrl,
+              },
+              session: user,
+            }
+          : null,
+        isPending: clerk.useUser ? !isLoaded : false,
+        error: null,
+      };
+    },
     normalizeError: mapClerkError,
   };
 }

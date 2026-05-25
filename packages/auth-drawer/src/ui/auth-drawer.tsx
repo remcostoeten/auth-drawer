@@ -37,7 +37,7 @@ import { LoginForm } from "./login-form";
 
 type Props = {
   config?: AuthConfig;
-  adapter?: AuthAdapter;
+  adapter: AuthAdapter;
   className?: string;
   hideTrigger?: boolean;
   open?: boolean;
@@ -67,12 +67,12 @@ function readSavedSettings(): Partial<MotionSettings> {
   }
 }
 
-function resolveAuthGroup(config?: AuthConfig, adapter?: AuthAdapter) {
+function resolveAuthGroup(config: AuthConfig | undefined, adapter: AuthAdapter) {
   const auth = config?.ui?.auth ?? {};
   const providers =
-    adapter && !adapter.signInWithOAuth
+    !adapter.signInWithOAuth
       ? []
-      : (adapter?.providers ?? auth.providers ?? DEFAULT_CONFIG.ui.auth.providers);
+      : (adapter.providers ?? auth.providers ?? DEFAULT_CONFIG.ui.auth.providers);
 
   return {
     providers,
@@ -85,11 +85,11 @@ function resolveAuthGroup(config?: AuthConfig, adapter?: AuthAdapter) {
         auth.oauthOverflow?.showPreviewIcons ??
         DEFAULT_CONFIG.ui.auth.oauthOverflow.showPreviewIcons,
     },
-    allowRegister: adapter && !adapter.signUp ? false : (auth.allowRegister ?? DEFAULT_CONFIG.ui.auth.allowRegister),
+    allowRegister: !adapter.signUp ? false : (auth.allowRegister ?? DEFAULT_CONFIG.ui.auth.allowRegister),
     showRememberMe: auth.showRememberMe ?? DEFAULT_CONFIG.ui.auth.showRememberMe,
     initialMode: auth.initialMode ?? DEFAULT_CONFIG.ui.auth.initialMode,
     showForgotPassword:
-      adapter && !adapter.requestPasswordReset
+      !adapter.requestPasswordReset
         ? false
         : (auth.showForgotPassword ?? DEFAULT_CONFIG.ui.auth.showForgotPassword),
     showLivePasswordMatch:
@@ -199,7 +199,7 @@ export function AuthDrawer({
   onError,
   triggerStore: providedTriggerStore,
 }: Props) {
-  const session = adapter?.useSession?.() ?? { data: null, isPending: false, error: null };
+  const session = adapter.useSession();
   const isAuthenticated = Boolean(session.data?.user);
   const triggerStore = useMemo(
     () => providedTriggerStore ?? createAuthTriggerStore(),

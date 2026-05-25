@@ -1,4 +1,9 @@
-import type { AuthConfig, OAuthProvider } from "@/components/auth/auth-drawer";
+import type { AuthAdapter, OAuthProvider } from "@/components/auth/auth-drawer";
+import type {
+  AuthErrorCode,
+  AuthErrorTarget,
+  AuthUiError,
+} from "../../../../packages/auth-drawer/src/auth-errors";
 
 export type AuthScenarioId =
   | "success"
@@ -81,58 +86,46 @@ function wait() {
   return new Promise((resolve) => setTimeout(resolve, 650));
 }
 
+function adapterError(
+  code: AuthErrorCode,
+  target: AuthErrorTarget,
+  message: string,
+): AuthUiError {
+  return {
+    code,
+    target,
+    message,
+    retryable: code === "network_error" || code === "server_error" || code === "rate_limited",
+  };
+}
+
 function credentialErrorForScenario(scenario: AuthScenarioId) {
   if (scenario === "invalid_credentials") {
-    return {
-      code: "invalid_credentials",
-      message: "Invalid login credentials",
-      status: 400,
-    };
+    return adapterError("invalid_credentials", "form", "Invalid login credentials");
   }
 
   if (scenario === "email_taken") {
-    return {
-      error: {
-        code: "USER_ALREADY_EXISTS",
-        message: "User already exists",
-      },
-    };
+    return adapterError("email_taken", "email", "User already exists");
   }
 
   if (scenario === "email_not_verified") {
-    return {
-      code: "EMAIL_NOT_VERIFIED",
-      message: "Email is not verified",
-      status: 403,
-    };
+    return adapterError("email_not_verified", "form", "Email is not verified");
   }
 
   if (scenario === "user_not_found") {
-    return {
-      code: "USER_NOT_FOUND",
-      message: "No user found for this email",
-      status: 404,
-    };
+    return adapterError("user_not_found", "email", "No user found for this email");
   }
 
   if (scenario === "network_error") {
-    return new TypeError("Network request failed");
+    return adapterError("network_error", "form", "Network request failed");
   }
 
   if (scenario === "rate_limited") {
-    return {
-      code: "too_many_requests",
-      message: "Rate limit exceeded",
-      status: 429,
-    };
+    return adapterError("rate_limited", "form", "Rate limit exceeded");
   }
 
   if (scenario === "server_error") {
-    return {
-      code: "internal_server_error",
-      message: "Auth service failed",
-      status: 503,
-    };
+    return adapterError("server_error", "form", "Auth service failed");
   }
 
   return null;
@@ -140,45 +133,55 @@ function credentialErrorForScenario(scenario: AuthScenarioId) {
 
 function oauthErrorForScenario(scenario: AuthScenarioId, provider: OAuthProvider) {
   if (scenario === "oauth_cancelled") {
-    return `Popup closed by user while signing in with ${provider}`;
+    return adapterError(
+      "oauth_cancelled",
+      "oauth",
+      `Popup closed by user while signing in with ${provider}`,
+    );
   }
 
   if (scenario === "popup_blocked") {
-    return {
-      code: "popup_blocked",
-      message: "Popup was blocked by the browser",
-    };
+    return adapterError("popup_blocked", "oauth", "Popup was blocked by the browser");
   }
 
   if (scenario === "provider_unavailable") {
-    return {
-      code: "provider_unavailable",
-      message: `${provider} provider is unavailable`,
-      status: 503,
-    };
+    return adapterError("provider_unavailable", "oauth", `${provider} provider is unavailable`);
   }
 
   return credentialErrorForScenario(scenario);
 }
 
-export function createScenarioHandlers(
-  scenario: AuthScenarioId,
-): Pick<AuthConfig, "onCredential" | "onOAuth" | "onForgotPassword"> {
+export function createScenarioAdapter(scenario: AuthScenarioId): AuthAdapter {
   return {
-    async onCredential() {
+    id: "scenario",
+    providers: ["github", "google", "discord"],
+    requiresName: false,
+    async signIn() {
       await wait();
       const error = credentialErrorForScenario(scenario);
-      if (error) throw error;
+      if (error) return { success: false, error };
+      return { success: true, data: null };
     },
-    async onOAuth(provider) {
-      await wait();
-      const error = oauthErrorForScenario(scenario, provider);
-      if (error) throw error;
-    },
-    async onForgotPassword() {
+    async signUp() {
       await wait();
       const error = credentialErrorForScenario(scenario);
-      if (error && scenario !== "invalid_credentials") throw error;
+      if (error) return { success: false, error };
+      return { success: true, data: null };
+    },
+    async signInWithOAuth(provider) {
+      await wait();
+      const error = oauthErrorForScenario(scenario, provider as OAuthProvider);
+      if (error) return { success: false, error };
+      return { success: true, data: null };
+    },
+    async requestPasswordReset() {
+      await wait();
+      const error = credentialErrorForScenario(scenario);
+      if (error && scenario !== "invalid_credentials") return { success: false, error };
+      return { success: true, data: null };
+    },
+    useSession() {
+      return { data: null, isPending: false, error: null };
     },
   };
 }
