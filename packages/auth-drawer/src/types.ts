@@ -403,6 +403,14 @@ export interface AuthAdapter {
   id: string;
   providers?: OAuthProvider[];
   /**
+   * Optional demo credentials used by mock or showcase adapters to prefill the form.
+   * Real providers can omit this.
+   */
+  demoCredentials?: {
+    email: string;
+    password: string;
+  };
+  /**
    * When true, the drawer collects a name field during registration.
    */
   requiresName?: boolean;

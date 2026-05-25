@@ -10,6 +10,7 @@ Below is the complete design for the first-party Supabase adapter.
 
 This adapter maps the standard `supabase.auth` client calls directly to our unified `AuthAdapter` interface.
 
+**`packages/auth-drawer/src/adapters/supabase.ts`**
 ```typescript
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AuthAdapter, AuthResult, CredentialAuthInput, AuthSessionState, OAuthProvider } from "../types";

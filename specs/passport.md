@@ -8,6 +8,7 @@ This specification outlines the client-side integration architecture to interfac
 
 The client adapter handles credentials submission to Passport's Local Strategy endpoint, cookie session revocation, and fetching serialized user session profiles.
 
+**`packages/auth-drawer/src/adapters/passport.ts`**
 ```typescript
 import { useState, useEffect } from "react";
 import type { AuthAdapter, AuthResult, CredentialAuthInput, AuthSessionState } from "../types";

@@ -22,7 +22,7 @@ export const docsCorpus: DocsSnippet[] = [
     id: "adapters",
     title: "Auth adapters",
     href: "/docs#start",
-    body: "Use a typed AuthAdapter to route signIn, signUp, signOut, OAuth, forgot-password, and reset-password actions directly. Supported adapter factories include Better Auth, Supabase, NextAuth, Clerk, Firebase, Custom JWT, Passport, and the built-in mock adapter. AuthProvider and useAuth expose the same adapter-backed session state across the app.",
+    body: "Use a typed AuthAdapter to route signIn, signUp, signOut, OAuth, forgot-password, and reset-password actions directly. Supported adapter factories include Better Auth, Supabase, NextAuth, Clerk, Firebase, Custom JWT, Passport, and createMockAdapter. AuthProvider and useAuth expose the same adapter-backed session state across the app.",
   },
   {
     id: "defaults",
@@ -34,7 +34,55 @@ export const docsCorpus: DocsSnippet[] = [
     id: "sdk-adapters",
     title: "SDK adapter setup",
     href: "/docs#sdk-adapters",
-    body: "SDK adapter docs show complete frontend setup for Supabase, Better Auth, NextAuth/Auth.js, Clerk, Firebase Auth, Custom JWT/REST, Passport cookie sessions, and the Mock adapter. Each provider documents install commands, import paths, supported features, required client shape, AuthDrawer usage, AuthProvider compatibility, and adapter options.",
+    body: "SDK adapter docs show complete frontend setup for Supabase, Better Auth, NextAuth/Auth.js, Clerk, Firebase Auth, Custom JWT/REST, Passport cookie sessions, and createMockAdapter. Each provider documents install commands, import paths, supported features, required client shape, AuthDrawer usage, AuthProvider compatibility, and adapter options.",
+  },
+  {
+    id: "sdk-supabase",
+    title: "Supabase SDK adapter",
+    href: "/docs#sdk-supabase",
+    body: "The Supabase subsection shows the browser client shape, required auth.auth methods, redirect parameters, session mapping, and magic-link support exposed through adapter.features.",
+  },
+  {
+    id: "sdk-better-auth",
+    title: "Better Auth SDK adapter",
+    href: "/docs#sdk-better-auth",
+    body: "The Better Auth subsection shows createAuthClient usage, required signIn/signUp/signOut/requestPasswordReset/session hooks, and optional plugin support surfaced through adapter.features.",
+  },
+  {
+    id: "sdk-next-auth",
+    title: "NextAuth SDK adapter",
+    href: "/docs#sdk-next-auth",
+    body: "The NextAuth subsection shows the client object passed into createNextAuthAdapter, credential redirect:false behavior, OAuth redirects, and session mapping through useSession.",
+  },
+  {
+    id: "sdk-clerk",
+    title: "Clerk SDK adapter",
+    href: "/docs#sdk-clerk",
+    body: "The Clerk subsection shows the client hook shape required by createClerkAdapter, including useSignIn, useSignUp, useUser, callbackURL handling, and the requireName option.",
+  },
+  {
+    id: "sdk-firebase",
+    title: "Firebase SDK adapter",
+    href: "/docs#sdk-firebase",
+    body: "The Firebase subsection shows the modular auth functions the adapter expects, providerFactory usage, onAuthStateChanged session mapping, and password reset/update flows.",
+  },
+  {
+    id: "sdk-custom-jwt",
+    title: "Custom JWT adapter",
+    href: "/docs#sdk-custom-jwt",
+    body: "The Custom JWT subsection shows how to bind login/register/logout/profile endpoints, control token storage, and point OAuth redirects at your own backend.",
+  },
+  {
+    id: "sdk-passport",
+    title: "Passport adapter",
+    href: "/docs#sdk-passport",
+    body: "The Passport subsection shows the cookie-session endpoints expected by createPassportAdapter and how the drawer maps them into login, signup, and session state.",
+  },
+  {
+    id: "sdk-mock",
+    title: "createMockAdapter",
+    href: "/docs#sdk-mock",
+    body: "The createMockAdapter subsection shows how to use the built-in demo adapter for local development, docs, and visual regression checks when no backend is connected.",
   },
   {
     id: "oauth",
@@ -64,7 +112,7 @@ export const docsCorpus: DocsSnippet[] = [
     id: "api-auth-provider",
     title: "AuthProvider",
     href: "/docs#api",
-    body: "AuthProvider exposes global auth state and drawer controls through useAuth. It calls adapter.useSession internally and shares user, session, loading, and signOut behavior across the app.",
+    body: "AuthProvider exposes global auth state and drawer controls through useAuth. When AuthDrawer is rendered inside the provider without open/onOpenChange props, it follows provider openDrawer and closeDrawer controls and reuses the provider's adapter-backed session state. Explicit controlled props remain available.",
   },
   {
     id: "api-auth",
@@ -82,7 +130,7 @@ export const docsCorpus: DocsSnippet[] = [
     id: "api-visual",
     title: "ui.visual config",
     href: "/docs#api-visual",
-    body: "ui.visual controls static visual backdrop properties. Animated backdrop values that move with open and close transitions live under ui.motion.",
+    body: "ui.visual controls static visual backdrop properties. Animated backdrop values that move with open and close transitions live under ui.motion. Override the bundled CSS theme with --surface-overlay, --text-on-overlay, and --border-overlay tokens.",
   },
   {
     id: "api-motion",

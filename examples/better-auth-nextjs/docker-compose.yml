@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: auth_drawer
+      POSTGRES_PASSWORD: auth_drawer
+      POSTGRES_DB: auth_drawer
+    volumes:
+      - auth_drawer_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_drawer -d auth_drawer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  auth_drawer_postgres:

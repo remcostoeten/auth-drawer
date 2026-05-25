@@ -84,9 +84,9 @@ function Form({
   descId,
   config,
 }: Props) {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => adapter.demoCredentials?.email ?? "");
   const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(() => adapter.demoCredentials?.password ?? "");
   const [confirm, setConfirm] = useState("");
   const [mode, setMode] = useState<FormMode>(
     config.ui.auth.allowRegister ? config.ui.auth.initialMode : "login",

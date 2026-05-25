@@ -68,12 +68,41 @@ type AuthDrawerProps = {
 | **`config`** | `AuthConfig` | `DEFAULT_CONFIG` | **Behavioral & visual theme configuration.** Customizes layout styles, Framer Motion properties, label/error copy, and active triggers (scroll, delay, idle). |
 | **`className`** | `string` | `""` | CSS classes applied directly to the default built-in floating/inline trigger button. |
 | **`hideTrigger`** | `boolean` | `false` | **Hides the built-in trigger button.** Enable this if you want to open the drawer exclusively from your own custom elements (e.g., custom header, route guards, paywall blockers, or CTA buttons). |
-| **`open`** | `boolean` | `undefined` | **Controlled state driver.** Drives the drawer's visual status from the host application. If provided, you must manage its state manually using the `onOpenChange` callback. |
+| **`open`** | `boolean` | `undefined` | **Controlled state driver.** Drives the drawer's visual status from the host application. If provided, it takes precedence over provider-managed and uncontrolled state, and you must update it from `onOpenChange`. |
 | **`defaultOpen`** | `boolean` | `false` | **Uncontrolled initial state.** Sets the default open state on initial render. Only used if the `open` prop is left undefined. |
 | **`onOpenChange`** | `(open: boolean) => void` | `undefined` | **State change callback.** Fires whenever the drawer transitions between open/closed states. Triggers on drag-to-dismiss, backdrop click, Escape keypress, or close button click. |
 | **`triggerStore`** | `AuthTriggerStore` | `undefined` | **Agnostic trigger ledger.** Connects external/non-React code (e.g., canvas renderers, router events, third-party libraries) to the drawer's activation listener. |
 | **`onSuccess`** | `(action) => void` | `undefined` | **Successful authentication callback.** Fired on any completed auth action (e.g., credentials login, registration, social callback). Perfect for performing route transitions, toast displays, or state syncs. |
 | **`onError`** | `(error, action) => void` | `undefined` | **Failed action callback.** Fired when any credential check, signup, or social attempt fails. Useful for analytics tracking or logging. |
+
+### Provider-controlled drawer
+
+`AuthProvider` exposes session state and drawer controls through `useAuth()`. If
+`AuthDrawer` is rendered inside the provider and you do not pass `open` or
+`onOpenChange`, the drawer follows `useAuth().openDrawer()` /
+`useAuth().closeDrawer()` and reuses the provider's adapter-backed session state.
+
+```tsx
+import { AuthDrawer, AuthProvider, useAuth } from "@remcostoeten/auth-drawer";
+
+function HeaderButton() {
+  const { openDrawer } = useAuth();
+  return <button onClick={openDrawer}>Sign in</button>;
+}
+
+function AppShell({ adapter, children }) {
+  return (
+    <AuthProvider adapter={adapter}>
+      <HeaderButton />
+      {children}
+      <AuthDrawer adapter={adapter} hideTrigger />
+    </AuthProvider>
+  );
+}
+```
+
+Pass `open` and `onOpenChange` when you need explicit host-owned state instead;
+those props take precedence over provider-managed state.
 
 ## Config
 
@@ -87,7 +116,12 @@ type AuthConfig = {
 
 Use `ui.*` for everything that changes how the auth surface renders. Use `triggers.*` for rules that open the surface.
 
-`ui.auth.providers` may be an empty array to disable OAuth entirely.
+`ui.auth.providers` may be an empty array to disable OAuth entirely. At render time
+the drawer resolves OAuth buttons with
+`adapter.providers ?? config.ui.auth.providers ?? DEFAULT_CONFIG.ui.auth.providers`
+(when the adapter implements `signInWithOAuth`). Pass `providers` on the adapter
+factory (e.g. `createBetterAuthAdapter({ providers: [] })`) or keep both lists in
+sync — config alone cannot hide OAuth if the adapter still advertises providers.
 
 Defaults come from `DEFAULT_CONFIG`.
 
@@ -135,6 +169,25 @@ Current defaults:
     },
   },
   triggers: {}
+}
+```
+
+### CSS theme tokens
+
+The package ships CSS variables for the overlay theme. Override the existing HSL
+component tokens in your app CSS; there is no `cad-*` theme API.
+
+```css
+:root {
+  --surface-overlay: 34 12% 82%;
+  --text-on-overlay: 24 18% 14%;
+  --border-overlay: 28 12% 54%;
+}
+
+.dark {
+  --surface-overlay: 0 0% 7.5%;
+  --text-on-overlay: 0 0% 96%;
+  --border-overlay: 0 0% 100%;
 }
 ```
 
@@ -202,7 +255,8 @@ Current behavior:
 - Adapter action failures should return `{ success: false, error }`.
 - Thrown errors are passed through `adapter.normalizeError` or `config.normalizeError`.
 - On successful sign-in, sign-up, or OAuth, the drawer closes.
-- When `ui.auth.providers` is empty, the OAuth button group and divider are omitted.
+- When the resolved provider list is empty (see precedence above), the OAuth button
+  group and divider are omitted.
 
 ## Error Shape
 

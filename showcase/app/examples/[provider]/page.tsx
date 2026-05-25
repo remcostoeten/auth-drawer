@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import {
-  MOCK_AUTH_PROVIDERS,
-  getMockAuthProvider,
-} from "@/lib/providers/mock-auth-providers";
-import { MockProviderExample } from "@/components/examples/mock-provider-example";
+import { RedirectToDocs } from "@/components/redirect-to-docs";
+
+const PROVIDER_DOC_ANCHORS: Record<string, string> = {
+  supabase: "sdk-supabase",
+  "better-auth": "sdk-better-auth",
+  "auth-js": "sdk-next-auth",
+  clerk: "sdk-clerk",
+  "custom-backend": "sdk-custom-jwt",
+};
 
 type ProviderPageProps = {
   params: Promise<{
@@ -13,28 +17,27 @@ type ProviderPageProps = {
 };
 
 export function generateStaticParams() {
-  return MOCK_AUTH_PROVIDERS.map((provider) => ({
-    provider: provider.slug,
-  }));
+  return Object.keys(PROVIDER_DOC_ANCHORS).map((provider) => ({ provider }));
 }
 
 export async function generateMetadata({
   params,
 }: ProviderPageProps): Promise<Metadata> {
   const { provider: slug } = await params;
-  const provider = getMockAuthProvider(slug);
-  if (!provider) return {};
+  const anchor = PROVIDER_DOC_ANCHORS[slug];
+  if (!anchor) return {};
 
   return {
-    title: `${provider.name} Example`,
-    description: provider.description,
+    title: "Provider Example",
+    description: "Redirecting to SDK adapter docs.",
+    robots: { index: false, follow: true },
   };
 }
 
 export default async function ProviderExamplePage({ params }: ProviderPageProps) {
   const { provider: slug } = await params;
-  const provider = getMockAuthProvider(slug);
-  if (!provider) notFound();
+  const anchor = PROVIDER_DOC_ANCHORS[slug];
+  if (!anchor) notFound();
 
-  return <MockProviderExample provider={provider} />;
+  return <RedirectToDocs hash={anchor} />;
 }

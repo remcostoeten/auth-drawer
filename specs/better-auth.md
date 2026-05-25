@@ -8,6 +8,7 @@ This specification outlines the client-side integration architecture for **Bette
 
 The adapter manages credential submission, OAuth provider redirection, reactive session hook updates, and client plugin discovery.
 
+**`packages/auth-drawer/src/adapters/better-auth.ts`**
 ```typescript
 import type { AuthAdapter, AuthResult, CredentialAuthInput, OAuthProvider } from "../types";
 import { mapBetterAuthError } from "./errors";

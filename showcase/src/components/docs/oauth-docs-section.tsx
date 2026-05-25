@@ -66,7 +66,7 @@ function OAuthVariantCard({
         </button>
       </div>
       <div className="bg-[#0b0b0c]/40 px-1 pb-1 pt-0">
-        <CodeBlock lang="ts" embedded>
+        <CodeBlock lang="ts" embedded title="ui.auth">
           {snippet}
         </CodeBlock>
       </div>

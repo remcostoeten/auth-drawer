@@ -7,8 +7,20 @@ type NavItem = {
   label: string;
   id: string;
   depth?: 0 | 1 | 2 | 3;
-  group?: "sdk-adapters" | "better-auth-guide" | "api";
-  controlsGroup?: "sdk-adapters" | "better-auth-guide" | "api";
+  group?:
+    | "sdk-adapters"
+    | "supabase-guide"
+    | "better-auth-guide"
+    | "next-auth-guide"
+    | "clerk-guide"
+    | "api";
+  controlsGroup?:
+    | "sdk-adapters"
+    | "supabase-guide"
+    | "better-auth-guide"
+    | "next-auth-guide"
+    | "clerk-guide"
+    | "api";
 };
 
 export const NAV_ITEMS = [
@@ -17,6 +29,19 @@ export const NAV_ITEMS = [
   { label: "Defaults", id: "showcase" },
   { label: "SDK adapters", id: "sdk-adapters", controlsGroup: "sdk-adapters" },
   { label: "Supabase", id: "sdk-supabase", depth: 1, group: "sdk-adapters" },
+  {
+    label: "A-Z Guide",
+    id: "supabase-guide",
+    depth: 2,
+    group: "sdk-adapters",
+    controlsGroup: "supabase-guide",
+  },
+  { label: "1. Install", id: "supabase-install", depth: 3, group: "supabase-guide" },
+  { label: "2. Env", id: "supabase-env", depth: 3, group: "supabase-guide" },
+  { label: "3. Dashboard", id: "supabase-dashboard", depth: 3, group: "supabase-guide" },
+  { label: "4. Client", id: "supabase-client", depth: 3, group: "supabase-guide" },
+  { label: "5. Mount drawer", id: "supabase-mount", depth: 3, group: "supabase-guide" },
+  { label: "6. Reset route", id: "supabase-reset", depth: 3, group: "supabase-guide" },
   { label: "Better Auth", id: "sdk-better-auth", depth: 1, group: "sdk-adapters" },
   {
     label: "A-Z Guide",
@@ -26,13 +51,45 @@ export const NAV_ITEMS = [
     controlsGroup: "better-auth-guide",
   },
   { label: "1. Install", id: "ba-install", depth: 3, group: "better-auth-guide" },
-  { label: "2. Schema", id: "ba-schema", depth: 3, group: "better-auth-guide" },
-  { label: "3. Server config", id: "ba-server", depth: 3, group: "better-auth-guide" },
-  { label: "4. API route", id: "ba-route", depth: 3, group: "better-auth-guide" },
-  { label: "5. Client SDK", id: "ba-client", depth: 3, group: "better-auth-guide" },
-  { label: "6. Mount drawer", id: "ba-mount", depth: 3, group: "better-auth-guide" },
+  { label: "2. Env", id: "ba-env", depth: 3, group: "better-auth-guide" },
+  { label: "3. Schema", id: "ba-schema", depth: 3, group: "better-auth-guide" },
+  { label: "4. Server config", id: "ba-server", depth: 3, group: "better-auth-guide" },
+  { label: "5. API route", id: "ba-route", depth: 3, group: "better-auth-guide" },
+  { label: "6. Client SDK", id: "ba-client", depth: 3, group: "better-auth-guide" },
+  { label: "7. Mount drawer", id: "ba-mount", depth: 3, group: "better-auth-guide" },
   { label: "NextAuth", id: "sdk-next-auth", depth: 1, group: "sdk-adapters" },
+  {
+    label: "A-Z Guide",
+    id: "next-auth-guide",
+    depth: 2,
+    group: "sdk-adapters",
+    controlsGroup: "next-auth-guide",
+  },
+  { label: "1. Install", id: "next-auth-install", depth: 3, group: "next-auth-guide" },
+  { label: "2. Env", id: "next-auth-env", depth: 3, group: "next-auth-guide" },
+  { label: "3. Server config", id: "next-auth-server", depth: 3, group: "next-auth-guide" },
+  { label: "4. Route", id: "next-auth-route", depth: 3, group: "next-auth-guide" },
+  {
+    label: "5. Session provider",
+    id: "next-auth-session-provider",
+    depth: 3,
+    group: "next-auth-guide",
+  },
+  { label: "6. Mount drawer", id: "next-auth-mount", depth: 3, group: "next-auth-guide" },
   { label: "Clerk", id: "sdk-clerk", depth: 1, group: "sdk-adapters" },
+  {
+    label: "A-Z Guide",
+    id: "clerk-guide",
+    depth: 2,
+    group: "sdk-adapters",
+    controlsGroup: "clerk-guide",
+  },
+  { label: "1. Install", id: "clerk-install", depth: 3, group: "clerk-guide" },
+  { label: "2. Env", id: "clerk-env", depth: 3, group: "clerk-guide" },
+  { label: "3. Middleware", id: "clerk-middleware", depth: 3, group: "clerk-guide" },
+  { label: "4. Provider", id: "clerk-provider", depth: 3, group: "clerk-guide" },
+  { label: "5. Dashboard", id: "clerk-dashboard", depth: 3, group: "clerk-guide" },
+  { label: "6. Mount drawer", id: "clerk-mount", depth: 3, group: "clerk-guide" },
   { label: "Firebase", id: "sdk-firebase", depth: 1, group: "sdk-adapters" },
   { label: "Custom JWT", id: "sdk-custom-jwt", depth: 1, group: "sdk-adapters" },
   { label: "Passport", id: "sdk-passport", depth: 1, group: "sdk-adapters" },
@@ -164,7 +221,11 @@ function useDocsActiveSection(sectionIds: readonly NavSectionId[]) {
   return activeId;
 }
 
-export function DocsSidebarNav() {
+type DocsSidebarNavProps = {
+  onNavigate?: () => void;
+};
+
+export function DocsSidebarNav({ onNavigate }: DocsSidebarNavProps = {}) {
   const reduceMotion = useReducedMotion();
   const activeId = useDocsActiveSection(NAV_SECTION_IDS);
   const navRef = useRef<HTMLElement>(null);
@@ -172,7 +233,10 @@ export function DocsSidebarNav() {
   const sidebarStorageKey = "auth-drawer-docs-sidebar-collapsed";
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({
     "sdk-adapters": false,
+    "supabase-guide": false,
     "better-auth-guide": false,
+    "next-auth-guide": false,
+    "clerk-guide": false,
     api: false,
   });
   const [indicator, setIndicator] = useState<{
@@ -260,8 +324,14 @@ export function DocsSidebarNav() {
         const isCollapsed = controlsGroup ? collapsedGroups[controlsGroup] : false;
         const isHiddenByGroup =
           (group === "sdk-adapters" && collapsedGroups["sdk-adapters"]) ||
+          (group === "supabase-guide" && collapsedGroups["sdk-adapters"]) ||
+          (group === "supabase-guide" && collapsedGroups["supabase-guide"]) ||
           (group === "better-auth-guide" && collapsedGroups["sdk-adapters"]) ||
           (group === "better-auth-guide" && collapsedGroups["better-auth-guide"]) ||
+          (group === "next-auth-guide" && collapsedGroups["sdk-adapters"]) ||
+          (group === "next-auth-guide" && collapsedGroups["next-auth-guide"]) ||
+          (group === "clerk-guide" && collapsedGroups["sdk-adapters"]) ||
+          (group === "clerk-guide" && collapsedGroups["clerk-guide"]) ||
           (group === "api" && collapsedGroups.api);
 
         if (isHiddenByGroup) return null;
@@ -277,6 +347,7 @@ export function DocsSidebarNav() {
                 }}
                 href={`#${href}`}
                 aria-current={isActive ? "location" : undefined}
+                onClick={onNavigate}
                 className="min-w-0 flex-1 truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
               >
                 {label}
@@ -307,7 +378,7 @@ export function DocsSidebarBrand() {
   return (
     <a
       href="#start"
-      className="font-display mb-7 flex items-center gap-2 text-sm font-normal tracking-[-0.01em]"
+      className="font-display mb-4 flex items-center gap-2 text-sm font-normal tracking-[-0.01em]"
     >
       <span className="grid h-7 w-7 place-items-center rounded-[5px] bg-foreground text-background">
         <LockKeyhole size={14} aria-hidden="true" />

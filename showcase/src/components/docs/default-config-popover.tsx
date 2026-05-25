@@ -140,7 +140,7 @@ export function DefaultConfigPopover({
                   </button>
                 </div>
                 <div className="custom-scrollbar group/code min-h-0 flex-1 overflow-y-auto overflow-x-auto">
-                  <CodeBlock lang="typescript" embedded>
+                  <CodeBlock lang="typescript" embedded title="DEFAULT_CONFIG">
                     {code}
                   </CodeBlock>
                 </div>

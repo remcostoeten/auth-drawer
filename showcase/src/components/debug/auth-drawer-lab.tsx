@@ -1,15 +1,10 @@
 import { useTheme } from "next-themes";
 import {
-  BarChart3,
   Check,
   ChevronDown,
   Clipboard,
-  Laptop,
   Moon,
-  Newspaper,
-  Rocket,
   Settings2,
-  ShoppingBag,
   Sun,
   X,
 } from "lucide-react";
@@ -28,10 +23,8 @@ import {
   type MotionSettings,
   type OAuthProvider,
   type AuthTriggerConfig,
-  type AuthTriggerStore,
 } from "@/components/auth/auth-drawer";
 import { createAuthTriggerStore } from "@remcostoeten/auth-drawer";
-import { MediumPaywallScene } from "@/components/debug/scenes/medium-paywall";
 import { WindowsXpScene } from "@/components/debug/scenes/windows-xp";
 import { AUTH_SCENARIOS, type AuthScenarioId, createScenarioAdapter } from "./auth-scenarios";
 
@@ -41,23 +34,13 @@ const EASE_OPTIONS = ["[0.23,1,0.32,1]", "easeOut", "easeInOut", "linear"] as co
 const FORM_JUSTIFY_OPTIONS = ["center", "flex-start", "flex-end", "space-between"] as const;
 const FORM_ALIGN_OPTIONS = ["center", "flex-start", "flex-end", "stretch"] as const;
 const DOUBLE_PRESS_DELAY = 300;
-const LAB_SCENES = [
-  { value: "dashboard", label: "Dash", icon: BarChart3 },
-  { value: "windows", label: "XP", icon: Laptop },
-  { value: "medium", label: "Post", icon: Newspaper },
-  { value: "saas", label: "SaaS", icon: Rocket },
-  { value: "checkout", label: "Shop", icon: ShoppingBag },
-] as const;
-const LAB_SCENE_VALUES = LAB_SCENES.map((item) => item.value);
 const DRAWER_MODES = ["drawer", "modal"] as const;
 const DRAWER_POSITIONS = ["left", "center", "right"] as const;
 const OAUTH_LAYOUTS = ["row", "column"] as const;
 const AUTH_MODES = ["login", "register"] as const;
 const AUTH_SCENARIO_IDS = AUTH_SCENARIOS.map((item) => item.id);
 const CONFIG_PARAM = "config";
-const SHOWCASE_PARAM = "showcase";
 
-type LabScene = (typeof LAB_SCENES)[number]["value"];
 type LabAuthFlags = Required<
   Pick<
     AuthConfigGroup,
@@ -81,7 +64,6 @@ type LabTriggers = {
   scrollCooldownMs: number;
 };
 type LabUrlSnapshot = Partial<{
-  scene: LabScene;
   displayMode: DrawerMode;
   oauthLayout: "row" | "column";
   desktopPosition: DrawerPosition;
@@ -134,12 +116,6 @@ function readLabUrlSnapshot(): LabUrlSnapshot {
 
   const params = new URLSearchParams(window.location.search);
   const snapshot = decodeSnapshot(params.get(CONFIG_PARAM));
-  const showcase = params.get(SHOWCASE_PARAM);
-
-  if (isOneOf(showcase, LAB_SCENE_VALUES)) {
-    snapshot.scene = showcase;
-  }
-
   return snapshot;
 }
 
@@ -221,8 +197,7 @@ function sanitizeTriggers(value: unknown): LabTriggers | undefined {
 
 function sanitizeSnapshot(raw: Record<string, unknown>): LabUrlSnapshot {
   return {
-    scene: isOneOf(raw.scene, LAB_SCENE_VALUES) ? raw.scene : undefined,
-    displayMode: isOneOf(raw.displayMode, DRAWER_MODES) ? raw.displayMode : undefined,
+      displayMode: isOneOf(raw.displayMode, DRAWER_MODES) ? raw.displayMode : undefined,
     oauthLayout: isOneOf(raw.oauthLayout, OAUTH_LAYOUTS) ? raw.oauthLayout : undefined,
     desktopPosition: isOneOf(raw.desktopPosition, DRAWER_POSITIONS)
       ? raw.desktopPosition
@@ -357,44 +332,6 @@ function Segment<T extends string>({ label, value, options, onChange }: SegmentP
         ))}
       </div>
     </label>
-  );
-}
-
-type SceneOptionProps = {
-  scene: LabScene;
-  onSceneChange: (scene: LabScene) => void;
-};
-
-function SceneOptions({ scene, onSceneChange }: SceneOptionProps) {
-  return (
-    <div>
-      <span className="mb-2 block text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-overlay-subtle">
-        Backdrop
-      </span>
-      <div className="grid grid-cols-5 gap-1 rounded-[4px] border border-overlay-border/12 bg-overlay-bg/35 p-1">
-        {LAB_SCENES.map((item) => {
-          const Icon = item.icon;
-          const isActive = scene === item.value;
-
-          return (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => onSceneChange(item.value)}
-              className={
-                isActive
-                  ? "flex h-9 items-center justify-center rounded-[3px] border border-overlay-text bg-overlay-text text-overlay-bg"
-                  : "flex h-9 items-center justify-center rounded-[3px] border border-transparent text-overlay-muted transition-[background-color,border-color,color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-overlay-border/18 hover:bg-overlay-surface/55 hover:text-overlay-text active:scale-[0.97]"
-              }
-              aria-label={`${item.label} backdrop`}
-              title={`${item.label} backdrop`}
-            >
-              <Icon size={15} aria-hidden="true" />
-            </button>
-          );
-        })}
-      </div>
-    </div>
   );
 }
 
@@ -585,449 +522,16 @@ function ColorField({ label, value, onChange, info }: TextFieldProps) {
   );
 }
 
-function DashboardScene({ children }: { children: ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-0 overflow-hidden bg-[#eef3f9] text-[#101828]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.95),transparent_34%),radial-gradient(circle_at_90%_0%,rgba(110,145,255,0.14),transparent_30%),linear-gradient(180deg,#f7fafc_0%,#eef3f9_55%,#e8eef6_100%)]" />
-      <aside className="absolute inset-y-0 left-0 hidden w-64 border-r border-[#101828]/8 bg-[#101828] p-5 text-white shadow-[20px_0_40px_rgba(16,24,40,0.12)] md:block">
-        <div className="mb-10 flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#ffd166] text-sm font-black text-[#101828] shadow-[0_12px_28px_rgba(255,209,102,0.35)]">
-            Q
-          </div>
-          <div>
-            <div className="font-display text-2xl font-semibold leading-none">Quarry</div>
-            <div className="mt-1 text-[0.68rem] uppercase tracking-[0.18em] text-white/45">
-              Revenue system
-            </div>
-          </div>
-        </div>
-        <div className="space-y-1.5">
-          {["Overview", "Revenue", "Customers", "Pipeline", "Reports"].map((item, index) => (
-            <div
-              key={item}
-              className={
-                index === 0
-                  ? "flex h-11 items-center rounded-xl border border-white/8 bg-white/10 px-3 text-xs font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-                  : "flex h-11 items-center rounded-xl px-3 text-xs font-medium text-white/68 transition-colors hover:bg-white/8 hover:text-white"
-              }
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-        <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/8 bg-white/6 p-4 backdrop-blur">
-          <div className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-white/48">
-            Health
-          </div>
-          <div className="flex items-end gap-1.5">
-            {[34, 52, 43, 68, 58, 76, 71].map((height) => (
-              <span
-                key={height}
-                className="w-full rounded-[3px] bg-gradient-to-t from-[#62d2a2] to-[#95efc6]"
-                style={{ height }}
-              />
-            ))}
-          </div>
-        </div>
-      </aside>
-
-      <main className="relative min-h-screen p-3 md:pl-64 lg:p-5 lg:pl-[18.5rem]">
-        <header className="mb-5 flex min-h-20 items-center justify-between gap-4 rounded-[28px] border border-[#101828]/8 bg-white/82 px-5 py-4 shadow-[0_18px_50px_rgba(16,24,40,0.08)] backdrop-blur">
-          <div>
-            <div className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#667085]">
-              Revenue desk
-            </div>
-            <div className="font-display text-3xl font-semibold tracking-tight text-[#101828]">
-              Operating pulse
-            </div>
-            <p className="mt-1 text-sm text-[#667085]">
-              Live revenue view with clean account health and conversion pressure.
-            </p>
-          </div>
-          <div className="shrink-0">{children}</div>
-        </header>
-
-        <section className="grid gap-4 md:grid-cols-4">
-          {[
-            { label: "MRR", value: "$84.2k", delta: "+12.4%" },
-            { label: "Pipeline", value: "$312k", delta: "+8.1%" },
-            { label: "Activation", value: "68%", delta: "+3.0%" },
-            { label: "Churn", value: "2.1%", delta: "-0.4%" },
-          ].map((item, index) => (
-            <div
-              key={item.label}
-              className="rounded-[24px] border border-[#101828]/8 bg-white/88 p-4 shadow-[0_16px_40px_rgba(16,24,40,0.06)]"
-            >
-              <div className="mb-5 flex items-start justify-between gap-3">
-                <div>
-                  <div className="mb-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#667085]">
-                    {item.label}
-                  </div>
-                  <div className="font-display text-3xl font-semibold tracking-tight text-[#101828]">
-                    {item.value}
-                  </div>
-                </div>
-                <span
-                  className={
-                    index === 3
-                      ? "rounded-full bg-[#ecfdf3] px-2.5 py-1 text-[0.68rem] font-semibold text-[#027a48]"
-                      : "rounded-full bg-[#eff8ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#175cd3]"
-                  }
-                >
-                  {item.delta}
-                </span>
-              </div>
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#d8dee4]">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#0f766e] via-[#14b8a6] to-[#8bd3ff]"
-                  style={{
-                    width: `${[72, 61, 68, 22][index]}%`,
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </section>
-
-        <section className="mt-4 grid gap-4 lg:grid-cols-[1.35fr_0.65fr]">
-          <div className="rounded-[28px] border border-[#101828]/8 bg-white/90 p-5 shadow-[0_18px_50px_rgba(16,24,40,0.06)]">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <div className="text-sm font-semibold text-[#101828]">Net revenue</div>
-                <div className="text-xs text-[#667085]">Weekly performance across all accounts</div>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-full border border-[#d0d5dd] bg-[#f8fafc] px-3 py-1.5">
-                <span className="h-2 w-2 rounded-full bg-[#14b8a6]" />
-                <span className="text-xs font-medium text-[#475467]">Live</span>
-              </div>
-            </div>
-            <div className="grid h-64 grid-cols-12 items-end gap-2 sm:gap-3">
-              {[42, 58, 48, 72, 64, 86, 78, 96, 74, 88, 104, 118].map((height, index) => (
-                <div key={index} className="flex h-full items-end">
-                  <div
-                    className="w-full rounded-t-2xl bg-gradient-to-t from-[#0f172a] via-[#334155] to-[#8bd3ff]"
-                    style={{ height }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border border-[#101828]/8 bg-white/90 p-5 shadow-[0_18px_50px_rgba(16,24,40,0.06)]">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <div className="text-sm font-semibold text-[#101828]">Accounts</div>
-                <div className="text-xs text-[#667085]">Most active customers this week</div>
-              </div>
-              <div className="rounded-full bg-[#eff8ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#175cd3]">
-                12 active
-              </div>
-            </div>
-            <div className="space-y-3">
-              {[
-                ["Acme Studio", "Expansion", "84%"],
-                ["Northwind", "Renewal", "73%"],
-                ["Fjord Labs", "Growth", "91%"],
-                ["Kanso", "At risk", "41%"],
-              ].map(([name, status, score], index) => (
-                <div
-                  key={name}
-                  className="rounded-2xl border border-[#d0d5dd]/70 bg-[#f8fafc]/80 px-3 py-3"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-[#101828]">{name}</div>
-                      <div className="text-xs text-[#667085]">{status}</div>
-                    </div>
-                    <div className="text-sm font-semibold text-[#101828]">{score}</div>
-                  </div>
-                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#e4e7ec]">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#7c3aed] via-[#14b8a6] to-[#8bd3ff]"
-                      style={{ width: `${[84, 73, 91, 41][index]}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-  );
-}
-
-function SaasScene({ children }: { children: ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-0 overflow-hidden bg-[#f4f6f0] text-[#101828]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_8%_18%,rgba(16,185,129,0.14),transparent_18rem),radial-gradient(circle_at_100%_0%,rgba(8,145,178,0.12),transparent_20rem),linear-gradient(180deg,#f7faf7_0%,#eef4ef_100%)]" />
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#101828] text-sm font-black text-white shadow-[0_12px_28px_rgba(16,24,40,0.18)]">
-            N
-          </div>
-          <div>
-            <div className="font-display text-xl font-semibold leading-none">Northstar</div>
-            <div className="mt-1 text-[0.68rem] uppercase tracking-[0.18em] text-[#667085]">
-              Product operations
-            </div>
-          </div>
-        </div>
-        <nav className="hidden items-center gap-6 text-sm text-[#475467] md:flex">
-          <span>Product</span>
-          <span>Teams</span>
-          <span>Pricing</span>
-          <span>Docs</span>
-        </nav>
-        {children}
-      </header>
-      <main className="relative mx-auto grid min-h-[calc(100vh-88px)] max-w-7xl items-center gap-8 px-5 pb-10 lg:grid-cols-[0.92fr_1.08fr]">
-        <section>
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#101828]/8 bg-white/76 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#667085] shadow-[0_10px_24px_rgba(16,24,40,0.04)]">
-            <span className="h-2 w-2 rounded-full bg-[#14b8a6]" />
-            Team operating layer
-          </div>
-          <h2 className="font-display max-w-xl text-5xl font-semibold leading-[0.96] tracking-tight text-[#101828] md:text-7xl">
-            Plan launches without losing the week.
-          </h2>
-          <p className="mt-5 max-w-md text-base leading-7 text-[#475467]">
-            Coordinate roadmaps, customer signals, launch health, and weekly decisions in one calm
-            workspace.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <div className="inline-flex h-11 items-center justify-center rounded-full bg-[#101828] px-5 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(16,24,40,0.18)]">
-              Book a demo
-            </div>
-            <div className="inline-flex h-11 items-center justify-center rounded-full border border-[#101828]/12 bg-white/76 px-5 text-sm font-semibold text-[#101828]">
-              Explore roadmap
-            </div>
-          </div>
-        </section>
-        <section className="relative min-h-[520px] overflow-hidden rounded-[32px] border border-[#101828]/8 bg-white/84 p-4 shadow-[0_24px_80px_rgba(16,24,40,0.08)] backdrop-blur">
-          <div className="mb-4 flex h-10 items-center gap-2 border-b border-[#101828]/8 pb-4">
-            <span className="h-3 w-3 rounded-full bg-[#ef4444]" />
-            <span className="h-3 w-3 rounded-full bg-[#f59e0b]" />
-            <span className="h-3 w-3 rounded-full bg-[#22c55e]" />
-          </div>
-          <div className="grid gap-4 md:grid-cols-[0.78fr_1.22fr]">
-            <div className="space-y-3">
-              {["Launch", "Signals", "Risks", "Notes"].map((item, index) => (
-                <div
-                  key={item}
-                  className={
-                    index === 0
-                      ? "rounded-2xl bg-[#101828] p-3 text-sm text-white shadow-[0_14px_28px_rgba(16,24,40,0.2)]"
-                      : "rounded-2xl bg-[#f8fafc] p-3 text-sm text-[#475467] ring-1 ring-[#d0d5dd]/70"
-                  }
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
-            <div className="space-y-4">
-              <div className="rounded-3xl bg-gradient-to-br from-[#e8f3ee] via-[#eff6ff] to-[#f8fafc] p-4 ring-1 ring-[#d0d5dd]/70">
-                <div className="mb-3 h-2 w-24 rounded-full bg-[#9bad8d]" />
-                <div className="grid gap-3 sm:grid-cols-[1.2fr_0.8fr]">
-                  <div className="h-28 rounded-2xl bg-white/72" />
-                  <div className="h-28 rounded-2xl bg-[#101828]" />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  ["Ship", "#d9e7cf"],
-                  ["Review", "#f0dfca"],
-                  ["Adopt", "#d7e0ee"],
-                ].map(([label, color]) => (
-                  <div
-                    key={label}
-                    className="rounded-3xl p-3 ring-1 ring-[#d0d5dd]/70"
-                    style={{ background: color }}
-                  >
-                    <div className="mb-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#667085]">
-                      {label}
-                    </div>
-                    <div className="h-16 rounded-2xl bg-white/55" />
-                  </div>
-                ))}
-              </div>
-              <div className="rounded-3xl border border-dashed border-[#cbd5e1] bg-white/62 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-[#101828]">Weekly summary</span>
-                  <span className="text-xs font-medium text-[#667085]">Updated 6m ago</span>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {[
-                    ["Deals", "18"],
-                    ["Risks", "3"],
-                    ["Confident", "91%"],
-                  ].map(([label, value]) => (
-                    <div key={label} className="rounded-2xl bg-[#f8fafc] px-3 py-4">
-                      <div className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#667085]">
-                        {label}
-                      </div>
-                      <div className="mt-2 text-2xl font-semibold tracking-tight text-[#101828]">
-                        {value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-  );
-}
-
-function CheckoutScene({ children }: { children: ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-0 overflow-hidden bg-[#f5f0eb] text-[#211c18]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(255,255,255,0.88),transparent_26rem),radial-gradient(circle_at_85%_0%,rgba(244,153,74,0.14),transparent_18rem),linear-gradient(180deg,#faf6f1_0%,#f5f0eb_100%)]" />
-      <header className="relative flex h-18 items-center justify-between border-b border-[#211c18]/10 bg-white/78 px-5 backdrop-blur">
-        <div>
-          <div className="font-display text-2xl font-semibold tracking-tight">Field Goods</div>
-          <div className="text-xs uppercase tracking-[0.18em] text-[#86786c]">
-            Checkout with confidence
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden text-sm text-[#6f645b] sm:inline">Cart $148.00</span>
-          {children}
-        </div>
-      </header>
-      <main className="relative mx-auto grid max-w-7xl gap-6 px-5 py-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="space-y-4">
-          <div className="rounded-[30px] border border-[#211c18]/10 bg-white/82 p-5 shadow-[0_18px_50px_rgba(33,28,24,0.06)] backdrop-blur">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#86786c]">
-                  Shipping
-                </div>
-                <p className="mt-1 text-sm text-[#6f645b]">
-                  Delivery details with saved preferences and fast autofill.
-                </p>
-              </div>
-              <span className="rounded-full bg-[#eff8ff] px-3 py-1 text-xs font-semibold text-[#175cd3]">
-                2 min
-              </span>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="h-12 rounded-2xl border border-[#211c18]/10 bg-[#fbfaf8]" />
-              <div className="h-12 rounded-2xl border border-[#211c18]/10 bg-[#fbfaf8]" />
-              <div className="h-12 rounded-2xl border border-[#211c18]/10 bg-[#fbfaf8] sm:col-span-2" />
-            </div>
-          </div>
-          <div className="rounded-[30px] border border-[#211c18]/10 bg-white/82 p-5 shadow-[0_18px_50px_rgba(33,28,24,0.06)] backdrop-blur">
-            <div className="mb-4">
-              <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#86786c]">
-                Payment
-              </div>
-              <p className="mt-1 text-sm text-[#6f645b]">
-                Secure card entry, Apple Pay, and modern wallet support.
-              </p>
-            </div>
-            <div className="grid gap-3">
-              <div className="h-12 rounded-2xl border border-[#211c18]/10 bg-[#fbfaf8]" />
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="h-12 rounded-2xl border border-[#211c18]/10 bg-[#fbfaf8]" />
-                <div className="h-12 rounded-2xl border border-[#211c18]/10 bg-[#fbfaf8]" />
-              </div>
-            </div>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[
-              ["Fast ship", "2-3 business days"],
-              ["Easy return", "30-day window"],
-              ["Secure pay", "Encrypted checkout"],
-            ].map(([title, body]) => (
-              <div
-                key={title}
-                className="rounded-[24px] border border-[#211c18]/10 bg-white/72 p-4 shadow-[0_12px_30px_rgba(33,28,24,0.04)]"
-              >
-                <div className="text-sm font-semibold text-[#211c18]">{title}</div>
-                <div className="mt-2 text-xs leading-5 text-[#6f645b]">{body}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-        <aside className="rounded-[34px] border border-[#211c18]/10 bg-white/90 p-5 shadow-[0_20px_60px_rgba(33,28,24,0.08)]">
-          <div className="mb-5">
-            <div className="font-display text-2xl font-semibold tracking-tight">Order summary</div>
-            <div className="mt-1 text-sm text-[#6f645b]">
-              Balanced cart, clear totals, no surprises.
-            </div>
-          </div>
-          <div className="space-y-4">
-            {[
-              ["Canvas tote", "$48", "#ded6ca"],
-              ["Desk tray", "$72", "#d9e7cf"],
-              ["Notebook", "$28", "#f0dfca"],
-            ].map(([item, price, color]) => (
-              <div key={item} className="flex gap-3 rounded-2xl border border-[#211c18]/10 p-3">
-                <div className="h-16 w-16 shrink-0 rounded-2xl" style={{ background: color }} />
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-[#211c18]">{item}</div>
-                  <div className="mt-2 h-2 w-24 rounded-full bg-[#d3cbc1]" />
-                  <div className="mt-4 text-xs uppercase tracking-[0.16em] text-[#86786c]">
-                    Ready to ship
-                  </div>
-                </div>
-                <div className="text-sm font-semibold text-[#211c18]">{price}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-5 space-y-3 border-t border-[#211c18]/10 pt-5">
-            <div className="flex items-center justify-between text-sm text-[#6f645b]">
-              <span>Subtotal</span>
-              <span>$148.00</span>
-            </div>
-            <div className="flex items-center justify-between text-sm text-[#6f645b]">
-              <span>Shipping</span>
-              <span>Free</span>
-            </div>
-            <div className="flex items-center justify-between text-base font-semibold text-[#211c18]">
-              <span>Total</span>
-              <span>$148.00</span>
-            </div>
-            <div className="mt-4 h-12 rounded-full bg-[#211c18]" />
-          </div>
-        </aside>
-      </main>
-    </div>
-  );
-}
-
 function ScenePreview({
-  scene,
   children,
   onOpenAuth,
-  triggers,
-  triggerStore,
+  desktop,
 }: {
-  scene: LabScene;
   children: ReactNode;
   onOpenAuth: () => void;
-  triggers: AuthConfig["triggers"];
-  triggerStore: AuthTriggerStore;
+  desktop?: boolean;
 }) {
-  if (scene === "windows")
-    return <WindowsXpScene onOpenAuth={onOpenAuth}>{children}</WindowsXpScene>;
-  if (scene === "medium") {
-    return (
-      <>
-        <MediumPaywallScene
-          onOpenAuth={onOpenAuth}
-          triggers={triggers}
-          triggerStore={triggerStore}
-        />
-        {children}
-      </>
-    );
-  }
-  if (scene === "saas") return <SaasScene>{children}</SaasScene>;
-  if (scene === "checkout") return <CheckoutScene>{children}</CheckoutScene>;
-  return <DashboardScene>{children}</DashboardScene>;
+  return <WindowsXpScene onOpenAuth={onOpenAuth} desktop={desktop}>{children}</WindowsXpScene>;
 }
 
 /**
@@ -1040,6 +544,7 @@ export function AuthDrawerLab() {
   const lastRightShiftPress = useRef(0);
   const [isLabOpen, setLabOpen] = useState(true);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [desktop, setDesktop] = useState(false);
   const [displayMode, setDisplayMode] = useState<DrawerMode>(
     () => initialUrlState.displayMode ?? "drawer",
   );
@@ -1099,7 +604,7 @@ export function AuthDrawerLab() {
   const [scenario, setScenario] = useState<AuthScenarioId>(
     () => initialUrlState.scenario ?? "success",
   );
-  const [scene, setScene] = useState<LabScene>(() => initialUrlState.scene ?? "windows");
+  const scene = "windows" as const;
   const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
   const triggerStore = useMemo(() => createAuthTriggerStore(), []);
   const adapter = useMemo(() => createScenarioAdapter(scenario), [scenario]);
@@ -1205,8 +710,6 @@ export function AuthDrawerLab() {
   }, [resolvedTheme, setTheme]);
 
   const config = useMemo<AuthConfig>(() => {
-    const isMediumScene = scene === "medium";
-    const resolvedDisplayMode = isMediumScene ? "modal" : displayMode;
     const triggers: AuthTriggerConfig = {};
 
     if (triggerDraft.pageLoadEnabled) {
@@ -1232,7 +735,7 @@ export function AuthDrawerLab() {
           ...authFlags,
         },
         presentation: {
-          variant: resolvedDisplayMode,
+          variant: displayMode,
           defaultOpen,
         },
         visual: {
@@ -1240,15 +743,10 @@ export function AuthDrawerLab() {
         },
         motion: {
           ...motion,
-          displayMode: resolvedDisplayMode,
-          desktopPosition: isMediumScene ? "center" : desktopPosition,
-          desktopWidth: isMediumScene ? "392px" : desktopWidth,
-          entryDuration: isMediumScene ? 0.42 : motion.entryDuration,
-          entryScale: isMediumScene ? 0.98 : motion.entryScale,
-          entryY: isMediumScene ? 12 : motion.entryY,
-          backdropOpacity: isMediumScene ? 0.2 : motion.backdropOpacity,
-          backdropBlur: isMediumScene ? 2 : motion.backdropBlur,
-          formPaddingBottom: resolvedDisplayMode === "modal" ? 0 : motion.formPaddingBottom,
+          displayMode,
+          desktopPosition,
+          desktopWidth,
+          formPaddingBottom: displayMode === "modal" ? 0 : motion.formPaddingBottom,
         },
       },
       triggers,
@@ -1263,7 +761,6 @@ export function AuthDrawerLab() {
     motion,
     oauthLayout,
     providers,
-    scene,
     triggerDraft,
   ]);
 
@@ -1277,7 +774,6 @@ export function AuthDrawerLab() {
   const usageCode = useMemo(() => generateUsageCode(usageConfig), [usageConfig]);
   const urlSnapshot = useMemo<LabUrlSnapshot>(
     () => ({
-      scene,
       displayMode,
       oauthLayout,
       desktopPosition,
@@ -1301,7 +797,6 @@ export function AuthDrawerLab() {
       oauthLayout,
       providers,
       scenario,
-      scene,
       triggerDraft,
     ],
   );
@@ -1311,7 +806,6 @@ export function AuthDrawerLab() {
 
     const params = new URLSearchParams(window.location.search);
     params.set("view", "playground");
-    params.set(SHOWCASE_PARAM, scene);
     params.set(CONFIG_PARAM, encodeSnapshot(urlSnapshot));
     const search = params.toString();
     const nextUrl = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`;
@@ -1319,23 +813,19 @@ export function AuthDrawerLab() {
     if (nextUrl !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
       window.history.replaceState(null, "", nextUrl);
     }
-  }, [scene, urlSnapshot]);
+  }, [urlSnapshot]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <ScenePreview
-        scene={scene}
-        onOpenAuth={() => setDrawerOpen(true)}
-        triggers={config.triggers}
-        triggerStore={triggerStore}
-      >
+      <ScenePreview onOpenAuth={() => setDrawerOpen(true)} desktop={desktop}>
         <AuthDrawer
           adapter={adapter}
           config={config}
           triggerStore={triggerStore}
-          hideTrigger={scene === "medium" || scene === "windows"}
+          hideTrigger
           open={isDrawerOpen}
           onOpenChange={setDrawerOpen}
+          onSuccess={() => setDesktop(true)}
         />
       </ScenePreview>
 
@@ -1417,8 +907,6 @@ export function AuthDrawerLab() {
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <SceneOptions scene={scene} onSceneChange={setScene} />
-
                     <Segment<DrawerMode>
                       label="Surface"
                       value={displayMode}
@@ -1911,7 +1399,7 @@ export function AuthDrawerLab() {
                           label="Scroll open"
                           checked={triggerDraft.scrollEnabled}
                           onChange={(checked) => updateTrigger("scrollEnabled", checked)}
-                          info="Medium scene emits scroll progress into the central trigger store."
+                          info="Emits scroll progress into the central trigger store."
                         />
                         <RangeField
                           label="Scroll threshold"

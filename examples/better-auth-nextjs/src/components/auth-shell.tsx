@@ -1,0 +1,36 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
+import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
+import { authAdapter } from "@/lib/auth-adapter";
+import { authDrawerConfig } from "@/lib/auth-drawer-config";
+
+type AuthShellProps = {
+  children: React.ReactNode;
+};
+
+export function AuthShell({ children }: AuthShellProps) {
+  const router = useRouter();
+
+  const handleAuthSuccess = useCallback(
+    (action: "signIn" | "signUp" | "signOut" | "oauth") => {
+      if (action === "signIn" || action === "signUp" || action === "oauth") {
+        router.push("/dashboard");
+      }
+    },
+    [router],
+  );
+
+  return (
+    <AuthProvider adapter={authAdapter} onSuccess={handleAuthSuccess}>
+      {children}
+      <AuthDrawer
+        adapter={authAdapter}
+        config={authDrawerConfig}
+        hideTrigger
+        onSuccess={handleAuthSuccess}
+      />
+    </AuthProvider>
+  );
+}

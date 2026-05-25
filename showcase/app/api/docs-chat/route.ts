@@ -58,10 +58,8 @@ function createRateLimitKey(kind: (typeof LIMITS)[number]["name"], key: string) 
 }
 
 function getRateLimitBackend() {
-  const redisUrl =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
-  const redisToken =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
 
   if (redisUrl && redisToken) {
     return {
@@ -73,8 +71,7 @@ function getRateLimitBackend() {
 
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const namespaceId = process.env.CLOUDFLARE_KV_NAMESPACE_ID;
-  const apiToken =
-    process.env.CLOUDFLARE_KV_API_TOKEN ?? process.env.CLOUDFLARE_AI_API_TOKEN;
+  const apiToken = process.env.CLOUDFLARE_KV_API_TOKEN ?? process.env.CLOUDFLARE_AI_API_TOKEN;
 
   if (accountId && namespaceId && apiToken) {
     return {
@@ -191,11 +188,7 @@ async function checkRateLimit(key: string) {
     const bucketKey = createRateLimitKey(limit.name, key);
 
     if (backend.kind === "redis-rest") {
-      const bucket = await incrementRedisBucket(
-        backend,
-        bucketKey,
-        limit.windowMs,
-      );
+      const bucket = await incrementRedisBucket(backend, bucketKey, limit.windowMs);
 
       if (bucket.count > limit.max) {
         return {
@@ -268,12 +261,15 @@ function validatePayload(payload: DocsChatRequest) {
     return { error: "Docs snippets are required." };
   }
 
-  const snippets = payload.snippets.filter(isDocsSnippet).slice(0, 5).map((snippet) => ({
-    ...snippet,
-    title: snippet.title.slice(0, 120),
-    href: snippet.href.slice(0, 160),
-    body: snippet.body.slice(0, 1200),
-  }));
+  const snippets = payload.snippets
+    .filter(isDocsSnippet)
+    .slice(0, 5)
+    .map((snippet) => ({
+      ...snippet,
+      title: snippet.title.slice(0, 120),
+      href: snippet.href.slice(0, 160),
+      body: snippet.body.slice(0, 1200),
+    }));
 
   if (snippets.length === 0) return { error: "No matching docs context." };
 
@@ -283,14 +279,20 @@ function validatePayload(payload: DocsChatRequest) {
 function buildPrompt(question: string, snippets: DocsSnippet[]) {
   const context = snippets
     .map(
-      (snippet, index) =>
-        `Source ${index + 1}: ${snippet.title}\nURL: ${snippet.href}\n${snippet.body}`,
+      (snippet, index) => `[${index + 1}] ${snippet.title}\nURL: ${snippet.href}\n${snippet.body}`,
     )
     .join("\n\n");
 
   return {
-    system:
-      "You answer questions about Auth Drawer only. Use only the provided docs context. If the answer is not in the context, say you do not know. Keep the answer under 180 words and mention relevant section links.",
+    system: [
+      "You answer questions about Auth Drawer only.",
+      "Use only the provided docs context. If the answer is not in the context, say you do not know.",
+      "Return concise Markdown under 180 words.",
+      "Do not start with boilerplate like 'according to the provided docs' or 'based on the documentation'.",
+      "Use numbered lists for ordered steps or enumerations.",
+      "Use fenced code blocks with a language tag for code.",
+      "End with a short 'Sources:' line using bracket references like [1], [2] when useful.",
+    ].join(" "),
     user: `Docs context:\n${context}\n\nQuestion:\n${question}`,
   };
 }
@@ -298,8 +300,7 @@ function buildPrompt(question: string, snippets: DocsSnippet[]) {
 async function callCloudflareAI(question: string, snippets: DocsSnippet[]) {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const apiToken = process.env.CLOUDFLARE_AI_API_TOKEN;
-  const model =
-    process.env.CLOUDFLARE_AI_MODEL ?? "@cf/meta/llama-3.2-3b-instruct";
+  const model = process.env.CLOUDFLARE_AI_MODEL ?? "@cf/meta/llama-3.2-3b-instruct";
 
   if (!accountId || !apiToken) return null;
 
@@ -340,12 +341,29 @@ async function callCloudflareAI(question: string, snippets: DocsSnippet[]) {
 
 function createMockAnswer(question: string, snippets: DocsSnippet[]) {
   const top = snippets[0];
-  const sourceList = snippets
+  const sourceRefs = snippets
     .slice(0, 3)
-    .map((snippet) => `${snippet.title} (${snippet.href})`)
+    .map((_, index) => `[${index + 1}]`)
     .join(", ");
 
-  return `Based on the current docs, ${top.body} Relevant sections: ${sourceList}. Question received: "${question}".`;
+  if (/adapter|provider/i.test(question)) {
+    return [
+      "Supported adapters:",
+      "",
+      "1. Better Auth",
+      "2. Supabase",
+      "3. NextAuth / Auth.js",
+      "4. Clerk",
+      "5. Firebase Auth",
+      "6. Custom JWT / REST",
+      "7. Passport cookie sessions",
+      "8. Mock adapter",
+      "",
+      `Sources: ${sourceRefs}`,
+    ].join("\n");
+  }
+
+  return [`${top.body}`, "", `Sources: ${sourceRefs}`].join("\n");
 }
 
 export async function POST(request: Request) {
@@ -353,8 +371,7 @@ export async function POST(request: Request) {
   if (rateLimit.limited) {
     return NextResponse.json(
       {
-        answer:
-          "Docs chat is rate limited for this browser. Local search still works.",
+        answer: "Docs chat is rate limited for this browser. Local search still works.",
         sources: [],
         limited: true,
         retryAfterSeconds: rateLimit.retryAfterSeconds,
@@ -380,15 +397,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validated.error }, { status: 400 });
   }
 
-  const cloudflareAnswer = await callCloudflareAI(
-    validated.question,
-    validated.snippets,
-  );
+  const cloudflareAnswer = await callCloudflareAI(validated.question, validated.snippets);
 
   return NextResponse.json({
-    answer:
-      cloudflareAnswer ??
-      createMockAnswer(validated.question, validated.snippets),
+    answer: cloudflareAnswer ?? createMockAnswer(validated.question, validated.snippets),
     sources: validated.snippets,
     mode: cloudflareAnswer ? "cloudflare" : "mock",
   });

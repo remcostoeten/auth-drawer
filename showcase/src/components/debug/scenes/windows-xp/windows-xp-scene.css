@@ -829,3 +829,310 @@
     text-align: right;
   }
 }
+
+.xp-desktop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  animation: xp-desktop-enter 420ms ease-out forwards;
+}
+
+.windows_xp {
+  flex: 1;
+  position: relative;
+  background-image: url('https://i.imgur.com/yOpoaJH.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.xp-desktop__icon-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 6px;
+  padding: 12px 8px;
+}
+
+.xp-desktop__icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 72px;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+  outline: none;
+}
+
+.xp-desktop__icon:hover,
+.xp-desktop__icon:focus-visible {
+  background: rgb(255 255 255 / 10%);
+  border-color: rgb(255 255 255 / 25%);
+}
+
+.xp-desktop__icon:active {
+  background: rgb(0 0 0 / 15%);
+  border-color: rgb(255 255 255 / 8%);
+}
+
+.xp-desktop__icon-img {
+  font-size: 2rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%));
+}
+
+.xp-desktop__icon-label {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 75%);
+  word-break: break-word;
+}
+
+.xp-taskbar {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 2px;
+  background: linear-gradient(180deg, #2a6edb 0%, #205ac6 4%, #1a4eb5 50%, #1b4ead 51%, #1b4ead 95%, #123b8a 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 20%),
+    0 -1px 0 rgb(0 0 0 / 30%);
+  z-index: 2;
+}
+
+.xp-start-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 10px 0 6px;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  background: linear-gradient(180deg, #3c9a3c 0%, #2d822d 50%, #1f6a1f 100%);
+  color: white;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 45%);
+  outline: none;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 28%),
+    inset -1px 0 0 rgb(0 0 0 / 15%);
+}
+
+.xp-start-btn:hover {
+  background: linear-gradient(180deg, #4aad4a 0%, #369636 50%, #267a26 100%);
+}
+
+.xp-start-btn:active,
+.xp-start-btn--active {
+  background: linear-gradient(180deg, #1f6a1f 0%, #2d822d 50%, #3c9a3c 100%);
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 40%),
+    inset -1px 0 0 rgb(0 0 0 / 15%);
+}
+
+.xp-start-btn--active {
+  background: linear-gradient(180deg, #1a5c1a 0%, #246d24 50%, #2d7d2d 100%);
+}
+
+.xp-start-btn__icon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background: radial-gradient(circle at 35% 35%, #fff, #b8d4f0 60%, #4c8fd6);
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 40%);
+  position: relative;
+}
+
+.xp-start-btn__icon::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  background:
+    linear-gradient(135deg, #f34f1d 0%, #f34f1d 33%, transparent 33%),
+    linear-gradient(180deg, #8cc63f 0%, #8cc63f 33%, transparent 33%),
+    linear-gradient(225deg, #00aeef 0%, #00aeef 33%, transparent 33%),
+    linear-gradient(270deg, #fbbe28 0%, #fbbe28 33%, transparent 33%);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.xp-start-btn__label {
+  letter-spacing: -0.02em;
+  margin-top: 1px;
+}
+
+.xp-taskbar__divider {
+  width: 2px;
+  height: 26px;
+  margin: 0 6px;
+  background: linear-gradient(180deg, transparent 0%, rgb(255 255 255 / 25%) 20%, rgb(255 255 255 / 25%) 80%, transparent 100%);
+  box-shadow: 1px 0 0 rgb(0 0 0 / 20%);
+}
+
+.xp-taskbar__tray {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  height: 30px;
+  padding: 0 10px;
+  border-left: 1px solid rgb(0 0 0 / 25%);
+  box-shadow: inset 1px 0 0 rgb(255 255 255 / 15%);
+}
+
+.xp-taskbar__clock {
+  font-size: 0.7rem;
+  color: white;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 35%);
+  white-space: nowrap;
+}
+
+.xp-start-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+}
+
+.xp-start {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  z-index: 9;
+  display: flex;
+  width: 320px;
+  border: 2px solid #1a4eb5;
+  border-radius: 6px 6px 0 0;
+  background: #fff;
+  box-shadow:
+    0 6px 24px rgb(0 0 0 / 45%),
+    inset 0 0 0 1px #87b8ff;
+  overflow: hidden;
+}
+
+.xp-start__rail {
+  display: flex;
+  align-items: flex-end;
+  width: 38px;
+  padding: 0 0 8px;
+  background: linear-gradient(180deg, #2a6edb 0%, #205ac6 30%, #1a4eb5 100%);
+}
+
+.xp-start__rail-text {
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 35%);
+  text-align: center;
+  width: 100%;
+  padding: 4px 0;
+}
+
+.xp-start__items {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  background: #fff;
+}
+
+.xp-start__item {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  border: none;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  text-align: left;
+  outline: none;
+}
+
+.xp-start__item:hover,
+.xp-start__item:focus-visible {
+  background: #1a4eb5;
+  color: white;
+}
+
+.xp-start__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  background: #ece9d8;
+  border-top: 1px solid #d4d0b8;
+}
+
+.xp-start__logout,
+.xp-start__shutdown {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid #0e3d8f;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #fffefb 0%, #f1f0e4 42%, #c8c4aa 100%);
+  box-shadow:
+    inset 1px 1px 0 rgb(255 255 255 / 82%),
+    inset -1px -1px 0 rgb(0 0 0 / 18%);
+  color: #111;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.7rem;
+  outline: none;
+}
+
+.xp-start__logout:active,
+.xp-start__shutdown:active {
+  transform: translateY(1px);
+  box-shadow: inset 1px 1px 2px rgb(0 0 0 / 35%);
+}
+
+@keyframes xp-desktop-enter {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 760px) {
+  .xp-start {
+    width: 260px;
+  }
+
+  .xp-desktop__icon {
+    width: 60px;
+  }
+
+  .xp-desktop__icon-img {
+    font-size: 1.6rem;
+  }
+}

@@ -167,7 +167,7 @@ function TriggerExampleCard({
         </div>
       </div>
       <div className="bg-[#0b0b0c]/40 px-1 pb-1 pt-0">
-        <CodeBlock lang="tsx" embedded>
+        <CodeBlock lang="tsx" embedded title="trigger example">
           {snippet}
         </CodeBlock>
       </div>

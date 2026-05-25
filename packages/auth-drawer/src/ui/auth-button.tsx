@@ -20,9 +20,9 @@ const BASE =
 
 const VARIANTS = {
   primary:
-    "bg-overlay-surface/82 border-overlay-border/20 text-overlay-text hover:bg-overlay-surface/87 hover:border-overlay-border/26 hover:shadow-[0_10px_22px_rgba(26,20,17,0.055),inset_0_1px_0_rgba(255,255,255,0.42)] shadow-[0_8px_20px_rgba(26,20,17,0.05),inset_0_1px_0_rgba(255,255,255,0.38)] dark:bg-overlay-surface/50 dark:border-overlay-border/10 dark:hover:bg-overlay-surface/70 dark:hover:border-overlay-border/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]",
+    "bg-overlay-surface/36 border-overlay-border/10 text-overlay-text fine-hover:bg-overlay-surface-hover/44 fine-hover:border-overlay-border/12 shadow-[inset_0_1px_1px_rgba(0,0,0,0.03)] dark:bg-overlay-surface/48 dark:fine-hover:bg-overlay-surface-hover/52 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)]",
   "outline-solid":
-    "bg-overlay-surface/82 border-overlay-border/20 text-overlay-text hover:bg-overlay-surface/87 hover:border-overlay-border/26 hover:shadow-[0_10px_22px_rgba(26,20,17,0.055),inset_0_1px_0_rgba(255,255,255,0.42)] shadow-[0_8px_20px_rgba(26,20,17,0.05),inset_0_1px_0_rgba(255,255,255,0.38)] dark:bg-overlay-surface/30 dark:border-overlay-border/10 dark:hover:bg-overlay-surface/50 dark:hover:border-overlay-border/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]",
+    "bg-overlay-surface/22 border-overlay-border/10 text-overlay-text fine-hover:bg-overlay-surface-hover/30 fine-hover:border-overlay-border/12 shadow-[inset_0_1px_1px_rgba(0,0,0,0.025)] dark:bg-overlay-surface/28 dark:fine-hover:bg-overlay-surface-hover/34 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]",
 } as const;
 
 /**

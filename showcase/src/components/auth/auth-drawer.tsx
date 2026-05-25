@@ -29,6 +29,7 @@ export type AuthDrawerProps = {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onSuccess?: (action: "signIn" | "signUp" | "signOut" | "oauth") => void;
   triggerStore?: AuthTriggerStore;
 };
 

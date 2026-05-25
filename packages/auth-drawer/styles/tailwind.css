@@ -5,9 +5,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@custom-variant fine-hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
 @theme inline {
   --color-overlay-bg: hsl(var(--surface-overlay));
   --color-overlay-surface: hsl(var(--surface-overlay-raised));
+  --color-overlay-surface-hover: hsl(var(--surface-overlay-hover));
   --color-overlay-border: hsl(var(--border-overlay));
   --color-overlay-text: hsl(var(--text-on-overlay));
   --color-overlay-muted: hsl(var(--text-on-overlay-muted));
@@ -26,7 +35,7 @@
 }
 
 @utility auth-button-soft-hover {
-  transition-property: background-color, border-color, box-shadow, color;
-  transition-duration: 240ms;
-  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  transition-property: background-color, border-color, box-shadow;
+  transition-duration: 180ms;
+  transition-timing-function: ease;
 }

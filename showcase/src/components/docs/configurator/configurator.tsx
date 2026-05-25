@@ -365,7 +365,7 @@ export function Configurator({
                     defaults are omitted where possible.
                   </p>
                 )}
-                <CodeBlock>{usageCode}</CodeBlock>
+                <CodeBlock title="generated-usage.tsx">{usageCode}</CodeBlock>
               </div>
             </div>
           </div>

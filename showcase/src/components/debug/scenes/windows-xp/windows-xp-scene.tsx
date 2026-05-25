@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
+import { WindowsDesktop } from "./windows-xp-desktop";
 
 type Props = {
   onOpenAuth: () => void;
   children?: ReactNode;
+  desktop?: boolean;
 };
 
 const USER = {
@@ -111,7 +113,15 @@ function LoginScreen({ children, onOpenAuth }: Props) {
   );
 }
 
-export function WindowsXpScene({ children, onOpenAuth }: Props) {
+export function WindowsXpScene({ children, onOpenAuth, desktop }: Props) {
+  if (desktop) {
+    return (
+      <div className="xp-scene">
+        <WindowsDesktop />
+      </div>
+    );
+  }
+
   return (
     <div className="xp-scene">
       <LoginScreen onOpenAuth={onOpenAuth}>{children}</LoginScreen>

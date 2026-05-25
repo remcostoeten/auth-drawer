@@ -11,6 +11,7 @@ This specification outlines the client-side integration architecture for **Clerk
 
 The adapter calls all Clerk hooks at the top level and returns a memoized `AuthAdapter` object.
 
+**`packages/auth-drawer/src/adapters/clerk.ts`**
 ```typescript
 import { useSignIn, useSignUp, useAuth, useUser, useSession } from "@clerk/clerk-react";
 import { useMemo } from "react";
@@ -204,6 +205,7 @@ Clerk throws errors containing an `errors` array property. Each error object con
 
 ### Clerk Error Mapper Code
 
+**`packages/auth-drawer/src/adapters/clerk.ts` (Error Mapper)**
 ```typescript
 import type { AuthUiError, AuthErrorCode } from "../types";
 
@@ -259,6 +261,7 @@ Because `useClerkAdapter` is a React hook (not a plain factory function), it mus
 2. **Cannot be called conditionally** — do not wrap in `if` statements or loops.
 3. **Requires `<ClerkProvider>` ancestor** — Clerk's hooks require the ClerkProvider context to be present in the tree.
 
+**`App.tsx` (Usage Example)**
 ```tsx
 // ✅ Correct usage
 import { ClerkProvider } from "@clerk/clerk-react";

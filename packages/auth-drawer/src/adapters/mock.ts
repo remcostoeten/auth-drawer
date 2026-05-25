@@ -31,6 +31,10 @@ export function createMockAdapter(options: MockAdapterOptions = {}): AuthAdapter
   return {
     id: "mock",
     providers: ["github", "google", "discord"],
+    demoCredentials: {
+      email: mockEmail,
+      password: mockPassword,
+    },
     requiresName: options.requireName,
     async signIn({ email, password }) {
       await wait();

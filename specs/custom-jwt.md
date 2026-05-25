@@ -8,6 +8,7 @@ This specification outlines the client-side integration architecture for custom 
 
 The adapter manages credential submission, authorization header configuration, and token cleanup inside the browser storage (localStorage or sessionStorage).
 
+**`packages/auth-drawer/src/adapters/custom-jwt.ts`**
 ```typescript
 import { useState, useEffect } from "react";
 import type { AuthAdapter, AuthResult, CredentialAuthInput, AuthSessionState } from "../types";

@@ -8,6 +8,7 @@ This specification outlines the client-side integration architecture for **Auth.
 
 The adapter delegates credentials and OAuth actions directly to client methods imported from `next-auth/react`.
 
+**`packages/auth-drawer/src/adapters/next-auth.ts`**
 ```typescript
 import { signIn, signOut, useSession } from "next-auth/react";
 import type { AuthAdapter, AuthResult, CredentialAuthInput, OAuthProvider } from "../types";

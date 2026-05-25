@@ -24,7 +24,7 @@ export const AUTH_DRAWER_PROPS: PropDef[] = [
   {
     name: "open",
     type: "boolean",
-    description: "Controlled open state. When defined, the drawer operates in controlled mode, bypassing automatic trigger store bindings.",
+    description: "Controlled open state. When defined, it takes precedence over provider-managed and uncontrolled state.",
   },
   {
     name: "defaultOpen",

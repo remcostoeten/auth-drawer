@@ -2,10 +2,10 @@
 
 import { Analytics } from "@remcostoeten/analytics";
 import { ThemeProvider } from "next-themes";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AuthDrawerLab } from "@/components/debug/auth-drawer-lab";
 import { DocsPage } from "@/components/docs/docs-page";
+import { AppNav } from "@/components/app-nav";
 
 type AppView = "lab" | "docs";
 
@@ -13,23 +13,21 @@ type ShowcaseAppProps = {
   initialView?: AppView;
 };
 
-function getInitialView(defaultView: AppView): AppView {
-  if (typeof window === "undefined") return defaultView;
-
-  const params = new URLSearchParams(window.location.search);
-  const view = params.get("view");
-  if (view === "playground" || view === "lab") return "lab";
-  if (view === "docs") return "docs";
-  if (params.has("showcase") || params.has("config")) return "lab";
-
-  return defaultView;
-}
-
 export function ShowcaseApp({ initialView = "docs" }: ShowcaseAppProps) {
-  const [view, setView] = useState<AppView>(() => getInitialView(initialView));
+  const [view, setView] = useState<AppView>(initialView);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const v = params.get("view");
+    if (v === "playground" || v === "lab") setView("lab");
+    else if (v === "docs") setView("docs");
+    else if (params.has("showcase") || params.has("config")) setView("lab");
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
 
     const params = new URLSearchParams(window.location.search);
     params.set("view", view === "lab" ? "playground" : "docs");
@@ -42,45 +40,15 @@ export function ShowcaseApp({ initialView = "docs" }: ShowcaseAppProps) {
     ) {
       window.history.replaceState(null, "", nextUrl);
     }
-  }, [view]);
+  }, [view, mounted]);
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <Analytics projectId="modal" ingestUrl="https://ingestion.remcostoeten.nl" />
-      <nav className="fixed top-0 right-0 left-0 z-[200] flex h-9 items-center gap-2 border-b border-foreground/8 bg-background/85 px-3">
-        <button
-          type="button"
-          onClick={() => setView("lab")}
-          className={
-            view === "lab"
-              ? "font-display bg-foreground/13 px-2.5 py-1 text-[0.68rem] font-normal text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
-              : "px-2.5 py-1 text-[0.68rem] font-medium text-foreground/48 transition-colors hover:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
-          }
-        >
-          Playground
-        </button>
-        <button
-          type="button"
-          onClick={() => setView("docs")}
-          className={
-            view === "docs"
-              ? "font-display bg-foreground/13 px-2.5 py-1 text-[0.68rem] font-normal text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
-              : "px-2.5 py-1 text-[0.68rem] font-medium text-foreground/48 transition-colors hover:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
-          }
-        >
-          Docs
-        </button>
-        <Link
-          href="/examples"
-          className="px-2.5 py-1 text-[0.68rem] font-medium text-foreground/48 transition-colors hover:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
-        >
-          Examples
-        </Link>
-        <div className="flex-1" />
-        <span className="font-display text-[0.6rem] font-normal uppercase tracking-[0.14em] text-foreground/28">
-          auth-drawer
-        </span>
-      </nav>
+      <Analytics
+        projectId="modal"
+        ingestUrl="https://ingestion.remcostoeten.nl"
+      />
+      <AppNav showSearch={view === "docs"} />
       <main className="scan-overlay pt-9">
         {view === "lab" ? <AuthDrawerLab /> : <DocsPage />}
       </main>
