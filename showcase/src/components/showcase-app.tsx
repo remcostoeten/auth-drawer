@@ -13,8 +13,8 @@ type ShowcaseAppProps = {
   initialView?: AppView;
 };
 
-function getInitialView(fallback: AppView): AppView {
-  if (typeof window === "undefined") return fallback;
+function getInitialView(defaultView: AppView): AppView {
+  if (typeof window === "undefined") return defaultView;
 
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view");
@@ -22,7 +22,7 @@ function getInitialView(fallback: AppView): AppView {
   if (view === "docs") return "docs";
   if (params.has("showcase") || params.has("config")) return "lab";
 
-  return fallback;
+  return defaultView;
 }
 
 export function ShowcaseApp({ initialView = "docs" }: ShowcaseAppProps) {

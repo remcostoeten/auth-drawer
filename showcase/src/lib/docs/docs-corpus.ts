@@ -22,7 +22,7 @@ export const docsCorpus: DocsSnippet[] = [
     id: "handlers",
     title: "Auth handlers and adapters",
     href: "/docs#start",
-    body: "Bring your own auth backend. Pass async handlers through onCredential and onOAuth, or use a typed AuthAdapter that routes signIn, signUp, signOut, OAuth, forgot-password, and reset-password actions directly. Supported adapter factories include Better Auth, Supabase, NextAuth, Clerk, Firebase, Custom JWT, Passport, and the built-in mock adapter.",
+    body: "Use a typed AuthAdapter to route signIn, signUp, signOut, OAuth, forgot-password, and reset-password actions directly. Supported adapter factories include Better Auth, Supabase, NextAuth, Clerk, Firebase, Custom JWT, Passport, and the built-in mock adapter. AuthProvider and useAuth expose the same adapter-backed session state across the app.",
   },
   {
     id: "defaults",

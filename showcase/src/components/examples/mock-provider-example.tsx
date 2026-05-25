@@ -7,6 +7,7 @@ import {
   DEFAULT_CONFIG,
   type AuthConfig,
 } from "@/components/auth/auth-drawer";
+import { createMockAdapter } from "@remcostoeten/auth-drawer/adapters/mock";
 import type { MockAuthProvider } from "@/lib/providers/mock-auth-providers";
 
 type MockProviderExampleProps = {
@@ -46,19 +47,14 @@ function mergeProviderConfig(providerConfig: Partial<AuthConfig>): AuthConfig {
 
 export function MockProviderExample({ provider }: MockProviderExampleProps) {
   const [open, setOpen] = useState(false);
+  const adapter = useMemo(
+    () =>
+      createMockAdapter(),
+    [],
+  );
   const config = useMemo<AuthConfig>(
     () => ({
       ...mergeProviderConfig(provider.config),
-      onCredential: async () => {
-        throw new Error(
-          "This provider showcase is mocked until backend credentials are configured.",
-        );
-      },
-      onOAuth: async () => {
-        throw new Error(
-          "OAuth handoff is mocked. Add provider credentials and callback routes to make it live.",
-        );
-      },
     }),
     [provider],
   );
@@ -138,6 +134,7 @@ export function MockProviderExample({ provider }: MockProviderExampleProps) {
       </div>
 
       <AuthDrawer
+        adapter={adapter}
         config={config}
         open={open}
         hideTrigger

@@ -5,14 +5,14 @@ export const AUTH_DRAWER_PROPS: PropDef[] = [
     name: "adapter",
     type: "AuthAdapter",
     description:
-      "Active auth adapter. When present, the drawer routes sign-in, sign-up, forgot-password, reset-password, and OAuth through the adapter. It also auto-hides unsupported UI (for example: register tab, forgot-password link, OAuth buttons) and can request a name field for registration via adapter.requiresName.",
+      "Active auth adapter. The drawer routes sign-in, sign-up, forgot-password, reset-password, and OAuth through the adapter, auto-hides unsupported UI, and can request a name field for registration via adapter.requiresName.",
   },
   {
     name: "config",
     type: "AuthConfig",
     default: "DEFAULT_CONFIG",
     defaultPreview: "default-config",
-    description: "Visual, behavioural, trigger, and fallback logic configuration.",
+    description: "Visual, behavioural, trigger, and auth routing configuration.",
   },
   {
     name: "hideTrigger",
@@ -96,33 +96,9 @@ export const CONFIG_PROPS: PropDef[] = [
       "pageLoad, click, scrollOpen, state, idle, or custom activation rules.",
   },
   {
-    name: "onCredential",
-    type: "(input: CredentialAuthInput) => Promise<void>",
-    description:
-      "Fallback callback receiving email/password credentials after local validation passes. Ignored when adapter is provided.",
-  },
-  {
-    name: "onOAuth",
-    type: "(provider: OAuthProvider) => Promise<void>",
-    description:
-      "Fallback callback receiving OAuth actions when provider buttons are clicked (ignored if adapter is provided).",
-  },
-  {
-    name: "onForgotPassword",
-    type: "(email: string) => Promise<void>",
-    description:
-      "Fallback callback receiving password reset requests with email input (ignored if adapter is provided).",
-  },
-  {
-    name: "onResetPassword",
-    type: "(input: ResetPasswordInput) => Promise<void>",
-    description:
-      "Fallback callback for setting a new password during a reset flow. Receives { newPassword }.",
-  },
-  {
     name: "normalizeError",
     type: "(error: unknown, context: { provider?: OAuthProvider; fallbackTarget?: AuthUiError[\"target\"] }) => AuthUiError",
     description:
-      "Custom error mapper to standard AuthUiError targets. Used when no adapter is configured or when the adapter does not provide its own normalizer.",
+      "Custom error mapper to standard AuthUiError targets.",
   },
 ];

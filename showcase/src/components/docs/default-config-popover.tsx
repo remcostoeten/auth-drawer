@@ -16,9 +16,7 @@ function formatDefaultConfigPreview() {
     "export const DEFAULT_CONFIG = {",
     `${indentObject("ui", DEFAULT_CONFIG.ui)},`,
     `${indentObject("triggers", DEFAULT_CONFIG.triggers)},`,
-    "  onCredential: async (input) => { /* noop */ },",
-    "  onOAuth: async (provider) => { /* noop */ },",
-    "  onForgotPassword: async (email) => { /* noop */ },",
+    "  adapter: myAuthAdapter,",
     "  normalizeError: (error) => error,",
     "};",
   ].join("\n");

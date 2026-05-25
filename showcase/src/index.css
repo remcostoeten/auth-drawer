@@ -70,11 +70,10 @@
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
+  so this keeps the docs styling explicit and stable.
 
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
+  Any element that depends on a specific border color should declare it
+  directly instead of relying on framework defaults.
 */
 @layer base {
   *,

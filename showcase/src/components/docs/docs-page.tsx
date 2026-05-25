@@ -114,17 +114,16 @@ export function DocsPage() {
               controlling every visual, motion, behavioural, and copy detail.
             </p>
             <p className="mb-6 max-w-2xl text-sm leading-6 text-foreground/58">
-              Bring your own auth backend. You can still use fallback handlers
-              via <code className="font-mono text-[0.72rem]">onCredential</code>{" "}
-              and <code className="font-mono text-[0.72rem]">onOAuth</code>, or
-              plug in a typed <code className="font-mono text-[0.72rem]">AuthAdapter</code>{" "}
+              Plug in a typed <code className="font-mono text-[0.72rem]">AuthAdapter</code>{" "}
               for Better Auth, Supabase, NextAuth, Clerk, Firebase, Custom JWT,
-              Passport, or the built-in mock adapter.
+              Passport, or the built-in mock adapter. The drawer routes
+              credentials, OAuth, forgot-password, reset-password, and session
+              state through the adapter.
             </p>
             <p className="mb-6 max-w-2xl text-sm leading-6 text-foreground/58">
               When an adapter is present, the drawer auto-hides unsupported UI
-              and can request a registration name field only for adapters that
-              need it. The same adapter can also power a global{" "}
+              and shows a registration name field only for adapters that request
+              one. The same adapter can power a global{" "}
               <code className="font-mono text-[0.72rem]">AuthProvider</code>{" "}
               and <code className="font-mono text-[0.72rem]">useAuth</code>{" "}
               hook for app-wide session state.
@@ -150,7 +149,7 @@ export function DocsPage() {
               <p className="mb-2 font-semibold text-foreground/72">
                 Adapter-driven registration
               </p>
-              <p>
+                <p>
                 Some adapters request a name field during sign-up by setting{" "}
                 <code className="font-mono text-[0.72rem]">requiresName</code>.
                 In that case, the drawer shows the field only in register mode.
@@ -252,8 +251,9 @@ export function DocsPage() {
                 <div className="rounded-[8px] border border-foreground/10 bg-foreground/[0.03] p-4 text-xs leading-6 text-foreground/58">
                   <p className="mb-2">
                     Use <code className="font-mono text-[0.72rem]">AuthProvider</code>{" "}
-                    when other parts of the app need access to the current user
-                    or drawer controls through <code className="font-mono text-[0.72rem]">useAuth</code>.
+                    when other parts of the app need the current user, session,
+                    or drawer controls through{" "}
+                    <code className="font-mono text-[0.72rem]">useAuth</code>.
                   </p>
                   <pre className="overflow-x-auto rounded-[6px] bg-background p-3 text-[0.7rem] text-foreground/72">
 {`import { AuthProvider, useAuth } from "@remcostoeten/auth-drawer";

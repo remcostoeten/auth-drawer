@@ -6,6 +6,7 @@ import {
 } from "@remcostoeten/auth-drawer";
 import type { ComponentType } from "react";
 import type {
+  AuthAdapter,
   AuthConfig,
   OAuthProvider,
   ResolvedAuthConfig,
@@ -22,6 +23,7 @@ export {
 
 export type AuthDrawerProps = {
   config?: AuthConfig;
+  adapter?: AuthAdapter;
   className?: string;
   hideTrigger?: boolean;
   open?: boolean;

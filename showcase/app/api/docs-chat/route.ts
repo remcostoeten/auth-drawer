@@ -32,7 +32,7 @@ type DocsChatRequest = {
 };
 
 declare global {
-  // Development-safe fallback limiter. Production should swap this for Redis,
+  // Development-safe rate limiter. Production should swap this for Redis,
   // Durable Objects, or another shared atomic store.
   var __docsChatRateLimit: RateLimitStore | undefined;
 }

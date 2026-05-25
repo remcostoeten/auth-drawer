@@ -85,9 +85,8 @@ export function OAuthDocsSection({ onPreviewDefault, onPreviewOverflow }: Props)
       <p className="max-w-2xl text-sm leading-6 text-foreground/58">
         Enable built-in providers via{" "}
         <code className="font-mono text-[0.72rem]">ui.auth.providers</code>.
-        Array order is display order. Wire{" "}
-        <code className="font-mono text-[0.72rem]">onOAuth</code> to your auth
-        backend — the drawer only renders buttons and icons.
+        Array order is display order. The adapter handles provider routing;
+        the drawer only renders buttons, overflow, and labels.
       </p>
 
       <div className="mt-5">

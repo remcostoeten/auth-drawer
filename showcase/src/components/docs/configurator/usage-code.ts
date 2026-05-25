@@ -126,6 +126,7 @@ export function buildUsageCode({
       : null;
 
   return `<AuthDrawer
+  adapter={authAdapter}
   config={{
     ui: {
       presentation: { variant: "${mode}" },
@@ -150,8 +151,6 @@ export function buildUsageCode({
         },
       },
     },
-    onCredential: async (input) => signIn(input),
-    onOAuth: async (provider) => signInWithOAuth(provider),
   }}
 />`;
 }

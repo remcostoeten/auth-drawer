@@ -285,15 +285,6 @@ export function buildConfig({
       motion: { ...motion, displayMode: mode },
       visual: { backdrop },
     },
-    onCredential: async () => {
-      await new Promise((r) => setTimeout(r, 450));
-    },
-    onOAuth: async () => {
-      await new Promise((r) => setTimeout(r, 450));
-    },
-    onForgotPassword: async () => {
-      await new Promise((r) => setTimeout(r, 450));
-    },
   };
 }
 
