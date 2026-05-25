@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import "./windows-xp-scene.css";
 
 type Props = {
   onOpenAuth: () => void;

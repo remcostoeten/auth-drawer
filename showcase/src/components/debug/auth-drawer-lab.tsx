@@ -63,11 +63,12 @@ type LabAuthFlags = Required<
     AuthConfigGroup,
     | "allowRegister"
     | "showRememberMe"
-    | "initialMode"
     | "showForgotPassword"
     | "showLivePasswordMatch"
   >
->;
+> & {
+  initialMode: "login" | "register";
+};
 type LabBackdrop = Required<AuthBackdropConfig> & {
   gradient: Required<NonNullable<AuthBackdropConfig["gradient"]>>;
 };
@@ -159,7 +160,7 @@ function sanitizeAuthFlags(value: unknown): LabAuthFlags | undefined {
       : DEFAULT_CONFIG.ui.auth.showRememberMe,
     initialMode: isOneOf(value.initialMode, AUTH_MODES)
       ? value.initialMode
-      : DEFAULT_CONFIG.ui.auth.initialMode,
+      : "login",
     showForgotPassword: isBoolean(value.showForgotPassword)
       ? value.showForgotPassword
       : DEFAULT_CONFIG.ui.auth.showForgotPassword,
@@ -280,7 +281,7 @@ function generateUsageCode(config: AuthConfig): string {
 
 function PropUsage({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
@@ -1058,7 +1059,7 @@ export function AuthDrawerLab() {
     allowRegister: initialUrlState.authFlags?.allowRegister ?? DEFAULT_CONFIG.ui.auth.allowRegister,
     showRememberMe:
       initialUrlState.authFlags?.showRememberMe ?? DEFAULT_CONFIG.ui.auth.showRememberMe,
-    initialMode: initialUrlState.authFlags?.initialMode ?? DEFAULT_CONFIG.ui.auth.initialMode,
+    initialMode: initialUrlState.authFlags?.initialMode ?? "login",
     showForgotPassword:
       initialUrlState.authFlags?.showForgotPassword ?? DEFAULT_CONFIG.ui.auth.showForgotPassword,
     showLivePasswordMatch:

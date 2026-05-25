@@ -1,13 +1,20 @@
+"use client";
+
 import { Analytics } from "@remcostoeten/analytics";
 import { ThemeProvider } from "next-themes";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AuthDrawerLab } from "@/components/debug/auth-drawer-lab";
 import { DocsPage } from "@/components/docs/docs-page";
 
 type AppView = "lab" | "docs";
 
-function getInitialView(): AppView {
-  if (typeof window === "undefined") return "docs";
+type ShowcaseAppProps = {
+  initialView?: AppView;
+};
+
+function getInitialView(fallback: AppView): AppView {
+  if (typeof window === "undefined") return fallback;
 
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view");
@@ -15,11 +22,11 @@ function getInitialView(): AppView {
   if (view === "docs") return "docs";
   if (params.has("showcase") || params.has("config")) return "lab";
 
-  return "docs";
+  return fallback;
 }
 
-const App = () => {
-  const [view, setView] = useState<AppView>(() => getInitialView());
+export function ShowcaseApp({ initialView = "docs" }: ShowcaseAppProps) {
+  const [view, setView] = useState<AppView>(() => getInitialView(initialView));
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -29,7 +36,10 @@ const App = () => {
     const search = params.toString();
     const nextUrl = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`;
 
-    if (nextUrl !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+    if (
+      nextUrl !==
+      `${window.location.pathname}${window.location.search}${window.location.hash}`
+    ) {
       window.history.replaceState(null, "", nextUrl);
     }
   }, [view]);
@@ -60,14 +70,20 @@ const App = () => {
         >
           Docs
         </button>
+        <Link
+          href="/examples"
+          className="px-2.5 py-1 text-[0.68rem] font-medium text-foreground/48 transition-colors hover:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
+        >
+          Examples
+        </Link>
         <div className="flex-1" />
         <span className="font-display text-[0.6rem] font-normal uppercase tracking-[0.14em] text-foreground/28">
           auth-drawer
         </span>
       </nav>
-      <main className="scan-overlay pt-9">{view === "lab" ? <AuthDrawerLab /> : <DocsPage />}</main>
+      <main className="scan-overlay pt-9">
+        {view === "lab" ? <AuthDrawerLab /> : <DocsPage />}
+      </main>
     </ThemeProvider>
   );
-};
-
-export default App;
+}

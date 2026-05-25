@@ -1,3 +1,5 @@
+"use client";
+
 import { Play, SlidersHorizontal } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { CodeBlock } from "../code/server-code-block";
@@ -14,7 +16,7 @@ import {
 import { Configurator } from "./configurator/configurator";
 import { OAUTH_OVERFLOW_PROVIDERS } from "./configurator/constants";
 import { buildConfig, DEFAULT_USAGE_CODE, initBackdrop, initCopy, initMotion } from "./configurator/helpers";
-import { DefaultConfigPopover } from "./default-config-popover";
+import { DocsAssistant } from "./docs-assistant";
 import { DocsSidebarBrand, DocsSidebarNav } from "./docs-sidebar-nav";
 import { OAuthDocsSection } from "./oauth-docs-section";
 import { TriggersDocsSection } from "./triggers-docs-section";
@@ -103,6 +105,7 @@ export function DocsPage() {
 
         <main className="min-w-0">
           <Section id="start" title="Start" eyebrow="Introduction">
+            <DocsAssistant />
             <p className="mb-4 max-w-2xl text-sm leading-6 text-foreground/58">
               <strong className="text-foreground">Auth Drawer</strong> is a
               configurable, animated authentication surface for React. It ships

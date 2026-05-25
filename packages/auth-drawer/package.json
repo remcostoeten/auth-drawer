@@ -19,7 +19,7 @@
     "**/*.css"
   ],
   "scripts": {
-    "build": "tailwindcss -i ./styles/build.css -o ./styles/bundle.css --minify && vite build && node ./scripts/stamp-css-import.mjs",
+    "build": "NODE_ENV=production tailwindcss -i ./styles/build.css -o ./styles/bundle.css --minify && NODE_ENV=production vite build && node ./scripts/stamp-css-import.mjs",
     "dev": "vite build --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -38,14 +38,14 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.0",
     "@testing-library/jest-dom": "^6.9.1",
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "framer-motion": "^12.38.0",
     "jsdom": "^29.1.1",
     "lucide-react": "^0.462.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "rolldown-vite": "^7.3.1",
     "tailwindcss": "^4.3.0",
     "typescript": "^5.8.3",

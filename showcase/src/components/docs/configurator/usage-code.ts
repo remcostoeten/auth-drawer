@@ -1,9 +1,7 @@
 import {
   type AuthConfigGroup,
-  type AuthOAuthOverflowConfig,
   type DrawerMode,
   type MotionSettings,
-  type OAuthProvider,
   type ResolvedAuthCopyConfig,
 } from "@/components/auth/auth-drawer";
 import {

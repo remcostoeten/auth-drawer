@@ -156,9 +156,9 @@ function TriggerExampleCard({
     <article className="overflow-hidden rounded-[8px] border border-foreground/10 bg-foreground/[0.02]">
       <div className="border-b border-foreground/10 px-4 py-3.5">
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-        <p className="mt-1 max-w-xl text-sm leading-6 text-foreground/58">
+        <div className="mt-1 max-w-xl text-sm leading-6 text-foreground/58">
           {description}
-        </p>
+        </div>
       </div>
       <div className="bg-[#0b0b0c]/40 px-1 pb-1 pt-0">
         <CodeBlock lang="tsx" embedded>

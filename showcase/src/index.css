@@ -1,4 +1,6 @@
 @import "./styles/tokens.css" layer(base);
+@import "./components/debug/scenes/medium-paywall/medium-paywall-scene.css";
+@import "./components/debug/scenes/windows-xp/windows-xp-scene.css";
 
 @import "tailwindcss";
 
