@@ -4,13 +4,32 @@ import { createAdapterError } from "../errors";
 
 type SupabaseClientLike = {
   auth: {
-    signInWithPassword: (input: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
-    signUp: (input: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
+    signInWithPassword: (input: {
+      email: string;
+      password: string;
+    }) => Promise<{ data?: unknown; error?: unknown }>;
+    signUp: (input: {
+      email: string;
+      password: string;
+      options?: {
+        data?: Record<string, unknown>;
+        emailRedirectTo?: string;
+      };
+    }) => Promise<{ data?: unknown; error?: unknown }>;
     signOut: () => Promise<{ error?: unknown }>;
-    resetPasswordForEmail: (email: string, options?: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
-    updateUser: (input: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
-    signInWithOAuth: (input: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
-    signInWithOtp?: (input: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
+    resetPasswordForEmail: (
+      email: string,
+      options?: { redirectTo?: string },
+    ) => Promise<{ data?: unknown; error?: unknown }>;
+    updateUser: (input: { password: string }) => Promise<{ data?: unknown; error?: unknown }>;
+    signInWithOAuth: (input: {
+      provider: string;
+      options?: { redirectTo?: string };
+    }) => Promise<{ data?: unknown; error?: unknown }>;
+    signInWithOtp?: (input: {
+      email: string;
+      options?: { emailRedirectTo?: string };
+    }) => Promise<{ data?: unknown; error?: unknown }>;
     getSession: () => Promise<{ data: { session: any | null }; error?: unknown }>;
     onAuthStateChange: (
       callback: (event: string, session: any | null) => void,
@@ -18,8 +37,8 @@ type SupabaseClientLike = {
   };
 };
 
-export interface SupabaseAdapterOptions {
-  supabase: SupabaseClientLike;
+export interface SupabaseAdapterOptions<TClient = unknown> {
+  supabase: TClient;
   redirectTo?: string;
   providers?: OAuthProvider[];
   requireName?: boolean;
@@ -59,17 +78,18 @@ function result(data: unknown, error: unknown): AuthResult {
 
 export function createSupabaseAdapter(options: SupabaseAdapterOptions): AuthAdapter {
   const { supabase, redirectTo = typeof window !== "undefined" ? window.location.origin : "", passwordResetRedirectTo } = options;
+  const auth = (supabase as SupabaseClientLike).auth;
 
   return {
     id: "supabase",
     providers: options.providers ?? ["github", "google"],
     requiresName: options.requireName,
     async signIn(input) {
-      const response = await supabase.auth.signInWithPassword({ email: input.email, password: input.password });
+      const response = await auth.signInWithPassword({ email: input.email, password: input.password });
       return result(response.data, response.error);
     },
     async signUp(input) {
-      const response = await supabase.auth.signUp({
+      const response = await auth.signUp({
         email: input.email,
         password: input.password,
         options: { data: { name: input.name }, emailRedirectTo: redirectTo },
@@ -77,21 +97,21 @@ export function createSupabaseAdapter(options: SupabaseAdapterOptions): AuthAdap
       return result(response.data, response.error);
     },
     async signOut() {
-      const response = await supabase.auth.signOut();
+      const response = await auth.signOut();
       return result(null, response.error);
     },
     async requestPasswordReset(email) {
-      const response = await supabase.auth.resetPasswordForEmail(email, {
+      const response = await auth.resetPasswordForEmail(email, {
         redirectTo: passwordResetRedirectTo ?? `${window.location.origin}/reset-password`,
       });
       return result(response.data, response.error);
     },
     async resetPassword({ newPassword }) {
-      const response = await supabase.auth.updateUser({ password: newPassword });
+      const response = await auth.updateUser({ password: newPassword });
       return result(response.data, response.error);
     },
     async signInWithOAuth(provider) {
-      const response = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo } });
+      const response = await auth.signInWithOAuth({ provider, options: { redirectTo } });
       return result(response.data, response.error);
     },
     useSession() {
@@ -100,13 +120,13 @@ export function createSupabaseAdapter(options: SupabaseAdapterOptions): AuthAdap
       const [error, setError] = useState<unknown>(null);
 
       useEffect(() => {
-        supabase.auth.getSession().then(({ data, error: sessionError }) => {
+        auth.getSession().then(({ data, error: sessionError }) => {
           if (sessionError) setError(sessionError);
           setSessionState(data.session ? mapSession(data.session) : null);
           setIsPending(false);
         });
 
-        const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data } = auth.onAuthStateChange((_event, session) => {
           setSessionState(session ? mapSession(session) : null);
           setIsPending(false);
         });
@@ -116,11 +136,11 @@ export function createSupabaseAdapter(options: SupabaseAdapterOptions): AuthAdap
 
       return { data: sessionState, isPending, error };
     },
-    features: supabase.auth.signInWithOtp
+    features: auth.signInWithOtp
       ? {
           magicLink: {
             signIn: async (email) => {
-              const response = await supabase.auth.signInWithOtp?.({
+              const response = await auth.signInWithOtp?.({
                 email,
                 options: { emailRedirectTo: redirectTo },
               });

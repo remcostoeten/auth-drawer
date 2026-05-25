@@ -17,10 +17,15 @@ export const DEFAULT_USAGE_CODE = `import { AuthDrawer } from "@remcostoeten/aut
 
 export function App() {
   return (
-  // todo shape to api
-  <AuthDrawer
-      adapter={someReffToYourAuthProvider} // This is explained later on how to couple with your authentication service
-      config={} // the entire modal ui, behaviour and settings can be configured in this object, when left out you'll get the default UI as shown above 'Open default drawer'
+    <AuthDrawer
+      adapter={authAdapter}
+      config={{
+        ui: {
+          auth: {
+            providers: ["github", "google"],
+          },
+        },
+      }}
     />
   );
 }`;

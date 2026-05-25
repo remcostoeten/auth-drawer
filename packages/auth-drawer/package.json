@@ -51,7 +51,7 @@
     "**/*.css"
   ],
   "scripts": {
-    "build": "NODE_ENV=production tailwindcss -i ./styles/build.css -o ./styles/bundle.css --minify && NODE_ENV=production vite build && node ./scripts/stamp-css-import.mjs",
+    "build": "NODE_ENV=production tailwindcss -i ./styles/build.css -o ./styles/bundle.css --minify && NODE_ENV=production vite build && tsc -p tsconfig.build.json && node ./scripts/stamp-css-import.mjs",
     "dev": "vite build --watch",
     "test": "vitest run",
     "test:watch": "vitest",

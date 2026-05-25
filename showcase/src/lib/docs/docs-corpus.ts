@@ -20,9 +20,9 @@ export const docsCorpus: DocsSnippet[] = [
   },
   {
     id: "handlers",
-    title: "Auth handlers",
+    title: "Auth handlers and adapters",
     href: "/docs#start",
-    body: "Bring your own auth backend. Pass async handlers through onCredential and onOAuth. The package can work with Supabase, Better Auth, Lucia, Auth.js, Clerk, custom sessions, or another backend.",
+    body: "Bring your own auth backend. Pass async handlers through onCredential and onOAuth, or use a typed AuthAdapter that routes signIn, signUp, signOut, OAuth, forgot-password, and reset-password actions directly. Supported adapter factories include Better Auth, Supabase, NextAuth, Clerk, Firebase, Custom JWT, Passport, and the built-in mock adapter.",
   },
   {
     id: "defaults",
@@ -52,7 +52,13 @@ export const docsCorpus: DocsSnippet[] = [
     id: "api-auth-drawer",
     title: "AuthDrawer props",
     href: "/docs#api",
-    body: "AuthDrawer top-level props include config, open, defaultOpen, onOpenChange, hideTrigger, onCredential, and onOAuth. Most fields are optional.",
+    body: "AuthDrawer top-level props include config, adapter, open, defaultOpen, onOpenChange, hideTrigger, onSuccess, and onError. When adapter is present, unsupported UI is hidden automatically and registration can request a name field via adapter.requiresName.",
+  },
+  {
+    id: "api-auth-provider",
+    title: "AuthProvider",
+    href: "/docs#api",
+    body: "AuthProvider exposes global auth state and drawer controls through useAuth. It calls adapter.useSession internally and shares user, session, loading, and signOut behavior across the app.",
   },
   {
     id: "api-auth",

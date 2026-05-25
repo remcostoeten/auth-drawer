@@ -3,18 +3,26 @@ import { createAdapterError } from "../errors";
 
 type ClerkClient = {
   signIn?: {
-    create?: (input: Record<string, unknown>) => Promise<any>;
-    authenticateWithRedirect?: (input: Record<string, unknown>) => Promise<unknown>;
+    create?: (input: { identifier: string; password: string }) => Promise<any>;
+    authenticateWithRedirect?: (input: {
+      strategy: string;
+      redirectUrl: string;
+      redirectUrlComplete: string;
+    }) => Promise<unknown>;
   };
   signUp?: {
-    create?: (input: Record<string, unknown>) => Promise<any>;
+    create?: (input: {
+      emailAddress: string;
+      password: string;
+      firstName?: string;
+    }) => Promise<any>;
   };
   signOut?: () => Promise<unknown>;
   useUser?: () => { user?: any; isLoaded?: boolean };
 };
 
-export interface ClerkAdapterOptions {
-  client: ClerkClient;
+export interface ClerkAdapterOptions<TClient = unknown> {
+  client: TClient;
   callbackURL?: string;
   providers?: OAuthProvider[];
   requireName?: boolean;
@@ -40,6 +48,7 @@ function mapClerkError(error: unknown) {
 
 export function createClerkAdapter(options: ClerkAdapterOptions): AuthAdapter {
   const { client, callbackURL = "/", providers = ["github", "google"] } = options;
+  const clerk = client as ClerkClient;
 
   return {
     id: "clerk",
@@ -47,7 +56,7 @@ export function createClerkAdapter(options: ClerkAdapterOptions): AuthAdapter {
     requiresName: options.requireName,
     async signIn(input) {
       try {
-        const data = await client.signIn?.create?.({
+        const data = await clerk.signIn?.create?.({
           identifier: input.email,
           password: input.password,
         });
@@ -58,7 +67,7 @@ export function createClerkAdapter(options: ClerkAdapterOptions): AuthAdapter {
     },
     async signUp(input) {
       try {
-        const data = await client.signUp?.create?.({
+        const data = await clerk.signUp?.create?.({
           emailAddress: input.email,
           password: input.password,
           firstName: input.name,
@@ -69,12 +78,12 @@ export function createClerkAdapter(options: ClerkAdapterOptions): AuthAdapter {
       }
     },
     async signOut() {
-      await client.signOut?.();
+      await clerk.signOut?.();
       return { success: true };
     },
     async signInWithOAuth(provider) {
       try {
-        await client.signIn?.authenticateWithRedirect?.({
+        await clerk.signIn?.authenticateWithRedirect?.({
           strategy: `oauth_${provider}`,
           redirectUrl: callbackURL,
           redirectUrlComplete: callbackURL,
@@ -84,9 +93,9 @@ export function createClerkAdapter(options: ClerkAdapterOptions): AuthAdapter {
         return { success: false, error: mapClerkError(error) };
       }
     },
-    useSession: client.useUser
+    useSession: clerk.useUser
       ? () => {
-          const { user, isLoaded } = client.useUser?.() ?? {};
+          const { user, isLoaded } = clerk.useUser?.() ?? {};
           return {
             data: user
               ? {

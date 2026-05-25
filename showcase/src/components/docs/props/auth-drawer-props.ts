@@ -5,7 +5,7 @@ export const AUTH_DRAWER_PROPS: PropDef[] = [
     name: "adapter",
     type: "AuthAdapter",
     description:
-      "Active auth adapter client (Supabase, Better Auth, Clerk, NextAuth, Firebase, etc.). Connects client handlers and reactive hooks directly. Dynamically overrides layout settings (e.g. hides the Register tab if adapter.signUp is undefined).",
+      "Active auth adapter. When present, the drawer routes sign-in, sign-up, forgot-password, reset-password, and OAuth through the adapter. It also auto-hides unsupported UI (for example: register tab, forgot-password link, OAuth buttons) and can request a name field for registration via adapter.requiresName.",
   },
   {
     name: "config",
@@ -49,7 +49,7 @@ export const AUTH_DRAWER_PROPS: PropDef[] = [
   },
   {
     name: "onError",
-    type: "(error: AuthUiError, action: string) => void",
+    type: '(error: AuthUiError, action: "signIn" | "signUp" | "signOut" | "oauth") => void',
     description: "Callback fired when any auth action fails. Useful for error logging or custom analytics.",
   },
 ];
@@ -99,7 +99,7 @@ export const CONFIG_PROPS: PropDef[] = [
     name: "onCredential",
     type: "(input: CredentialAuthInput) => Promise<void>",
     description:
-      "Fallback callback receiving email/password credentials after local validation passes (ignored if adapter is provided).",
+      "Fallback callback receiving email/password credentials after local validation passes. Ignored when adapter is provided.",
   },
   {
     name: "onOAuth",
@@ -121,8 +121,8 @@ export const CONFIG_PROPS: PropDef[] = [
   },
   {
     name: "normalizeError",
-    type: "(error: unknown, context: { provider?: OAuthProvider }) => AuthUiError",
+    type: "(error: unknown, context: { provider?: OAuthProvider; fallbackTarget?: AuthUiError[\"target\"] }) => AuthUiError",
     description:
-      "Custom error mapper to standard AuthUiError targets. Fallback utilized when no adapter is configured.",
+      "Custom error mapper to standard AuthUiError targets. Used when no adapter is configured or when the adapter does not provide its own normalizer.",
   },
 ];

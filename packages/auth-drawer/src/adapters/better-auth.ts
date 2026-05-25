@@ -4,23 +4,47 @@ import { createAdapterError } from "../errors";
 type BetterAuthClient = {
   options?: { socialProviders?: OAuthProvider[] };
   signIn?: {
-    email?: (input: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
-    social?: (input: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
-    magicLink?: (input: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
-    emailOtp?: (input: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
+    email?: (input: {
+      email: string;
+      password: string;
+      rememberMe?: boolean;
+      callbackURL?: string;
+    }) => Promise<{ data?: unknown; error?: unknown }>;
+    social?: (input: {
+      provider: string;
+      callbackURL?: string;
+      newUserCallbackURL?: string;
+    }) => Promise<{ data?: unknown; error?: unknown }>;
+    magicLink?: (input: {
+      email: string;
+      callbackURL?: string;
+      newUserCallbackURL?: string;
+    }) => Promise<{ data?: unknown; error?: unknown }>;
+    emailOtp?: (input: {
+      email: string;
+      otp: string;
+      callbackURL?: string;
+    }) => Promise<{ data?: unknown; error?: unknown }>;
     anonymous?: () => Promise<{ data?: unknown; error?: unknown }>;
   };
   signUp?: {
-    email?: (input: Record<string, unknown>) => Promise<{ data?: unknown; error?: unknown }>;
+    email?: (input: {
+      email: string;
+      password: string;
+      name: string;
+      callbackURL?: string;
+    }) => Promise<{ data?: unknown; error?: unknown }>;
   };
   signOut?: () => Promise<{ data?: unknown; error?: unknown }>;
-  requestPasswordReset?: (
-    input: Record<string, unknown>,
-  ) => Promise<{ data?: unknown; error?: unknown }>;
+  requestPasswordReset?: (input: {
+    email: string;
+    redirectTo?: string;
+  }) => Promise<{ data?: unknown; error?: unknown }>;
   emailOtp?: {
-    sendVerificationOtp?: (
-      input: Record<string, unknown>,
-    ) => Promise<{ data?: unknown; error?: unknown }>;
+    sendVerificationOtp?: (input: {
+      email: string;
+      type: "sign-in";
+    }) => Promise<{ data?: unknown; error?: unknown }>;
   };
   useSession?: () => { data?: any; isPending?: boolean; error?: unknown };
 };
@@ -139,7 +163,11 @@ export function createBetterAuthAdapter(options: BetterAuthAdapterOptions): Auth
   if (typeof client.signIn?.magicLink === "function") {
     features.magicLink = {
       signIn: async (email) => {
-        const response = await client.signIn?.magicLink?.({ email, callbackURL });
+        const response = await client.signIn?.magicLink?.({
+          email,
+          callbackURL,
+          newUserCallbackURL,
+        });
         return result(response?.data, response?.error);
       },
     };
