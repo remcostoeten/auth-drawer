@@ -153,7 +153,7 @@ export function DocsPage() {
         </aside>
 
         <main className="min-w-0">
-          <div className="mb-4 flex justify-start md:hidden">
+          <div className="sticky top-9 z-[180] -mx-4 mb-4 flex justify-start border-b border-foreground/8 bg-background/95 px-4 py-2 backdrop-blur md:hidden sm:-mx-6 sm:px-6">
             <button
               ref={mobileTocTriggerRef}
               type="button"
@@ -171,7 +171,7 @@ export function DocsPage() {
           {mobileTocOpen ? (
             <div
               id="mobile-docs-toc"
-              className="fixed inset-0 z-[260] md:hidden"
+              className="fixed inset-x-0 top-9 bottom-0 z-[260] md:hidden"
               role="dialog"
               aria-modal="true"
               aria-label="Table of contents"

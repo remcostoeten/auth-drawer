@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import type { AuthAdapter, AuthResult, AuthSessionState, OAuthProvider } from "../types";
 import { createAdapterError } from "../errors";
+import { createRevalidatingSession } from "./revalidating-session";
 
 export interface CustomJwtAdapterOptions {
   baseUrl?: string;
@@ -98,6 +98,18 @@ export function createCustomJwtAdapter(options: CustomJwtAdapterOptions = {}): A
     });
   };
 
+  const { notifySession, useSession } = createRevalidatingSession(async () => {
+    try {
+      const response = await authFetch(profileUrl);
+      if (response.status === 401) return { data: null, error: null };
+      if (!response.ok) throw await response.json().catch(() => response);
+      const profile = (await response.json()) as ApiResult;
+      return { data: mapProfile(profile), error: null };
+    } catch (error) {
+      return { data: null, error };
+    }
+  });
+
   return {
     id: "custom-jwt",
     providers: options.providers ?? [],
@@ -113,6 +125,7 @@ export function createCustomJwtAdapter(options: CustomJwtAdapterOptions = {}): A
         if (result.success && result.data?.token && typeof window !== "undefined") {
           localStorage.setItem(tokenStorageKey, result.data.token);
         }
+        if (result.success) notifySession();
         return result;
       } catch (error) {
         return { success: false, error: mapCustomJwtError(error) };
@@ -129,6 +142,7 @@ export function createCustomJwtAdapter(options: CustomJwtAdapterOptions = {}): A
         if (result.success && result.data?.token && typeof window !== "undefined") {
           localStorage.setItem(tokenStorageKey, result.data.token);
         }
+        if (result.success) notifySession();
         return result;
       } catch (error) {
         return { success: false, error: mapCustomJwtError(error) };
@@ -139,6 +153,7 @@ export function createCustomJwtAdapter(options: CustomJwtAdapterOptions = {}): A
         await authFetch(logoutUrl, { method: "POST" });
       } finally {
         if (typeof window !== "undefined") localStorage.removeItem(tokenStorageKey);
+        notifySession();
       }
       return { success: true };
     },
@@ -175,25 +190,7 @@ export function createCustomJwtAdapter(options: CustomJwtAdapterOptions = {}): A
           return { success: true };
         }
       : undefined,
-    useSession() {
-      const [data, setData] = useState<AuthSessionState | null>(null);
-      const [isPending, setIsPending] = useState(true);
-      const [error, setError] = useState<unknown>(null);
-
-      useEffect(() => {
-        authFetch(profileUrl)
-          .then(async (response) => {
-            if (response.status === 401) return null;
-            if (!response.ok) throw await response.json().catch(() => response);
-            return (await response.json()) as ApiResult;
-          })
-          .then((profile) => setData(mapProfile(profile)))
-          .catch(setError)
-          .finally(() => setIsPending(false));
-      }, []);
-
-      return { data, isPending, error };
-    },
+    useSession,
     normalizeError: mapCustomJwtError,
   };
 }

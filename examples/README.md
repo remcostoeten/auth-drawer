@@ -5,6 +5,7 @@ Runnable reference apps that mirror the setup guides in the docs.
 | Example | Stack | Docs |
 | --- | --- | --- |
 | [better-auth-nextjs](./better-auth-nextjs) | Next.js 16, Better Auth, Drizzle, PostgreSQL | [SDK adapters → Better Auth](https://auth-drawer.remcostoeten.nl/docs#sdk-better-auth) |
+| [custom-jwt-nextjs](./custom-jwt-nextjs) | Next.js 16, custom JWT REST API, jose, Drizzle, PostgreSQL | [SDK adapters → Custom JWT](https://auth-drawer.remcostoeten.nl/docs#sdk-custom-jwt) |
 
 ## Provider-open behavior
 

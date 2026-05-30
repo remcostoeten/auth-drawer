@@ -5,7 +5,8 @@
     "workspaces": [
         "packages/*",
         "showcase",
-        "examples/*"
+        "examples/*",
+        "!examples/custom-jwt-nextjs"
     ],
     "scripts": {
         "build": "turbo run build",
@@ -16,7 +17,8 @@
         "test": "turbo run test",
         "typecheck": "turbo run typecheck",
         "publish:auth-drawer": "npm publish -w @remcostoeten/auth-drawer --access public",
-        "example:better-auth": "cd examples/better-auth-nextjs && bun run dev:all"
+        "example:better-auth": "cd examples/better-auth-nextjs && bun run dev:all",
+        "example:custom-jwt": "cd examples/custom-jwt-nextjs && bun install && bun run dev:all"
     },
     "devDependencies": {
         "turbo": "^2.5.4"
