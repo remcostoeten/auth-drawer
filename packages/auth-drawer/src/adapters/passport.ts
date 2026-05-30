@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import type { AuthAdapter, AuthResult, AuthSessionState } from "../types";
 import { createAdapterError } from "../errors";
+import { createRevalidatingSession } from "./revalidating-session";
 
 export interface PassportAdapterOptions {
   loginUrl?: string;
@@ -50,12 +50,24 @@ export function createPassportAdapter(options: PassportAdapterOptions = {}): Aut
     fetcher = fetch,
   } = options;
 
+  const { notifySession, useSession } = createRevalidatingSession(async () => {
+    try {
+      const response = await fetcher(userProfileUrl, { credentials: "include" });
+      if (response.status === 401) return { data: null, error: null };
+      if (!response.ok) throw new Error("Profile request failed");
+      const user = await response.json();
+      return { data: mapUser(user), error: null };
+    } catch (error) {
+      return { data: null, error };
+    }
+  });
+
   return {
     id: "passport",
     requiresName: options.requireName,
     async signIn({ email, password }) {
       try {
-        return await parseResponse(
+        const result = await parseResponse(
           await fetcher(loginUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -63,13 +75,15 @@ export function createPassportAdapter(options: PassportAdapterOptions = {}): Aut
             body: JSON.stringify({ username: email, password }),
           }),
         );
+        if (result.success) notifySession();
+        return result;
       } catch (error) {
         return { success: false, error: mapPassportError(error) };
       }
     },
     async signUp({ email, password, name }) {
       try {
-        return await parseResponse(
+        const result = await parseResponse(
           await fetcher(registerUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -77,33 +91,18 @@ export function createPassportAdapter(options: PassportAdapterOptions = {}): Aut
             body: JSON.stringify({ username: email, password, name }),
           }),
         );
+        if (result.success) notifySession();
+        return result;
       } catch (error) {
         return { success: false, error: mapPassportError(error) };
       }
     },
     async signOut() {
       await fetcher(logoutUrl, { method: "POST", credentials: "include" });
+      notifySession();
       return { success: true };
     },
-    useSession() {
-      const [data, setData] = useState<AuthSessionState | null>(null);
-      const [isPending, setIsPending] = useState(true);
-      const [error, setError] = useState<unknown>(null);
-
-      useEffect(() => {
-        fetcher(userProfileUrl, { credentials: "include" })
-          .then((response) => {
-            if (response.status === 401) return null;
-            if (!response.ok) throw new Error("Profile request failed");
-            return response.json();
-          })
-          .then((user) => setData(mapUser(user)))
-          .catch(setError)
-          .finally(() => setIsPending(false));
-      }, []);
-
-      return { data, isPending, error };
-    },
+    useSession,
     normalizeError: mapPassportError,
   };
 }

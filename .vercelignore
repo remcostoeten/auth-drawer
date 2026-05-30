@@ -1,0 +1,20 @@
+# Build caches (huge, never needed in the upload — Vercel rebuilds)
+.turbo
+node_modules
+**/node_modules
+dist
+**/dist
+.next
+**/.next
+
+# VCS / local
+.git
+*.log
+
+# Repo bits not needed to build the deployed app
+specs
+skills
+docs/internal
+coverage
+playwright-report
+test-results
