@@ -1,6 +1,6 @@
 {
   "name": "@remcostoeten/auth-drawer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Configurable React auth drawer and modal with OAuth, triggers, motion, and typed provider adapters.",
   "license": "MIT",
   "author": "Remco Stoeten",
@@ -74,6 +74,7 @@
     "dist",
     "styles",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "sideEffects": [

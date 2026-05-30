@@ -1,7 +1,7 @@
 import "../styles/bundle.css";
 
 export { AuthDrawer } from "./ui/auth-drawer";
-export { AuthProvider, useAuth } from "./ui/auth-provider";
+export { AuthProvider, useAuth, useOptionalAuth } from "./ui/auth-provider";
 export { DEFAULT_CONFIG } from "./config";
 export { createAdapter } from "./create-adapter";
 export {
