@@ -1,18 +1,22 @@
 # Auth Drawer API
 
-This is the current public component and prop structure.
+This is the current public component and prop structure for `@remcostoeten/auth-drawer`.
+See [CHANGELOG.md](./packages/auth-drawer/CHANGELOG.md) for version history.
 
 ## Entry Points
 
-The local public wrapper is:
+Everything is imported directly from the published package:
 
 ```ts
 import {
   AuthDrawer,
+  AuthProvider,
+  useAuth,
+  useOptionalAuth,
   DEFAULT_CONFIG,
   createAuthTriggerStore,
   useScrollOpenTrigger,
-} from "@/components/auth/auth-drawer";
+} from "@remcostoeten/auth-drawer";
 import type {
   AuthBackdropConfig,
   AuthConfigGroup,
@@ -25,10 +29,11 @@ import type {
   DrawerPosition,
   OAuthProvider,
   AuthVisualConfig,
-} from "@/components/auth/auth-drawer";
+} from "@remcostoeten/auth-drawer";
 ```
 
-Internally that re-exports from `@remcostoeten/auth-drawer`.
+Adapter factories are imported from their own subpaths, e.g.
+`@remcostoeten/auth-drawer/adapters/better-auth`.
 
 ## Component
 
@@ -103,6 +108,42 @@ function AppShell({ adapter, children }) {
 
 Pass `open` and `onOpenChange` when you need explicit host-owned state instead;
 those props take precedence over provider-managed state.
+
+### Hooks
+
+```typescript
+type AuthContextValue = {
+  user: AuthUser | null;
+  session: unknown | null;
+  isPending: boolean;
+  error: unknown | null;
+  signIn: (input: CredentialAuthInput) => Promise<AuthResult>;
+  signUp?: (input: CredentialAuthInput & { name: string }) => Promise<AuthResult>;
+  signInWithOAuth?: (provider: OAuthProvider) => Promise<AuthResult>;
+  signOut: () => Promise<AuthResult>;
+  openDrawer: () => void;
+  closeDrawer: () => void;
+  isDrawerOpen: boolean;
+};
+```
+
+| Hook | Returns | Notes |
+| :--- | :--- | :--- |
+| **`useAuth()`** | `AuthContextValue` | Reads adapter-backed session state and drawer controls. **Throws** if called outside an `AuthProvider`. |
+| **`useOptionalAuth()`** | `AuthContextValue \| null` | Same value as `useAuth()`, but returns `null` instead of throwing when no `AuthProvider` is mounted. Use it in shared/reusable components that may render with or without the provider. |
+
+`signUp` and `signInWithOAuth` are only present when the active adapter
+implements them, mirroring the drawer's own feature detection.
+
+```tsx
+import { useOptionalAuth } from "@remcostoeten/auth-drawer";
+
+function AccountBadge() {
+  const auth = useOptionalAuth();
+  if (!auth?.user) return null;
+  return <span>{auth.user.email}</span>;
+}
+```
 
 ## Config
 
@@ -341,7 +382,7 @@ const config = {
 ## Supported Values
 
 ```ts
-type OAuthProvider = "github" | "google";
+type OAuthProvider = "github" | "google" | "apple" | "discord" | "tiktok";
 type DrawerMode = "drawer" | "modal";
 type DrawerPosition = "center" | "left" | "right";
 type FormMode = "login" | "register" | "resetPassword";

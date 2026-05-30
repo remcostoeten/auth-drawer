@@ -436,6 +436,30 @@ function Shell({ adapter, children }) {
   );
 }`}
                   </pre>
+                  <p className="mt-3 mb-1">
+                    <code className="font-mono text-[0.72rem]">useAuth()</code>{" "}
+                    returns{" "}
+                    <code className="font-mono text-[0.72rem]">user</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">session</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">isPending</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">error</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">signIn</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">signUp</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">signInWithOAuth</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">signOut</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">openDrawer</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">closeDrawer</code>, and{" "}
+                    <code className="font-mono text-[0.72rem]">isDrawerOpen</code>. It
+                    throws outside a provider.
+                  </p>
+                  <p>
+                    <code className="font-mono text-[0.72rem]">useOptionalAuth()</code>{" "}
+                    returns the same value or{" "}
+                    <code className="font-mono text-[0.72rem]">null</code> when no
+                    provider is mounted &mdash; use it in shared components that may
+                    render with or without{" "}
+                    <code className="font-mono text-[0.72rem]">AuthProvider</code>.
+                  </p>
                 </div>
               </div>
 

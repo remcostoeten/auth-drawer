@@ -59,6 +59,25 @@ Customize the bundled theme with CSS tokens:
 }
 ```
 
+## Hooks
+
+Wrap your app in `AuthProvider` to read auth state and control the drawer from
+anywhere:
+
+```tsx
+import { useAuth, useOptionalAuth } from "@remcostoeten/auth-drawer";
+
+function Header() {
+  const { user, signOut, openDrawer } = useAuth();
+  return user
+    ? <button onClick={signOut}>Sign out</button>
+    : <button onClick={openDrawer}>Sign in</button>;
+}
+```
+
+- `useAuth()` returns `{ user, session, isPending, error, signIn, signUp?, signInWithOAuth?, signOut, openDrawer, closeDrawer, isDrawerOpen }`. It throws if used outside an `AuthProvider`.
+- `useOptionalAuth()` returns the same value or `null` when no provider is mounted — use it in shared components that may render with or without the provider.
+
 ## Adapters
 
 - `@remcostoeten/auth-drawer/adapters/better-auth`
@@ -72,7 +91,9 @@ Customize the bundled theme with CSS tokens:
 
 ## Docs
 
-https://auth-drawer.remcostoeten.nl/docs
+- Full docs & live playground: https://auth-drawer.remcostoeten.nl/docs
+- API reference: [API.md](https://github.com/remcostoeten/auth-drawer/blob/master/API.md)
+- Changelog: [CHANGELOG.md](./CHANGELOG.md)
 
 ## License
 
