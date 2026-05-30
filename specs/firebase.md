@@ -8,6 +8,7 @@ This specification outlines the client-side integration architecture for **Fireb
 
 The adapter routes credentials and session hooks to standard Firebase Authentication SDK methods.
 
+**`packages/auth-drawer/src/adapters/firebase.ts`**
 ```typescript
 import {
   signInWithEmailAndPassword,
@@ -159,6 +160,7 @@ Firebase Authentication errors contain a `.code` string matching standard namesp
 
 ### Firebase Error Mapper Code
 
+**`packages/auth-drawer/src/adapters/firebase.ts` (Error Mapper)**
 ```typescript
 import type { AuthUiError, AuthErrorCode } from "../types";
 

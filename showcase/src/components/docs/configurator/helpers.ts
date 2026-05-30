@@ -17,15 +17,22 @@ export const DEFAULT_USAGE_CODE = `import { AuthDrawer } from "@remcostoeten/aut
 
 export function App() {
   return (
-  // todo shape to api
-  <AuthDrawer
-      adapter={someReffToYourAuthProvider} // This is explained later on how to couple with your authentication service
-      config={} // the entire modal ui, behaviour and settings can be configured in this object, when left out you'll get the default UI as shown above 'Open default drawer'
+    <AuthDrawer
+      adapter={authAdapter}
+      config={{
+        ui: {
+          auth: {
+            providers: ["github", "google"],
+          },
+        },
+      }}
     />
   );
 }`;
 
-export type BackdropState = ReturnType<typeof initBackdrop>;
+export type BackdropState = Required<AuthBackdropConfig> & {
+  gradient: Required<NonNullable<AuthBackdropConfig["gradient"]>>;
+};
 
 export function arraysEqual(a: readonly string[], b: readonly string[]) {
   return a.length === b.length && a.every((v, i) => v === b[i]);
@@ -277,15 +284,6 @@ export function buildConfig({
       ...(copyConfig ? { copy: copyConfig } : {}),
       motion: { ...motion, displayMode: mode },
       visual: { backdrop },
-    },
-    onCredential: async () => {
-      await new Promise((r) => setTimeout(r, 450));
-    },
-    onOAuth: async () => {
-      await new Promise((r) => setTimeout(r, 450));
-    },
-    onForgotPassword: async () => {
-      await new Promise((r) => setTimeout(r, 450));
     },
   };
 }

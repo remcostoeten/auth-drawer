@@ -1,11 +1,10 @@
 import { useRef } from "react";
 import { Edit3, Search, Smartphone, Sparkles } from "lucide-react";
-import {
-  useScrollOpenTrigger,
-  type AuthTriggerConfig,
-  type AuthTriggerStore,
-} from "@remcostoeten/auth-drawer";
-import "./medium-paywall-scene.css";
+import { useScrollOpenTrigger } from "@remcostoeten/auth-drawer";
+import type {
+  AuthTriggerConfig,
+  AuthTriggerStore,
+} from "../../../../../../packages/auth-drawer/src/types";
 
 type Props = {
   onOpenAuth: () => void;
@@ -113,7 +112,7 @@ export function MediumPaywallScene({ onOpenAuth, triggers, triggerStore }: Props
           <p className="medium-subtitle">And so are these examples</p>
 
           <div className="medium-author">
-            <span className="medium-author__photo" aria-hidden="true" />
+            <img src="/buu.svg" alt="" className="medium-author__photo" />
             <div className="medium-author__copy">
               <div className="medium-author__name-row">
                 <span className="medium-author__name">Remco Stoeten</span>

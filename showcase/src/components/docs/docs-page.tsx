@@ -1,5 +1,8 @@
-import { Play, SlidersHorizontal } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+"use client";
+
+import Link from "next/link";
+import { Menu, Play, SlidersHorizontal, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CodeBlock } from "../code/server-code-block";
 import {
   TabbedCodeBlock,
@@ -8,15 +11,24 @@ import {
 import {
   AuthDrawer,
   DEFAULT_CONFIG,
+  type AuthAdapter,
   type AuthConfig,
   type AuthConfigGroup,
 } from "@/components/auth/auth-drawer";
+import { createMockAdapter } from "@remcostoeten/auth-drawer/adapters/mock";
 import { Configurator } from "./configurator/configurator";
 import { OAUTH_OVERFLOW_PROVIDERS } from "./configurator/constants";
-import { buildConfig, DEFAULT_USAGE_CODE, initBackdrop, initCopy, initMotion } from "./configurator/helpers";
-import { DefaultConfigPopover } from "./default-config-popover";
+import {
+  buildConfig,
+  DEFAULT_USAGE_CODE,
+  initBackdrop,
+  initCopy,
+  initMotion,
+} from "./configurator/helpers";
 import { DocsSidebarBrand, DocsSidebarNav } from "./docs-sidebar-nav";
+import { PackageMetaLinks } from "@/components/package-meta-links";
 import { OAuthDocsSection } from "./oauth-docs-section";
+import { SdkDocsSection } from "./sdk-docs-section";
 import { TriggersDocsSection } from "./triggers-docs-section";
 import {
   AUTH_CONFIG_GROUP_PROPS,
@@ -46,11 +58,24 @@ import {
 } from "./props/trigger-props";
 import { PropTable, Section } from "./ui/section";
 
+const MINIMAL_USAGE_CODE = `import { createAuthClient } from "better-auth/react";
+import { AuthDrawer } from "@remcostoeten/auth-drawer";
+import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
+
+// Created from your Better Auth config, usually exported from "@/lib/auth-client".
+const client = createAuthClient();
+const adapter = createBetterAuthAdapter({ client });
+
+<AuthDrawer adapter={adapter} />`;
+
 export function DocsPage() {
   const [isOpen, setOpen] = useState(false);
+  const [mobileTocOpen, setMobileTocOpen] = useState(false);
   const [drawerAuthOverride, setDrawerAuthOverride] =
     useState<Partial<AuthConfigGroup> | null>(null);
   const [isConfigInView, setConfigInView] = useState(false);
+  const mobileTocCloseRef = useRef<HTMLButtonElement>(null);
+  const mobileTocTriggerRef = useRef<HTMLButtonElement>(null);
   const [config, setConfig] = useState<AuthConfig>(() =>
     buildConfig({
       mode: "drawer",
@@ -63,6 +88,7 @@ export function DocsPage() {
       motion: initMotion(),
     }),
   );
+  const adapter = useMemo(() => createMockAdapter() as AuthAdapter, []);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -91,30 +117,168 @@ export function DocsPage() {
     setConfigInView(inView);
   }, []);
 
+  useEffect(() => {
+    if (!mobileTocOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const previousActive = document.activeElement as HTMLElement | null;
+
+    document.body.style.overflow = "hidden";
+    window.requestAnimationFrame(() => mobileTocCloseRef.current?.focus());
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMobileTocOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousActive?.focus?.();
+    };
+  }, [mobileTocOpen]);
+
   return (
-    <div className="docs-root min-h-screen bg-background text-foreground">
-      <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:px-8">
-        <aside className="hidden lg:block">
-          <div className="sticky top-16">
+    <div className="docs-root relative z-10 min-h-screen bg-background text-foreground">
+      <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 sm:px-6 md:grid-cols-[14rem_minmax(0,1fr)] lg:px-8">
+        <aside className="max-md:hidden">
+          <div className="custom-scrollbar sticky top-16 z-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2 pb-8">
             <DocsSidebarBrand />
+            <PackageMetaLinks variant="sidebar" />
             <DocsSidebarNav />
           </div>
         </aside>
 
         <main className="min-w-0">
+          <div className="mb-4 flex justify-start md:hidden">
+            <button
+              ref={mobileTocTriggerRef}
+              type="button"
+              onClick={() => setMobileTocOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={mobileTocOpen}
+              aria-controls="mobile-docs-toc"
+              className="inline-flex h-10 items-center gap-2 border border-foreground/10 bg-background px-3 text-xs font-semibold text-foreground/70 transition-colors hover:border-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
+            >
+              <Menu size={14} aria-hidden="true" />
+              Contents
+            </button>
+          </div>
+
+          {mobileTocOpen ? (
+            <div
+              id="mobile-docs-toc"
+              className="fixed inset-0 z-[260] md:hidden"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Table of contents"
+            >
+              <button
+                type="button"
+                aria-label="Close table of contents"
+                className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+                onClick={() => setMobileTocOpen(false)}
+              />
+              <div className="absolute inset-y-0 left-0 z-[270] w-[min(88vw,22rem)] border-r border-foreground/10 bg-background shadow-[24px_0_80px_rgba(0,0,0,0.28)]">
+                <div className="flex items-center justify-between border-b border-foreground/10 px-4 py-3">
+                  <div>
+                    <p className="docs-eyebrow text-[0.65rem] uppercase tracking-[0.16em] text-foreground/38">
+                      Docs
+                    </p>
+                    <p className="text-sm text-foreground">Table of contents</p>
+                  </div>
+                  <button
+                    ref={mobileTocCloseRef}
+                    type="button"
+                    onClick={() => setMobileTocOpen(false)}
+                    className="inline-flex h-9 w-9 items-center justify-center border border-foreground/10 text-foreground/70 transition-colors hover:border-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20"
+                    aria-label="Close table of contents"
+                  >
+                    <X size={14} aria-hidden="true" />
+                  </button>
+                </div>
+                <div className="custom-scrollbar h-[calc(100%-3.5rem)] overflow-y-auto px-4 py-4">
+                  <DocsSidebarBrand />
+                  <PackageMetaLinks variant="sidebar" />
+                  <DocsSidebarNav onNavigate={() => setMobileTocOpen(false)} />
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           <Section id="start" title="Start" eyebrow="Introduction">
             <p className="mb-4 max-w-2xl text-sm leading-6 text-foreground/58">
-              <strong className="text-foreground">Auth Drawer</strong> is a
-              configurable, animated authentication surface for React. It ships
-              as a mobile-optimised bottom-sheet drawer that can also render as
-              a centred modal on desktop, with a single, type-safe config object
-              controlling every visual, motion, behavioural, and copy detail.
+              <Link
+                href="https://remcostoeten.nl"
+                target="_blank"
+                rel="noreferrer"
+                className="italic"
+              >
+                I've
+              </Link>
+              {" "}
+              rebuilt the same authentication UI enough times to package it:
+              an accessible, provider-agnostic auth drawer that can run as a
+              mobile bottom sheet or desktop modal. Plug in a typed{" "}
+              <code className="font-mono text-[0.72rem]">AuthAdapter</code> for
+              your auth provider, then control OAuth, email/password,
+              registration, motion, layout, and copy from one config object.
             </p>
             <p className="mb-6 max-w-2xl text-sm leading-6 text-foreground/58">
-              Bring your own auth backend — Supabase, Better Auth, Lucia, custom
-              sessions, or anything else. Pass async handlers via{" "}
-              <code className="font-mono text-[0.72rem]">onCredential</code> and{" "}
-              <code className="font-mono text-[0.72rem]">onOAuth</code>.
+              When an adapter is present, the drawer auto-hides unsupported UI
+              and shows a registration name field only for adapters that request
+              one. The same adapter can power a global{" "}
+              <code className="font-mono text-[0.72rem]">AuthProvider</code> and{" "}
+              <code className="font-mono text-[0.72rem]">useAuth</code> hook for
+              app-wide session state.
+            </p>
+            <p className="mb-4 max-w-2xl text-sm leading-6 text-foreground/58">
+              Besides these API docs, we also provide full setup guides for{" "}
+              <a
+                href="#sdk-better-auth"
+                className="text-foreground/72 underline underline-offset-4 transition-colors hover:text-foreground"
+              >
+                Better Auth
+              </a>
+              ,{" "}
+              <a
+                href="#sdk-supabase"
+                className="text-foreground/72 underline underline-offset-4 transition-colors hover:text-foreground"
+              >
+                Supabase
+              </a>
+              ,{" "}
+              <a
+                href="#next-auth-guide"
+                className="text-foreground/72 underline underline-offset-4 transition-colors hover:text-foreground"
+              >
+                NextAuth
+              </a>
+              , and{" "}
+              <a
+                href="#clerk-guide"
+                className="text-foreground/72 underline underline-offset-4 transition-colors hover:text-foreground"
+              >
+                Clerk
+              </a>
+              .
+            </p>
+            <div className="mb-4 max-w-2xl">
+              <CodeBlock title="minimal.tsx">{MINIMAL_USAGE_CODE}</CodeBlock>
+            </div>
+            <p className="mb-4 max-w-2xl text-sm leading-6 text-foreground/58">
+              This will result in the <em>Open default drawer</em> button below.
+              Read the full Better Auth setup{" "}
+              <a
+                href="#sdk-better-auth"
+                className="text-foreground/72 underline underline-offset-4 transition-colors hover:text-foreground"
+              >
+                here
+              </a>
+              .
             </p>
             <div className="mb-2 flex flex-wrap gap-2">
               <button
@@ -137,15 +301,13 @@ export function DocsPage() {
 
           <Section id="installation" title="Install" eyebrow="Setup">
             <p className="mb-4 max-w-2xl text-sm leading-6 text-foreground/58">
-              Install and render — styles ship with the component import. No
+              Install and render styles ship with the component import. No
               Tailwind setup, no separate CSS file.
             </p>
             <div className="space-y-4">
               <div>
-                <p className="mb-2 text-xs font-semibold text-foreground/72">
-                  1. Install
-                </p>
                 <TabbedCodeBlock
+                  title="install"
                   variants={createPackageInstallVariants(
                     "@remcostoeten/auth-drawer",
                   )}
@@ -155,7 +317,7 @@ export function DocsPage() {
                 <p className="mb-2 text-xs font-semibold text-foreground/72">
                   2. Render
                 </p>
-                <CodeBlock>{DEFAULT_USAGE_CODE}</CodeBlock>
+                <CodeBlock title="usage.tsx">{DEFAULT_USAGE_CODE}</CodeBlock>
               </div>
             </div>
           </Section>
@@ -164,10 +326,10 @@ export function DocsPage() {
             <p className="max-w-2xl text-sm leading-6 text-foreground/58">
               <code className="font-mono text-[0.72rem]">DEFAULT_CONFIG</code>{" "}
               ships with GitHub and Google OAuth, login and register tabs,
-              remember-me, forgot-password, backdrop, drag behaviour, and trigger
-              hooks. The same config shape covers drawer vs modal presentation,
-              desktop width, position, and scroll or idle open triggers — customize
-              only what you need in the{" "}
+              remember-me, forgot-password, backdrop, drag behaviour, and
+              trigger hooks. The same config shape covers drawer vs modal
+              presentation, desktop width, position, and scroll or idle open
+              triggers — customize only what you need in the{" "}
               <a
                 href="#configurator"
                 className="text-foreground/72 underline underline-offset-4 transition-colors hover:text-foreground"
@@ -183,6 +345,14 @@ export function DocsPage() {
               </a>
               .
             </p>
+          </Section>
+
+          <Section
+            id="sdk-adapters"
+            title="SDK adapters"
+            eyebrow="Provider setup"
+          >
+            <SdkDocsSection />
           </Section>
 
           <Section id="oauth" title="OAuth" eyebrow="Social sign-in">
@@ -216,9 +386,81 @@ export function DocsPage() {
               <div>
                 <h3 className="mb-1 text-sm">AuthDrawer props</h3>
                 <p className="mb-3 text-xs text-foreground/50">
-                  Top-level component props. All fields are optional.
+                  Top-level component props. The auth adapter is required; UI
+                  config and control props are optional.
                 </p>
                 <PropTable props={AUTH_DRAWER_PROPS} />
+              </div>
+
+              <div>
+                <h3 className="mb-1 text-sm">AuthProvider</h3>
+                <p className="mb-3 text-xs text-foreground/50">
+                  Global auth context wrapper around an adapter and drawer open
+                  state.
+                </p>
+                <div className="rounded-[8px] border border-foreground/10 bg-foreground/[0.03] p-4 text-xs leading-6 text-foreground/58">
+                  <p className="mb-2">
+                    Use{" "}
+                    <code className="font-mono text-[0.72rem]">
+                      AuthProvider
+                    </code>{" "}
+                    when other parts of the app need the current user, session,
+                    or drawer controls through{" "}
+                    <code className="font-mono text-[0.72rem]">useAuth</code>.
+                    When <code className="font-mono text-[0.72rem]">AuthDrawer</code>{" "}
+                    is rendered inside the provider without{" "}
+                    <code className="font-mono text-[0.72rem]">open</code>/
+                    <code className="font-mono text-[0.72rem]">onOpenChange</code>,
+                    it follows those provider controls.
+                  </p>
+                  <p className="mb-2">
+                    Add{" "}
+                    <code className="font-mono text-[0.72rem]">
+                      &lt;div id=&quot;auth-drawer-portal&quot; /&gt;
+                    </code>{" "}
+                    in your root layout so the drawer portals above page content.
+                    Without it, the drawer still works but renders inline.
+                  </p>
+                  <pre className="overflow-x-auto rounded-[6px] bg-background p-3 text-[0.7rem] text-foreground/72">
+                    {`import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
+
+function Shell({ adapter, children }) {
+  return (
+    <>
+      <AuthProvider adapter={adapter}>
+        {children}
+        <AuthDrawer adapter={adapter} hideTrigger />
+      </AuthProvider>
+      <div id="auth-drawer-portal" />
+    </>
+  );
+}`}
+                  </pre>
+                  <p className="mt-3 mb-1">
+                    <code className="font-mono text-[0.72rem]">useAuth()</code>{" "}
+                    returns{" "}
+                    <code className="font-mono text-[0.72rem]">user</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">session</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">isPending</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">error</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">signIn</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">signUp</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">signInWithOAuth</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">signOut</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">openDrawer</code>,{" "}
+                    <code className="font-mono text-[0.72rem]">closeDrawer</code>, and{" "}
+                    <code className="font-mono text-[0.72rem]">isDrawerOpen</code>. It
+                    throws outside a provider.
+                  </p>
+                  <p>
+                    <code className="font-mono text-[0.72rem]">useOptionalAuth()</code>{" "}
+                    returns the same value or{" "}
+                    <code className="font-mono text-[0.72rem]">null</code> when no
+                    provider is mounted &mdash; use it in shared components that may
+                    render with or without{" "}
+                    <code className="font-mono text-[0.72rem]">AuthProvider</code>.
+                  </p>
+                </div>
               </div>
 
               <div>
@@ -226,13 +468,16 @@ export function DocsPage() {
                 <p className="mb-3 text-xs text-foreground/50">
                   Passed to{" "}
                   <code className="font-mono text-[0.72rem]">config</code>.
-                  Groups UI controls, activation triggers, and auth handlers.
+                  Groups UI controls, activation triggers, and error
+                  normalization.
                 </p>
                 <PropTable props={CONFIG_PROPS} />
               </div>
 
               <div id="api-triggers" className="scroll-mt-24">
-                <h3 className="mb-1 text-sm">config.triggers — AuthTriggerConfig</h3>
+                <h3 className="mb-1 text-sm">
+                  config.triggers — AuthTriggerConfig
+                </h3>
                 <p className="mb-3 text-xs text-foreground/50">
                   Rules that open the auth surface. Examples live in the{" "}
                   <a
@@ -249,8 +494,10 @@ export function DocsPage() {
                 </h4>
                 <p className="mb-3 text-xs text-foreground/50">
                   All trigger kinds extend{" "}
-                  <code className="font-mono text-[0.72rem]">TriggerPolicy</code>.
-                  Fields below apply to every kind unless noted.
+                  <code className="font-mono text-[0.72rem]">
+                    TriggerPolicy
+                  </code>
+                  . Fields below apply to every kind unless noted.
                 </p>
                 <PropTable props={TRIGGER_POLICY_PROPS} />
 
@@ -356,6 +603,11 @@ export function DocsPage() {
                   animated backdrop values that move with the open/close
                   transition, see{" "}
                   <code className="font-mono text-[0.72rem]">ui.motion</code>.
+                  Override the packaged overlay theme with{" "}
+                  <code className="font-mono text-[0.72rem]">--surface-overlay</code>,{" "}
+                  <code className="font-mono text-[0.72rem]">--text-on-overlay</code>,
+                  and{" "}
+                  <code className="font-mono text-[0.72rem]">--border-overlay</code>.
                 </p>
                 <PropTable props={VISUAL_PROPS} />
               </div>
@@ -424,6 +676,7 @@ export function DocsPage() {
       ) : null}
 
       <AuthDrawer
+        adapter={adapter}
         config={config}
         hideTrigger
         open={isOpen}

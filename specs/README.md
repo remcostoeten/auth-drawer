@@ -21,4 +21,4 @@ This directory contains client-side specifications and interfaces mapping differ
 ## 🛠️ Architecture Guides
 
 *   📄 **[DRY_ADAPTER_PLAN.md](file:///home/remcostoeten/dev/cozy-auth-drawer/DRY_ADAPTER_PLAN.md)**: Separation rules explaining validation, error normalizations, and OAuth provider scopes boundaries.
-*   📄 **[ADVANCED_ADAPTER_SUGGESTIONS.md](file:///home/remcostoeten/dev/cozy-auth-drawer/ADVANCED_ADAPTER_SUGGESTIONS.md)**: Developer guide containing React Context implementations (`AuthProvider`), local sandbox mocking configurations (`mockAdapter`), React 19 async loaders (`useTransition`), and custom styling variables.
+*   📄 **[ADVANCED_ADAPTER_SUGGESTIONS.md](file:///home/remcostoeten/dev/cozy-auth-drawer/ADVANCED_ADAPTER_SUGGESTIONS.md)**: Developer guide containing React Context implementations (`AuthProvider`), local sandbox mocking configurations (`createMockAdapter`), React 19 async loaders (`useTransition`), and custom styling variables.

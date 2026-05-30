@@ -16,9 +16,7 @@ function formatDefaultConfigPreview() {
     "export const DEFAULT_CONFIG = {",
     `${indentObject("ui", DEFAULT_CONFIG.ui)},`,
     `${indentObject("triggers", DEFAULT_CONFIG.triggers)},`,
-    "  onCredential: async (input) => { /* noop */ },",
-    "  onOAuth: async (provider) => { /* noop */ },",
-    "  onForgotPassword: async (email) => { /* noop */ },",
+    "  adapter: myAuthAdapter,",
     "  normalizeError: (error) => error,",
     "};",
   ].join("\n");
@@ -142,7 +140,7 @@ export function DefaultConfigPopover({
                   </button>
                 </div>
                 <div className="custom-scrollbar group/code min-h-0 flex-1 overflow-y-auto overflow-x-auto">
-                  <CodeBlock lang="typescript" embedded>
+                  <CodeBlock lang="typescript" embedded title="DEFAULT_CONFIG">
                     {code}
                   </CodeBlock>
                 </div>

@@ -1,4 +1,4 @@
-import { memo, useCallback, useId, useState, type FormEvent } from "react";
+import { memo, useCallback, useId, useState, useTransition, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   EMPTY_AUTH_ERRORS,
@@ -7,7 +7,7 @@ import {
   hasAuthErrors,
   mergeAuthErrors,
 } from "../auth-errors";
-import type { FormMode, LoadingAction, OAuthProvider, ResolvedAuthConfig } from "../types";
+import type { AuthAdapter, FormMode, LoadingAction, OAuthProvider, ResolvedAuthConfig } from "../types";
 import { EASE_OUT, MAX_STAGGER } from "../constants";
 import { useRememberMe } from "../hooks/use-remember-me";
 import { getPasswordMatchFeedback, validateCredentials } from "../validation";
@@ -22,6 +22,9 @@ import { ValidationMessage } from "./validation-message";
 
 type Props = {
   onSuccess: () => void;
+  onAdapterSuccess?: NonNullable<AuthAdapter["onSuccess"]>;
+  onAdapterError?: NonNullable<AuthAdapter["onError"]>;
+  adapter: AuthAdapter;
   titleId: string;
   descId: string;
   config: ResolvedAuthConfig;
@@ -70,17 +73,29 @@ function fieldErrorId(base: string, field: string) {
  * @param props - Auth callbacks, ids, and resolved feature config.
  * @returns Complete credential and OAuth form.
  */
-function Form({ onSuccess, titleId, descId, config }: Props) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+type AuthAction = "signIn" | "signUp" | "signOut" | "oauth";
+
+function Form({
+  onSuccess,
+  onAdapterSuccess,
+  onAdapterError,
+  adapter,
+  titleId,
+  descId,
+  config,
+}: Props) {
+  const [email, setEmail] = useState(() => adapter.demoCredentials?.email ?? "");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState(() => adapter.demoCredentials?.password ?? "");
   const [confirm, setConfirm] = useState("");
   const [mode, setMode] = useState<FormMode>(
     config.ui.auth.allowRegister ? config.ui.auth.initialMode : "login",
   );
   const [rememberMe, setRememberMe] = useRememberMe();
-  const [isLoading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [loadingAction, setAction] = useState<LoadingAction>(null);
   const [errors, setErrors] = useState<AuthErrorState>(EMPTY_AUTH_ERRORS);
+  const [nameError, setNameError] = useState("");
   const [notice, setNotice] = useState("");
   const errorBaseId = useId();
 
@@ -94,12 +109,14 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
   const title = formCopy.title;
   const subtitle = formCopy.subtitle;
   const emailErrorId = fieldErrorId(errorBaseId, "email");
+  const nameErrorId = fieldErrorId(errorBaseId, "name");
   const passwordErrorId = fieldErrorId(errorBaseId, "password");
   const confirmErrorId = fieldErrorId(errorBaseId, "confirm");
   const confirmLiveId = fieldErrorId(errorBaseId, "confirm-live");
   const formErrorId = fieldErrorId(errorBaseId, "form");
   const oauthErrorId = fieldErrorId(errorBaseId, "oauth");
   const hasOAuthProviders = config.ui.auth.providers.length > 0;
+  const requiresName = Boolean(adapter.requiresName && isRegister);
   const emailError = errors.fields.email;
   const passwordError = errors.fields.password;
   const confirmError = errors.fields.confirmPassword;
@@ -115,36 +132,63 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
     : null;
   const formError = errors.form;
   const oauthError = errors.oauth;
+  const isLoading = isPending || loadingAction !== null;
+
+  const handleAdapterError = useCallback(
+    (error: AuthUiError, action: AuthAction) => {
+      adapter.onError?.(error, action);
+      onAdapterError?.(error, action);
+    },
+    [adapter, onAdapterError],
+  );
+
+  const handleAdapterSuccess = useCallback(
+    (action: AuthAction) => {
+      adapter.onSuccess?.(action);
+      onAdapterSuccess?.(action);
+    },
+    [adapter, onAdapterSuccess],
+  );
 
   const runOAuth = useCallback(
-    async (provider: OAuthProvider) => {
-      setLoading(true);
+    (provider: OAuthProvider) => {
       setAction(provider);
       setErrors(EMPTY_AUTH_ERRORS);
       setNotice("");
 
-      try {
-        await config.onOAuth(provider);
-        onSuccess();
-      } catch (error) {
-        setErrors(
-          errorForSubmit(
-            config.normalizeError(error, {
-              provider,
-              fallbackTarget: "oauth",
-            }),
-          ),
-        );
-      } finally {
-        setLoading(false);
-        setAction(null);
-      }
+      startTransition(async () => {
+        try {
+          const result = await adapter.signInWithOAuth?.(provider);
+          if (!result?.success) {
+            const error =
+              result?.error ??
+              config.normalizeError(new Error("OAuth provider unavailable."), {
+                provider,
+                fallbackTarget: "oauth",
+              });
+            handleAdapterError(error, "oauth");
+            setErrors(errorForSubmit(error));
+            return;
+          }
+          handleAdapterSuccess("oauth");
+
+          onSuccess();
+        } catch (error) {
+          const normalized = adapter.normalizeError
+            ? adapter.normalizeError(error)
+            : config.normalizeError(error, { provider, fallbackTarget: "oauth" });
+          handleAdapterError(normalized, "oauth");
+          setErrors(errorForSubmit(normalized));
+        } finally {
+          setAction(null);
+        }
+      });
     },
-    [config, onSuccess],
+    [adapter, config, handleAdapterError, handleAdapterSuccess, onSuccess, startTransition],
   );
 
   const submitForm = useCallback(
-    async (event: FormEvent) => {
+    (event: FormEvent) => {
       event.preventDefault();
 
       const validation = validateCredentials(
@@ -156,49 +200,100 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
         },
         config.ui.copy,
       );
+      const nextNameError = requiresName && !name.trim() ? "Enter your name." : "";
+      setNameError(nextNameError);
 
-      if (hasAuthErrors(validation)) {
+      if (hasAuthErrors(validation) || nextNameError) {
         setErrors(validation);
         return;
       }
 
-      setLoading(true);
       setAction("email");
       setErrors(EMPTY_AUTH_ERRORS);
       setNotice("");
 
-      try {
-        if (mode === "resetPassword") {
-          await config.onResetPassword({ newPassword: password });
-          setMode("login");
-          setPassword("");
-          setConfirm("");
-          setNotice("Your password has been reset successfully. Please sign in.");
-        } else {
-          await config.onCredential({
-            mode,
-            email: email.trim(),
-            password,
-            rememberMe,
-          });
+      startTransition(async () => {
+        try {
+          if (mode === "resetPassword") {
+            const result = await adapter.resetPassword?.({ newPassword: password });
+            if (!result?.success) {
+              const error =
+                result?.error ??
+                config.normalizeError(new Error("Password reset is unavailable."), {
+                  fallbackTarget: "form",
+                });
+              handleAdapterError(error, "signIn");
+              setErrors(mergeAuthErrors(validation, errorForSubmit(error)));
+              return;
+            }
+            setMode("login");
+            setPassword("");
+            setConfirm("");
+            setNotice("Your password has been reset successfully. Please sign in.");
+            return;
+          }
+
+          const action = mode === "register" ? "signUp" : "signIn";
+          const result =
+            action === "signUp"
+              ? await adapter.signUp?.({
+                  email: email.trim(),
+                  password,
+                  rememberMe,
+                  name: name.trim(),
+                })
+              : await adapter.signIn({
+                  email: email.trim(),
+                  password,
+                  rememberMe,
+                });
+
+          if (!result?.success) {
+            const error =
+              result?.error ??
+              config.normalizeError(new Error("Authentication action unavailable."), {
+                fallbackTarget: "form",
+              });
+            handleAdapterError(error, action);
+            setErrors(mergeAuthErrors(validation, errorForSubmit(error)));
+            return;
+          }
+
+          handleAdapterSuccess(action);
           onSuccess();
+          return;
+        } catch (error) {
+          const backendError = adapter.normalizeError
+            ? adapter.normalizeError(error)
+            : config.normalizeError(error, { fallbackTarget: "form" });
+          handleAdapterError(backendError, mode === "register" ? "signUp" : "signIn");
+          setErrors(mergeAuthErrors(validation, errorForSubmit(backendError)));
+        } finally {
+          setAction(null);
         }
-      } catch (error) {
-        const backendError = config.normalizeError(error, {
-          fallbackTarget: "form",
-        });
-        setErrors(mergeAuthErrors(validation, errorForSubmit(backendError)));
-      } finally {
-        setLoading(false);
-        setAction(null);
-      }
+      });
     },
-    [confirm, config, email, mode, onSuccess, password, rememberMe],
+    [
+      adapter,
+      confirm,
+      config,
+      email,
+      handleAdapterError,
+      handleAdapterSuccess,
+      mode,
+      name,
+      onSuccess,
+      password,
+      rememberMe,
+      requiresName,
+      startTransition,
+    ],
   );
 
   const switchMode = useCallback(() => {
     setMode((value) => (value === "login" ? "register" : "login"));
     setErrors(EMPTY_AUTH_ERRORS);
+    setNameError("");
     setNotice("");
   }, []);
 
@@ -222,6 +317,16 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
     }));
   }, []);
 
+  const changeName = useCallback((value: string) => {
+    setName(value);
+    setNameError("");
+    setNotice("");
+    setErrors((current) => ({
+      ...current,
+      form: undefined,
+    }));
+  }, []);
+
   const changePassword = useCallback((value: string) => {
     setPassword(value);
     setNotice("");
@@ -242,7 +347,7 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
     }));
   }, []);
 
-  const resetPassword = useCallback(async () => {
+  const resetPassword = useCallback(() => {
     const validation = validateCredentials(
       {
         mode: "login",
@@ -257,27 +362,36 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
       return;
     }
 
-    setLoading(true);
     setAction("forgotPassword");
     setErrors(EMPTY_AUTH_ERRORS);
     setNotice("");
 
-    try {
-      await config.onForgotPassword(email.trim());
-      setNotice(config.ui.copy.forgotPassword.successNotice);
-    } catch (error) {
-      setErrors(
-        errorForSubmit(
-          config.normalizeError(error, {
-            fallbackTarget: "form",
-          }),
-        ),
-      );
-    } finally {
-      setLoading(false);
-      setAction(null);
-    }
-  }, [config, email]);
+    startTransition(async () => {
+      try {
+        const result = await adapter.requestPasswordReset?.(email.trim());
+        if (!result?.success) {
+          const error =
+            result?.error ??
+            config.normalizeError(new Error("Password reset is unavailable."), {
+              fallbackTarget: "form",
+            });
+          handleAdapterError(error, "signIn");
+          setErrors(errorForSubmit(error));
+          return;
+        }
+
+        setNotice(config.ui.copy.forgotPassword.successNotice);
+      } catch (error) {
+        const normalized = adapter.normalizeError
+          ? adapter.normalizeError(error)
+          : config.normalizeError(error, { fallbackTarget: "form" });
+        handleAdapterError(normalized, "signIn");
+        setErrors(errorForSubmit(normalized));
+      } finally {
+        setAction(null);
+      }
+    });
+  }, [adapter, config, email, handleAdapterError, startTransition]);
 
   return (
     <motion.div className="w-full max-w-md" variants={FORM_VIEW} initial="hidden" animate="visible">
@@ -382,6 +496,36 @@ function Form({ onSuccess, titleId, descId, config }: Props) {
       >
         {!isResetPassword && (
           <>
+            <AnimatePresence>
+              {requiresName ? (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="relative">
+                    <label htmlFor={`${titleId}-name`} className="sr-only">
+                      Name
+                    </label>
+                    <input
+                      id={`${titleId}-name`}
+                      type="text"
+                      placeholder="Name"
+                      value={name}
+                      onChange={(event) => changeName(event.target.value)}
+                      required
+                      autoComplete="name"
+                      aria-invalid={!!nameError || undefined}
+                      aria-describedby={nameError ? nameErrorId : undefined}
+                      className="relative z-1 h-11 w-full rounded-none border border-overlay-border/20 bg-transparent px-4 text-sm font-normal tracking-[0.01em] text-overlay-text outline-hidden transition-colors placeholder:text-overlay-subtle focus:border-overlay-border/50 aria-invalid:border-overlay-error/35 aria-invalid:focus:border-overlay-error/50"
+                    />
+                  </div>
+                  <ValidationMessage id={nameErrorId} error={nameError} />
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
             <EmailField
               id={`${titleId}-email`}
               value={email}

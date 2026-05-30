@@ -5,14 +5,14 @@ export const AUTH_DRAWER_PROPS: PropDef[] = [
     name: "adapter",
     type: "AuthAdapter",
     description:
-      "Active auth adapter client (Supabase, Better Auth, Clerk, NextAuth, Firebase, etc.). Connects client handlers and reactive hooks directly. Dynamically overrides layout settings (e.g. hides the Register tab if adapter.signUp is undefined).",
+      "Active auth adapter. The drawer routes sign-in, sign-up, forgot-password, reset-password, and OAuth through the adapter, auto-hides unsupported UI, and can request a name field for registration via adapter.requiresName.",
   },
   {
     name: "config",
     type: "AuthConfig",
     default: "DEFAULT_CONFIG",
     defaultPreview: "default-config",
-    description: "Visual, behavioural, trigger, and fallback logic configuration.",
+    description: "Visual, behavioural, trigger, and auth routing configuration.",
   },
   {
     name: "hideTrigger",
@@ -24,7 +24,7 @@ export const AUTH_DRAWER_PROPS: PropDef[] = [
   {
     name: "open",
     type: "boolean",
-    description: "Controlled open state. When defined, the drawer operates in controlled mode, bypassing automatic trigger store bindings.",
+    description: "Controlled open state. When defined, it takes precedence over provider-managed and uncontrolled state.",
   },
   {
     name: "defaultOpen",
@@ -49,7 +49,7 @@ export const AUTH_DRAWER_PROPS: PropDef[] = [
   },
   {
     name: "onError",
-    type: "(error: AuthUiError, action: string) => void",
+    type: '(error: AuthUiError, action: "signIn" | "signUp" | "signOut" | "oauth") => void',
     description: "Callback fired when any auth action fails. Useful for error logging or custom analytics.",
   },
 ];
@@ -96,33 +96,9 @@ export const CONFIG_PROPS: PropDef[] = [
       "pageLoad, click, scrollOpen, state, idle, or custom activation rules.",
   },
   {
-    name: "onCredential",
-    type: "(input: CredentialAuthInput) => Promise<void>",
-    description:
-      "Fallback callback receiving email/password credentials after local validation passes (ignored if adapter is provided).",
-  },
-  {
-    name: "onOAuth",
-    type: "(provider: OAuthProvider) => Promise<void>",
-    description:
-      "Fallback callback receiving OAuth actions when provider buttons are clicked (ignored if adapter is provided).",
-  },
-  {
-    name: "onForgotPassword",
-    type: "(email: string) => Promise<void>",
-    description:
-      "Fallback callback receiving password reset requests with email input (ignored if adapter is provided).",
-  },
-  {
-    name: "onResetPassword",
-    type: "(input: ResetPasswordInput) => Promise<void>",
-    description:
-      "Fallback callback for setting a new password during a reset flow. Receives { newPassword }.",
-  },
-  {
     name: "normalizeError",
-    type: "(error: unknown, context: { provider?: OAuthProvider }) => AuthUiError",
+    type: "(error: unknown, context: { provider?: OAuthProvider; fallbackTarget?: AuthUiError[\"target\"] }) => AuthUiError",
     description:
-      "Custom error mapper to standard AuthUiError targets. Fallback utilized when no adapter is configured.",
+      "Custom error mapper to standard AuthUiError targets.",
   },
 ];

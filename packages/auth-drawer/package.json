@@ -1,26 +1,89 @@
 {
   "name": "@remcostoeten/auth-drawer",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.2.0",
+  "description": "Configurable React auth drawer and modal with OAuth, triggers, motion, and typed provider adapters.",
+  "license": "MIT",
+  "author": "Remco Stoeten",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/remcostoeten/auth-drawer.git",
+    "directory": "packages/auth-drawer"
+  },
+  "homepage": "https://auth-drawer.remcostoeten.nl/docs",
+  "bugs": {
+    "url": "https://github.com/remcostoeten/auth-drawer/issues"
+  },
+  "keywords": [
+    "react",
+    "auth",
+    "authentication",
+    "drawer",
+    "modal",
+    "oauth",
+    "sign-in",
+    "better-auth",
+    "supabase",
+    "clerk",
+    "next-auth"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./adapters/better-auth": {
+      "import": "./dist/adapters/better-auth.js",
+      "types": "./dist/adapters/better-auth.d.ts"
+    },
+    "./adapters/supabase": {
+      "import": "./dist/adapters/supabase.js",
+      "types": "./dist/adapters/supabase.d.ts"
+    },
+    "./adapters/next-auth": {
+      "import": "./dist/adapters/next-auth.js",
+      "types": "./dist/adapters/next-auth.d.ts"
+    },
+    "./adapters/clerk": {
+      "import": "./dist/adapters/clerk.js",
+      "types": "./dist/adapters/clerk.d.ts"
+    },
+    "./adapters/firebase": {
+      "import": "./dist/adapters/firebase.js",
+      "types": "./dist/adapters/firebase.d.ts"
+    },
+    "./adapters/custom-jwt": {
+      "import": "./dist/adapters/custom-jwt.js",
+      "types": "./dist/adapters/custom-jwt.d.ts"
+    },
+    "./adapters/passport": {
+      "import": "./dist/adapters/passport.js",
+      "types": "./dist/adapters/passport.d.ts"
+    },
+    "./adapters/mock": {
+      "import": "./dist/adapters/mock.js",
+      "types": "./dist/adapters/mock.d.ts"
+    },
     "./styles.css": "./dist/styles.css",
     "./styles/tailwind.css": "./styles/tailwind.css"
   },
   "files": [
     "dist",
-    "styles"
+    "styles",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "sideEffects": [
     "**/*.css"
   ],
   "scripts": {
-    "build": "tailwindcss -i ./styles/build.css -o ./styles/bundle.css --minify && vite build && node ./scripts/stamp-css-import.mjs",
+    "build": "NODE_ENV=production tailwindcss -i ./styles/build.css -o ./styles/bundle.css --minify && NODE_ENV=production vite build && tsc -p tsconfig.build.json && node ./scripts/stamp-css-import.mjs",
     "dev": "vite build --watch",
+    "prepublishOnly": "npm run build && npm test",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -38,14 +101,14 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.0",
     "@testing-library/jest-dom": "^6.9.1",
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "framer-motion": "^12.38.0",
     "jsdom": "^29.1.1",
     "lucide-react": "^0.462.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "rolldown-vite": "^7.3.1",
     "tailwindcss": "^4.3.0",
     "typescript": "^5.8.3",

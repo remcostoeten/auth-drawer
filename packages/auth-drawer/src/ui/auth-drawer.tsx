@@ -21,6 +21,7 @@ import { resolveCopyGroup } from "../copy";
 import { normalizeAuthError } from "../auth-errors";
 import { useDraggableDrawer } from "../hooks/use-draggable-drawer";
 import type {
+  AuthAdapter,
   AuthBackdropConfig,
   AuthConfig,
   AuthPresentationConfig,
@@ -33,18 +34,24 @@ import { DrawerBackdrop } from "./drawer-backdrop";
 import { DrawerClose } from "./drawer-close";
 import { DrawerHandle } from "./drawer-handle";
 import { LoginForm } from "./login-form";
+import { useOptionalAuth } from "./auth-provider";
 
 type Props = {
   config?: AuthConfig;
+  adapter: AuthAdapter;
   className?: string;
   hideTrigger?: boolean;
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onSuccess?: NonNullable<AuthAdapter["onSuccess"]>;
+  onError?: NonNullable<AuthAdapter["onError"]>;
   triggerStore?: AuthTriggerStore;
 };
 
 type SettingsEvent = CustomEvent<MotionSettings>;
+type AuthContextValue = NonNullable<ReturnType<typeof useOptionalAuth>>;
+type DrawerSession = ReturnType<AuthAdapter["useSession"]>;
 
 function isSettingsEvent(event: Event): event is SettingsEvent {
   return "detail" in event;
@@ -63,11 +70,15 @@ function readSavedSettings(): Partial<MotionSettings> {
   }
 }
 
-function resolveAuthGroup(config?: AuthConfig) {
+function resolveAuthGroup(config: AuthConfig | undefined, adapter: AuthAdapter) {
   const auth = config?.ui?.auth ?? {};
+  const providers =
+    !adapter.signInWithOAuth
+      ? []
+      : (adapter.providers ?? auth.providers ?? DEFAULT_CONFIG.ui.auth.providers);
 
   return {
-    providers: auth.providers ?? DEFAULT_CONFIG.ui.auth.providers,
+    providers,
     oauthLayout: auth.oauthLayout ?? DEFAULT_CONFIG.ui.auth.oauthLayout,
     oauthOverflow: {
       visibleCount: resolveOAuthVisibleCount(
@@ -77,10 +88,13 @@ function resolveAuthGroup(config?: AuthConfig) {
         auth.oauthOverflow?.showPreviewIcons ??
         DEFAULT_CONFIG.ui.auth.oauthOverflow.showPreviewIcons,
     },
-    allowRegister: auth.allowRegister ?? DEFAULT_CONFIG.ui.auth.allowRegister,
+    allowRegister: !adapter.signUp ? false : (auth.allowRegister ?? DEFAULT_CONFIG.ui.auth.allowRegister),
     showRememberMe: auth.showRememberMe ?? DEFAULT_CONFIG.ui.auth.showRememberMe,
     initialMode: auth.initialMode ?? DEFAULT_CONFIG.ui.auth.initialMode,
-    showForgotPassword: auth.showForgotPassword ?? DEFAULT_CONFIG.ui.auth.showForgotPassword,
+    showForgotPassword:
+      !adapter.requestPasswordReset
+        ? false
+        : (auth.showForgotPassword ?? DEFAULT_CONFIG.ui.auth.showForgotPassword),
     showLivePasswordMatch:
       auth.showLivePasswordMatch ?? DEFAULT_CONFIG.ui.auth.showLivePasswordMatch,
     showFooter: auth.showFooter ?? DEFAULT_CONFIG.ui.auth.showFooter,
@@ -176,15 +190,56 @@ function parseEase(value: string) {
  * @param props - Optional feature config and trigger class name.
  * @returns Trigger button and drawer portal.
  */
-export function AuthDrawer({
+export function AuthDrawer(props: Props) {
+  const auth = useOptionalAuth();
+
+  if (auth) {
+    return <AuthDrawerWithProviderSession {...props} auth={auth} />;
+  }
+
+  return <AuthDrawerWithAdapterSession {...props} />;
+}
+
+function AuthDrawerWithProviderSession({
+  auth,
+  ...props
+}: Props & { auth: AuthContextValue }) {
+  const session = useMemo<DrawerSession>(
+    () => ({
+      data: {
+        user: auth.user,
+        session: auth.session,
+      },
+      isPending: auth.isPending,
+      error: auth.error,
+    }),
+    [auth.error, auth.isPending, auth.session, auth.user],
+  );
+
+  return <AuthDrawerContent {...props} auth={auth} session={session} />;
+}
+
+function AuthDrawerWithAdapterSession(props: Props) {
+  const session = props.adapter.useSession();
+
+  return <AuthDrawerContent {...props} session={session} />;
+}
+
+function AuthDrawerContent({
   config,
+  adapter,
   className,
   hideTrigger = false,
   open: controlledOpen,
   defaultOpen,
   onOpenChange,
+  onSuccess,
+  onError,
   triggerStore: providedTriggerStore,
-}: Props) {
+  auth,
+  session,
+}: Props & { auth?: AuthContextValue; session: DrawerSession }) {
+  const isAuthenticated = Boolean(session.data?.user);
   const triggerStore = useMemo(
     () => providedTriggerStore ?? createAuthTriggerStore(),
     [providedTriggerStore],
@@ -192,7 +247,7 @@ export function AuthDrawer({
 
   const resolved = useMemo<ResolvedAuthConfig>(() => {
     const copy = resolveCopyGroup(config);
-    const auth = resolveAuthGroup(config);
+    const auth = resolveAuthGroup(config, adapter);
     const backdrop = resolveBackdropGroup(config);
     const presentation = resolvePresentationGroup(config);
     const motion = resolveMotionSettings(config?.ui?.motion, backdrop, presentation.variant);
@@ -224,7 +279,7 @@ export function AuthDrawer({
         footer: config?.ui?.footer,
       },
     };
-  }, [config]);
+  }, [adapter, config]);
 
   const [uncontrolledOpen, setUncontrolledOpen] = useState(
     defaultOpen ?? resolved.ui.presentation.defaultOpen,
@@ -236,38 +291,62 @@ export function AuthDrawer({
   const closeRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const descId = useId();
-  const open = controlledOpen ?? uncontrolledOpen;
+  const shouldUseProviderOpen =
+    controlledOpen === undefined && onOpenChange === undefined && auth !== undefined;
+  const open = controlledOpen ?? (shouldUseProviderOpen ? auth.isDrawerOpen : uncontrolledOpen);
   const setDrawerOpen = useCallback(
     (nextOpen: boolean) => {
       if (controlledOpen === undefined) {
-        setUncontrolledOpen(nextOpen);
+        if (shouldUseProviderOpen) {
+          if (nextOpen) {
+            auth.openDrawer();
+          } else {
+            auth.closeDrawer();
+          }
+        } else {
+          setUncontrolledOpen(nextOpen);
+        }
       }
 
       onOpenChange?.(nextOpen);
     },
-    [controlledOpen, onOpenChange],
+    [auth, controlledOpen, onOpenChange, shouldUseProviderOpen],
   );
 
+  const formAdapter = useMemo<AuthAdapter>(() => {
+    if (!auth) return adapter;
+
+    return {
+      ...adapter,
+      signIn: auth.signIn,
+      signUp: auth.signUp,
+      signOut: auth.signOut,
+      signInWithOAuth: auth.signInWithOAuth,
+      onSuccess: undefined,
+      onError: undefined,
+    };
+  }, [adapter, auth]);
+
   const closeDrawer = useCallback(() => setDrawerOpen(false), [setDrawerOpen]);
+  const openIfAllowed = useCallback(() => {
+    if (isAuthenticated) return;
+    setDrawerOpen(true);
+  }, [isAuthenticated, setDrawerOpen]);
 
   useEffect(() => {
     const cleanups = [
-      triggerStore.registerTrigger("pageLoad", resolved.triggers.pageLoad, () =>
-        setDrawerOpen(true),
-      ),
-      triggerStore.registerTrigger("click", resolved.triggers.click, () => setDrawerOpen(true)),
-      triggerStore.registerTrigger("state", resolved.triggers.state, () => setDrawerOpen(true)),
-      triggerStore.registerTrigger("scrollOpen", resolved.triggers.scrollOpen, () =>
-        setDrawerOpen(true),
-      ),
-      triggerStore.registerTrigger("idle", resolved.triggers.idle, () => setDrawerOpen(true)),
-      triggerStore.registerTrigger("custom", resolved.triggers.custom, () => setDrawerOpen(true)),
+      triggerStore.registerTrigger("pageLoad", resolved.triggers.pageLoad, openIfAllowed),
+      triggerStore.registerTrigger("click", resolved.triggers.click, openIfAllowed),
+      triggerStore.registerTrigger("state", resolved.triggers.state, openIfAllowed),
+      triggerStore.registerTrigger("scrollOpen", resolved.triggers.scrollOpen, openIfAllowed),
+      triggerStore.registerTrigger("idle", resolved.triggers.idle, openIfAllowed),
+      triggerStore.registerTrigger("custom", resolved.triggers.custom, openIfAllowed),
     ];
 
     return () => {
       cleanups.forEach((cleanup) => cleanup());
     };
-  }, [resolved.triggers, setDrawerOpen, triggerStore]);
+  }, [openIfAllowed, resolved.triggers, triggerStore]);
 
   useEffect(() => {
     const pageLoadTrigger = resolved.triggers.pageLoad;
@@ -351,10 +430,11 @@ export function AuthDrawer({
   const { y, rawY, onDrag, onDragEnd } = useDraggableDrawer(closeDrawer, true, drawerMotion);
 
   const openDrawer = useCallback(() => {
+    if (isAuthenticated) return;
     y.set(0);
     rawY.set(0);
     setDrawerOpen(true);
-  }, [rawY, setDrawerOpen, y]);
+  }, [isAuthenticated, rawY, setDrawerOpen, y]);
 
   const toggleDrawer = useCallback(() => {
     if (open) {
@@ -526,6 +606,9 @@ export function AuthDrawer({
 
               <LoginForm
                 onSuccess={closeDrawer}
+                onAdapterSuccess={onSuccess}
+                onAdapterError={onError}
+                adapter={formAdapter}
                 titleId={titleId}
                 descId={descId}
                 config={resolved}

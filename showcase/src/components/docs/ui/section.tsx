@@ -2,9 +2,14 @@ import { DefaultConfigPopover } from "../default-config-popover";
 import type { PropDef, SectionProps } from "../props/types";
 
 export function Section({ id, title, eyebrow, children }: SectionProps) {
+  const isWideSection = ["sdk-adapters", "configurator", "api"].includes(id);
+  const contentWidth = isWideSection ? "w-full" : "mx-auto w-full max-w-2xl";
+
   return (
     <section id={id} className="scroll-mt-24 py-4 first:pt-0">
-      <div className="mb-6 flex items-end justify-between gap-4 border-b border-foreground/10 pb-3">
+      <div
+        className={`mb-6 flex items-end justify-between gap-4 border-b border-foreground/10 pb-3 ${contentWidth}`}
+      >
         <div>
           {eyebrow ? (
             <p className="docs-eyebrow text-[0.68rem] font-normal uppercase tracking-[0.16em] text-foreground/38">
@@ -20,7 +25,7 @@ export function Section({ id, title, eyebrow, children }: SectionProps) {
           #{id}
         </a>
       </div>
-      {children}
+      <div className={contentWidth}>{children}</div>
     </section>
   );
 }

@@ -18,6 +18,7 @@ type TabbedCodeBlockProps = {
   variants: CodeBlockVariant[];
   defaultVariant?: string;
   lang?: string;
+  title?: string;
 };
 
 const EASE_OUT = [0.23, 1, 0.32, 1] as const;
@@ -36,6 +37,7 @@ export function TabbedCodeBlock({
   variants,
   defaultVariant,
   lang = "bash",
+  title,
 }: TabbedCodeBlockProps) {
   const reduceMotion = useReducedMotion();
   const tabListRef = useRef<HTMLDivElement>(null);
@@ -120,6 +122,13 @@ export function TabbedCodeBlock({
 
   return (
     <div className="overflow-hidden rounded-[6px] border border-foreground/10">
+      {title ? (
+        <div className="flex items-center justify-between border-b border-foreground/10 bg-[#0b0b0c] px-3 py-2">
+          <span className="font-mono text-[0.68rem] text-white/56">
+            {title}
+          </span>
+        </div>
+      ) : null}
       <div
         ref={tabListRef}
         className="relative flex gap-0.5 border-b border-foreground/10 bg-[#0b0b0c] "

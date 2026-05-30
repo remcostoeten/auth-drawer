@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from "react";
-import type { AuthUiError } from "./auth-errors";
+import type { AuthErrorCode, AuthUiError } from "./auth-errors";
 import type { AuthCopyConfig, ResolvedAuthCopyConfig } from "./copy";
 import type { OAuthProvider } from "./oauth-providers";
 
@@ -357,7 +357,6 @@ export type AuthTriggerStore = {
  * Credential payload passed to whichever auth backend the consumer uses.
  */
 export type CredentialAuthInput = {
-  mode: FormMode;
   email: string;
   password: string;
   rememberMe: boolean;
@@ -371,18 +370,92 @@ export interface ResetPasswordInput {
 }
 
 /**
- * Backend-agnostic auth operation contract.
+ * Standardized output wrapper for all adapter actions.
  */
-export type AuthHandlers = {
-  onCredential?: (input: CredentialAuthInput) => Promise<void>;
-  onOAuth?: (provider: OAuthProvider) => Promise<void>;
-  onForgotPassword?: (email: string) => Promise<void>;
-  onResetPassword?: (input: ResetPasswordInput) => Promise<void>;
-  normalizeError?: (
-    error: unknown,
-    context: { provider?: OAuthProvider; fallbackTarget?: AuthUiError["target"] },
-  ) => AuthUiError;
-};
+export interface AuthResult<T = any> {
+  success: boolean;
+  data?: T | null;
+  error?: AuthUiError | null;
+}
+
+/**
+ * User and session profile structure exposed to the UI.
+ */
+export interface AuthSessionState {
+  user: {
+    id: string;
+    email: string;
+    name?: string;
+    image?: string | null;
+    [key: string]: any;
+  } | null;
+  session: any | null;
+}
+
+/**
+ * Core interface for authentication adapters.
+ *
+ * `id`, `signIn`, and `useSession` are required. The drawer uses feature
+ * detection to show/hide UI elements based on which optional methods are
+ * implemented.
+ */
+export interface AuthAdapter {
+  id: string;
+  providers?: OAuthProvider[];
+  /**
+   * Optional demo credentials used by mock or showcase adapters to prefill the form.
+   * Real providers can omit this.
+   */
+  demoCredentials?: {
+    email: string;
+    password: string;
+  };
+  /**
+   * When true, the drawer collects a name field during registration.
+   */
+  requiresName?: boolean;
+  signIn: (input: CredentialAuthInput) => Promise<AuthResult>;
+  signUp?: (input: CredentialAuthInput & { name: string }) => Promise<AuthResult>;
+  signOut?: () => Promise<AuthResult>;
+  signInWithOAuth?: (provider: string) => Promise<AuthResult>;
+  requestPasswordReset?: (email: string) => Promise<AuthResult>;
+  resetPassword?: (input: ResetPasswordInput) => Promise<AuthResult>;
+  /**
+   * Reactive session hook. This is a React hook and MUST only be called
+   * from within a React component or custom hook (Rules of Hooks).
+   * @hook
+   */
+  useSession: () => {
+    data: AuthSessionState | null;
+    isPending: boolean;
+    error: any;
+  };
+  features?: {
+    magicLink?: {
+      signIn: (email: string) => Promise<AuthResult>;
+    };
+    emailOtp?: {
+      sendVerificationOtp: (email: string) => Promise<AuthResult>;
+      signIn: (email: string, otp: string) => Promise<AuthResult>;
+    };
+    anonymous?: {
+      signIn: () => Promise<AuthResult>;
+    };
+  };
+  normalizeError?: (error: unknown) => AuthUiError;
+  /** Called after any successful auth action. */
+  onSuccess?: (action: "signIn" | "signUp" | "signOut" | "oauth") => void;
+  /** Called after any failed auth action. */
+  onError?: (
+    error: AuthUiError,
+    action: "signIn" | "signUp" | "signOut" | "oauth",
+  ) => void;
+}
+
+export type AuthErrorNormalizer = (
+  error: unknown,
+  context: { provider?: OAuthProvider; fallbackTarget?: AuthUiError["target"] },
+) => AuthUiError;
 
 /**
  * Motion and layout contract consumed by AuthDrawer and the motion studio.
@@ -435,7 +508,8 @@ export type AuthConfig = {
    * Activation rules that can open the auth surface.
    */
   triggers?: AuthTriggerConfig;
-} & AuthHandlers;
+  normalizeError?: AuthErrorNormalizer;
+};
 
 /**
  * Fully resolved config used inside the drawer after defaults merge.

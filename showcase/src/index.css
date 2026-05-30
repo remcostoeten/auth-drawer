@@ -1,12 +1,24 @@
 @import "./styles/tokens.css" layer(base);
+@import "./components/debug/scenes/medium-paywall/medium-paywall-scene.css";
+@import "./components/debug/scenes/windows-xp/windows-xp-scene.css";
 
 @import "tailwindcss";
 
+@source "./";
+@source "../app";
 @source "../../packages/auth-drawer/src";
 
 @plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:is(.dark *));
+
+@custom-variant fine-hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
 
 @utility container {
   margin-inline: auto;
@@ -47,6 +59,7 @@
 
   --color-overlay-bg: hsl(var(--surface-overlay));
   --color-overlay-surface: hsl(var(--surface-overlay-raised));
+  --color-overlay-surface-hover: hsl(var(--surface-overlay-hover));
   --color-overlay-border: hsl(var(--border-overlay));
   --color-overlay-text: hsl(var(--text-on-overlay));
   --color-overlay-muted: hsl(var(--text-on-overlay-muted));
@@ -68,11 +81,10 @@
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
+  so this keeps the docs styling explicit and stable.
 
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
+  Any element that depends on a specific border color should declare it
+  directly instead of relying on framework defaults.
 */
 @layer base {
   *,
@@ -85,9 +97,9 @@
 }
 
 @utility auth-button-soft-hover {
-  transition-property: background-color, border-color, box-shadow, color;
-  transition-duration: 240ms;
-  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  transition-property: background-color, border-color, box-shadow;
+  transition-duration: 180ms;
+  transition-timing-function: ease;
 }
 
 @layer base {
@@ -268,7 +280,7 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 0;
     background: repeating-linear-gradient(
       0deg,
       transparent,
@@ -304,34 +316,41 @@
 }
 
 :root .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 999px;
 }
 
 :root .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.18);
+  background-clip: padding-box;
 }
 
 :root .custom-scrollbar {
-  scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.16) transparent;
+  scrollbar-width: thin;
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.14);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 999px;
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.24);
+  background-clip: padding-box;
 }
 
 .dark .custom-scrollbar {
-  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 8px;
+  height: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {

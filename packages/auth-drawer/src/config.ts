@@ -2,10 +2,6 @@ import type { ResolvedAuthConfig } from "./types";
 import { normalizeAuthError } from "./auth-errors";
 import { DEFAULT_COPY } from "./copy";
 
-async function noopAuthAction() {
-  await new Promise((resolveDone) => setTimeout(resolveDone, 800));
-}
-
 /**
  * Default resolved configuration for AuthDrawer.
  * Downstream components receive this merged shape only.
@@ -84,9 +80,5 @@ export const DEFAULT_CONFIG: ResolvedAuthConfig = {
     },
   },
   triggers: {},
-  onCredential: noopAuthAction,
-  onOAuth: noopAuthAction,
-  onForgotPassword: noopAuthAction,
-  onResetPassword: noopAuthAction,
   normalizeError: normalizeAuthError,
 };

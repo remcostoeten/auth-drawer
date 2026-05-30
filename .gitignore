@@ -1,5 +1,7 @@
 node_modules
 dist
+.next
+*.tsbuildinfo
 *.local
 
 .turbo
@@ -27,3 +29,5 @@ test-results
 
 # Bun
 bun.lockb
+.vercel
+.env*.local

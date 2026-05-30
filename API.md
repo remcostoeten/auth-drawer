@@ -1,18 +1,22 @@
 # Auth Drawer API
 
-This is the current public component and prop structure.
+This is the current public component and prop structure for `@remcostoeten/auth-drawer`.
+See [CHANGELOG.md](./packages/auth-drawer/CHANGELOG.md) for version history.
 
 ## Entry Points
 
-The local public wrapper is:
+Everything is imported directly from the published package:
 
 ```ts
 import {
   AuthDrawer,
+  AuthProvider,
+  useAuth,
+  useOptionalAuth,
   DEFAULT_CONFIG,
   createAuthTriggerStore,
   useScrollOpenTrigger,
-} from "@/components/auth/auth-drawer";
+} from "@remcostoeten/auth-drawer";
 import type {
   AuthBackdropConfig,
   AuthConfigGroup,
@@ -25,15 +29,17 @@ import type {
   DrawerPosition,
   OAuthProvider,
   AuthVisualConfig,
-} from "@/components/auth/auth-drawer";
+} from "@remcostoeten/auth-drawer";
 ```
 
-Internally that re-exports from `@remcostoeten/auth-drawer`.
+Adapter factories are imported from their own subpaths, e.g.
+`@remcostoeten/auth-drawer/adapters/better-auth`.
 
 ## Component
 
 ```tsx
 <AuthDrawer
+  adapter={authAdapter}
   config={config}
   className="..."
   hideTrigger={false}
@@ -48,7 +54,7 @@ Internally that re-exports from `@remcostoeten/auth-drawer`.
 
 ```typescript
 type AuthDrawerProps = {
-  adapter?: AuthAdapter;
+  adapter: AuthAdapter;
   config?: AuthConfig;
   className?: string;
   hideTrigger?: boolean;
@@ -63,16 +69,81 @@ type AuthDrawerProps = {
 
 | Prop | Type | Default | Description & Integration Tooltip |
 | :--- | :--- | :--- | :--- |
-| **`adapter`** | `AuthAdapter` | `undefined` | **The authentication client bridge.** Connects the UI to engines like Supabase, Better Auth, Clerk, NextAuth, Firebase, or custom JWT/REST. Automatically overrides layout flags based on supported adapter features (e.g. hides the Register tab if the adapter doesn't implement `signUp`). |
-| **`config`** | `AuthConfig` | `DEFAULT_CONFIG` | **Behavioral & visual theme configuration.** Customizes layout styles, Framer Motion properties, label/error copy, active triggers (scroll, delay, idle), and local handlers. |
+| **`adapter`** | `AuthAdapter` | Required | **The authentication client bridge.** Connects the UI to engines like Supabase, Better Auth, Clerk, NextAuth, Firebase, or custom JWT/REST. Automatically overrides layout flags based on supported adapter features (e.g. hides the Register tab if the adapter doesn't implement `signUp`). |
+| **`config`** | `AuthConfig` | `DEFAULT_CONFIG` | **Behavioral & visual theme configuration.** Customizes layout styles, Framer Motion properties, label/error copy, and active triggers (scroll, delay, idle). |
 | **`className`** | `string` | `""` | CSS classes applied directly to the default built-in floating/inline trigger button. |
 | **`hideTrigger`** | `boolean` | `false` | **Hides the built-in trigger button.** Enable this if you want to open the drawer exclusively from your own custom elements (e.g., custom header, route guards, paywall blockers, or CTA buttons). |
-| **`open`** | `boolean` | `undefined` | **Controlled state driver.** Drives the drawer's visual status from the host application. If provided, you must manage its state manually using the `onOpenChange` callback. |
+| **`open`** | `boolean` | `undefined` | **Controlled state driver.** Drives the drawer's visual status from the host application. If provided, it takes precedence over provider-managed and uncontrolled state, and you must update it from `onOpenChange`. |
 | **`defaultOpen`** | `boolean` | `false` | **Uncontrolled initial state.** Sets the default open state on initial render. Only used if the `open` prop is left undefined. |
 | **`onOpenChange`** | `(open: boolean) => void` | `undefined` | **State change callback.** Fires whenever the drawer transitions between open/closed states. Triggers on drag-to-dismiss, backdrop click, Escape keypress, or close button click. |
 | **`triggerStore`** | `AuthTriggerStore` | `undefined` | **Agnostic trigger ledger.** Connects external/non-React code (e.g., canvas renderers, router events, third-party libraries) to the drawer's activation listener. |
 | **`onSuccess`** | `(action) => void` | `undefined` | **Successful authentication callback.** Fired on any completed auth action (e.g., credentials login, registration, social callback). Perfect for performing route transitions, toast displays, or state syncs. |
 | **`onError`** | `(error, action) => void` | `undefined` | **Failed action callback.** Fired when any credential check, signup, or social attempt fails. Useful for analytics tracking or logging. |
+
+### Provider-controlled drawer
+
+`AuthProvider` exposes session state and drawer controls through `useAuth()`. If
+`AuthDrawer` is rendered inside the provider and you do not pass `open` or
+`onOpenChange`, the drawer follows `useAuth().openDrawer()` /
+`useAuth().closeDrawer()` and reuses the provider's adapter-backed session state.
+
+```tsx
+import { AuthDrawer, AuthProvider, useAuth } from "@remcostoeten/auth-drawer";
+
+function HeaderButton() {
+  const { openDrawer } = useAuth();
+  return <button onClick={openDrawer}>Sign in</button>;
+}
+
+function AppShell({ adapter, children }) {
+  return (
+    <AuthProvider adapter={adapter}>
+      <HeaderButton />
+      {children}
+      <AuthDrawer adapter={adapter} hideTrigger />
+    </AuthProvider>
+  );
+}
+```
+
+Pass `open` and `onOpenChange` when you need explicit host-owned state instead;
+those props take precedence over provider-managed state.
+
+### Hooks
+
+```typescript
+type AuthContextValue = {
+  user: AuthUser | null;
+  session: unknown | null;
+  isPending: boolean;
+  error: unknown | null;
+  signIn: (input: CredentialAuthInput) => Promise<AuthResult>;
+  signUp?: (input: CredentialAuthInput & { name: string }) => Promise<AuthResult>;
+  signInWithOAuth?: (provider: OAuthProvider) => Promise<AuthResult>;
+  signOut: () => Promise<AuthResult>;
+  openDrawer: () => void;
+  closeDrawer: () => void;
+  isDrawerOpen: boolean;
+};
+```
+
+| Hook | Returns | Notes |
+| :--- | :--- | :--- |
+| **`useAuth()`** | `AuthContextValue` | Reads adapter-backed session state and drawer controls. **Throws** if called outside an `AuthProvider`. |
+| **`useOptionalAuth()`** | `AuthContextValue \| null` | Same value as `useAuth()`, but returns `null` instead of throwing when no `AuthProvider` is mounted. Use it in shared/reusable components that may render with or without the provider. |
+
+`signUp` and `signInWithOAuth` are only present when the active adapter
+implements them, mirroring the drawer's own feature detection.
+
+```tsx
+import { useOptionalAuth } from "@remcostoeten/auth-drawer";
+
+function AccountBadge() {
+  const auth = useOptionalAuth();
+  if (!auth?.user) return null;
+  return <span>{auth.user.email}</span>;
+}
+```
 
 ## Config
 
@@ -80,12 +151,18 @@ type AuthDrawerProps = {
 type AuthConfig = {
   ui?: AuthUiConfig;
   triggers?: AuthTriggerConfig;
-} & AuthHandlers;
+  normalizeError?: AuthErrorNormalizer;
+};
 ```
 
 Use `ui.*` for everything that changes how the auth surface renders. Use `triggers.*` for rules that open the surface.
 
-`ui.auth.providers` may be an empty array to disable OAuth entirely.
+`ui.auth.providers` may be an empty array to disable OAuth entirely. At render time
+the drawer resolves OAuth buttons with
+`adapter.providers ?? config.ui.auth.providers ?? DEFAULT_CONFIG.ui.auth.providers`
+(when the adapter implements `signInWithOAuth`). Pass `providers` on the adapter
+factory (e.g. `createBetterAuthAdapter({ providers: [] })`) or keep both lists in
+sync — config alone cannot hide OAuth if the adapter still advertises providers.
 
 Defaults come from `DEFAULT_CONFIG`.
 
@@ -136,29 +213,64 @@ Current defaults:
 }
 ```
 
-## Auth Handlers
+### CSS theme tokens
 
-```ts
-type AuthHandlers = {
-  onCredential?: (input: CredentialAuthInput) => Promise<void>;
-  onOAuth?: (provider: OAuthProvider) => Promise<void>;
-  onForgotPassword?: (email: string) => Promise<void>;
-  onResetPassword?: (input: ResetPasswordInput) => Promise<void>;
-  normalizeError?: (
-    error: unknown,
-    context: {
-      provider?: OAuthProvider;
-      fallbackTarget?: AuthUiError["target"];
-    },
-  ) => AuthUiError;
-};
+The package ships CSS variables for the overlay theme. Override the existing HSL
+component tokens in your app CSS; there is no `cad-*` theme API.
+
+```css
+:root {
+  --surface-overlay: 34 12% 82%;
+  --text-on-overlay: 24 18% 14%;
+  --border-overlay: 28 12% 54%;
+}
+
+.dark {
+  --surface-overlay: 0 0% 7.5%;
+  --text-on-overlay: 0 0% 96%;
+  --border-overlay: 0 0% 100%;
+}
 ```
 
-Credential submit receives:
+## Auth Adapter
+
+```ts
+type AuthAdapter = {
+  id: string;
+  providers?: OAuthProvider[];
+  requiresName?: boolean;
+  signIn: (input: CredentialAuthInput) => Promise<AuthResult>;
+  signUp?: (input: CredentialAuthInput & { name: string }) => Promise<AuthResult>;
+  signOut?: () => Promise<AuthResult>;
+  signInWithOAuth?: (provider: string) => Promise<AuthResult>;
+  requestPasswordReset?: (email: string) => Promise<AuthResult>;
+  resetPassword?: (input: ResetPasswordInput) => Promise<AuthResult>;
+  useSession: () => {
+    data: AuthSessionState | null;
+    isPending: boolean;
+    error: unknown;
+  };
+  normalizeError?: (error: unknown) => AuthUiError;
+  onSuccess?: (action: "signIn" | "signUp" | "signOut" | "oauth") => void;
+  onError?: (
+    error: AuthUiError,
+    action: "signIn" | "signUp" | "signOut" | "oauth",
+  ) => void;
+};
+
+type AuthErrorNormalizer = (
+  error: unknown,
+  context: {
+    provider?: OAuthProvider;
+    fallbackTarget?: AuthUiError["target"];
+  },
+) => AuthUiError;
+```
+
+Credential sign-in receives:
 
 ```ts
 type CredentialAuthInput = {
-  mode: "login" | "register" | "resetPassword";
   email: string;
   password: string;
   rememberMe: boolean;
@@ -175,13 +287,17 @@ type ResetPasswordInput = {
 
 Current behavior:
 
-- `onCredential` runs after local email/password validation passes.
-- `onOAuth` receives the selected provider.
-- `onForgotPassword` receives the trimmed email.
-- `onResetPassword` receives a `ResetPasswordInput` with the new password.
-- Any thrown error is passed through `normalizeError`.
-- On success, the drawer closes.
-- When `ui.auth.providers` is empty, the OAuth button group and divider are omitted.
+- `adapter.signIn` runs after local email/password validation passes.
+- `adapter.signUp` is required to show registration.
+- `adapter.signInWithOAuth` is required to show OAuth provider buttons.
+- `adapter.requestPasswordReset` is required to show the forgot-password action.
+- `adapter.resetPassword` receives a `ResetPasswordInput` with the new password.
+- `adapter.useSession` is called once at the top of the drawer to suppress prompts for authenticated users.
+- Adapter action failures should return `{ success: false, error }`.
+- Thrown errors are passed through `adapter.normalizeError` or `config.normalizeError`.
+- On successful sign-in, sign-up, or OAuth, the drawer closes.
+- When the resolved provider list is empty (see precedence above), the OAuth button
+  group and divider are omitted.
 
 ## Error Shape
 
@@ -266,7 +382,7 @@ const config = {
 ## Supported Values
 
 ```ts
-type OAuthProvider = "github" | "google";
+type OAuthProvider = "github" | "google" | "apple" | "discord" | "tiktok";
 type DrawerMode = "drawer" | "modal";
 type DrawerPosition = "center" | "left" | "right";
 type FormMode = "login" | "register" | "resetPassword";
