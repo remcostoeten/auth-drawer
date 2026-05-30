@@ -25,12 +25,7 @@ export function AuthShell({ children }: AuthShellProps) {
   return (
     <AuthProvider adapter={authAdapter} onSuccess={handleAuthSuccess}>
       {children}
-      <AuthDrawer
-        adapter={authAdapter}
-        config={authDrawerConfig}
-        hideTrigger
-        onSuccess={handleAuthSuccess}
-      />
+      <AuthDrawer adapter={authAdapter} config={authDrawerConfig} hideTrigger />
     </AuthProvider>
   );
 }

@@ -112,7 +112,7 @@ export const docsCorpus: DocsSnippet[] = [
     id: "api-auth-provider",
     title: "AuthProvider",
     href: "/docs#api",
-    body: "AuthProvider exposes global auth state and drawer controls through useAuth. When AuthDrawer is rendered inside the provider without open/onOpenChange props, it follows provider openDrawer and closeDrawer controls and reuses the provider's adapter-backed session state. Explicit controlled props remain available.",
+    body: "AuthProvider exposes global auth state and drawer controls through useAuth. When AuthDrawer is rendered inside the provider without open/onOpenChange props, it follows provider openDrawer and closeDrawer controls and reuses the provider's adapter-backed session state. Add a root div with id auth-drawer-portal so the drawer portals above page content. Explicit controlled props remain available.",
   },
   {
     id: "api-auth",

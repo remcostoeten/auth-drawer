@@ -22,19 +22,30 @@ const adapter = createBetterAuthAdapter({ client });
 
 export function App() {
   return (
-    <AuthProvider adapter={adapter}>
-      <AuthDrawer adapter={adapter} />
-    </AuthProvider>
+    <>
+      <AuthProvider adapter={adapter}>
+        <AuthDrawer adapter={adapter} />
+      </AuthProvider>
+      <div id="auth-drawer-portal" />
+    </>
   );
 }
 ```
 
 Styles ship with the component import — no separate CSS file required.
 
+Add `<div id="auth-drawer-portal" />` near the root of your document so the drawer
+portals above page content and background scroll lock works correctly. Without it,
+the drawer still renders but falls back to inline placement (a dev console warning
+is logged).
+
 When `AuthDrawer` is rendered inside `AuthProvider`, `useAuth().openDrawer()` and
 `useAuth().closeDrawer()` control the drawer unless you pass explicit
 `open`/`onOpenChange` props. Use those props when your app needs fully controlled
 state. The drawer and `useAuth()` read the same adapter-backed session state.
+
+Put app-level success handling on `AuthProvider` (or `adapter.onSuccess`). Drawer
+submissions inside a provider already flow through the provider callbacks.
 
 Customize the bundled theme with CSS tokens:
 

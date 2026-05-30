@@ -1138,48 +1138,30 @@ export const authClient = createAuthClient();`,
     id: "ba-mount",
     number: 7,
     title: "Mount AuthDrawer Component & Pass Adapter",
-    description: "Wrap the Better Auth client with Auth Drawer's adapter and pass it into the drawer.",
+    description:
+      "Wrap the app in AuthProvider when you need useAuth() across the tree. Add a portal mount in your root layout so the drawer renders above page content.",
     type: "single-file",
     docsUrl: "https://www.better-auth.com/docs/installation#react",
     file: {
-      name: "components/auth/BetterAuthLogin.tsx",
+      name: "components/auth-shell.tsx",
       lang: "tsx",
       code: `"use client";
 
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
-import { authClient } from "@/lib/auth-client";
-import { useState } from "react";
+import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
+import { authAdapter } from "@/lib/auth-adapter";
+import { authDrawerConfig } from "@/lib/auth-drawer-config";
 
-const adapter = createBetterAuthAdapter({
-  client: authClient,
-  providers: ["github", "google"], // keep aligned with Better Auth socialProviders
-  callbackURL: "/dashboard",
-  newUserCallbackURL: "/onboarding",
-  passwordResetRedirectTo: "/reset-password",
-  requireName: true,
-});
-
-export function BetterAuthLogin() {
-  const [open, setOpen] = useState(false);
-
+export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <button 
-        onClick={() => setOpen(true)}
-        className="px-4 py-2 bg-foreground text-background rounded-[5px] text-sm font-semibold"
-      >
-        Open login portal
-      </button>
-
-      <AuthDrawer
-        adapter={adapter}
-        open={open}
-        onOpenChange={setOpen}
-      />
-    </>
+    <AuthProvider adapter={authAdapter}>
+      {children}
+      <AuthDrawer adapter={authAdapter} config={authDrawerConfig} hideTrigger />
+    </AuthProvider>
   );
-}`,
+}
+
+// app/layout.tsx — add once near the document root:
+// <div id="auth-drawer-portal" />`,
     },
   },
 ];

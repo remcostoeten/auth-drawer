@@ -413,15 +413,26 @@ export function DocsPage() {
                     <code className="font-mono text-[0.72rem]">onOpenChange</code>,
                     it follows those provider controls.
                   </p>
+                  <p className="mb-2">
+                    Add{" "}
+                    <code className="font-mono text-[0.72rem]">
+                      &lt;div id=&quot;auth-drawer-portal&quot; /&gt;
+                    </code>{" "}
+                    in your root layout so the drawer portals above page content.
+                    Without it, the drawer still works but renders inline.
+                  </p>
                   <pre className="overflow-x-auto rounded-[6px] bg-background p-3 text-[0.7rem] text-foreground/72">
                     {`import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
 
 function Shell({ adapter, children }) {
   return (
-    <AuthProvider adapter={adapter}>
-      {children}
-      <AuthDrawer adapter={adapter} hideTrigger />
-    </AuthProvider>
+    <>
+      <AuthProvider adapter={adapter}>
+        {children}
+        <AuthDrawer adapter={adapter} hideTrigger />
+      </AuthProvider>
+      <div id="auth-drawer-portal" />
+    </>
   );
 }`}
                   </pre>

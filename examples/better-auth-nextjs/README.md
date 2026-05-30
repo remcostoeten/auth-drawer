@@ -38,4 +38,5 @@ Configure a real mailer by replacing the `sendResetPassword` stub in `src/lib/au
 | `src/lib/auth-client.ts` | React client |
 | `src/lib/auth-adapter.ts` | `createBetterAuthAdapter` |
 | `src/lib/oauth-providers.ts` | Shared OAuth provider list |
+| `src/app/layout.tsx` | Root layout; includes `#auth-drawer-portal` |
 | `src/components/auth-shell.tsx` | `AuthProvider` + `AuthDrawer` |

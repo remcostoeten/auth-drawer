@@ -218,7 +218,12 @@ backend errors; for a custom adapter, return the `AuthUiError` object literal
   `{ data: null, isPending: false, error: null }` (this is what `createAdapter`
   defaults to).
 - **SSR / Next.js** — `AuthProvider`, `AuthDrawer`, and `useAuth` are client-side.
-  Put them in a `"use client"` boundary.
+  Put them in a `"use client"` boundary. Add `<div id="auth-drawer-portal" />` in
+  your root layout so the drawer portals above page content (without it, the drawer
+  still works but renders inline).
+- **Success callbacks inside a provider** — drawer submissions already invoke
+  `AuthProvider`'s `onSuccess`. Prefer provider-level (or `adapter.onSuccess`)
+  handlers for redirects; `AuthDrawer`'s `onSuccess` is optional and stacks on top.
 - **Don't reach into the package internals** — the public API is exactly what the
   main export and the `adapters/*` subpaths expose. Build against those.
 

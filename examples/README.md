@@ -4,7 +4,7 @@ Runnable reference apps that mirror the setup guides in the docs.
 
 | Example | Stack | Docs |
 | --- | --- | --- |
-| [better-auth-nextjs](./better-auth-nextjs) | Next.js 15, Better Auth, Drizzle, PostgreSQL | [SDK adapters → Better Auth](https://auth-drawer.remcostoeten.nl/docs#sdk-better-auth) |
+| [better-auth-nextjs](./better-auth-nextjs) | Next.js 16, Better Auth, Drizzle, PostgreSQL | [SDK adapters → Better Auth](https://auth-drawer.remcostoeten.nl/docs#sdk-better-auth) |
 
 ## Provider-open behavior
 
@@ -21,10 +21,13 @@ function SignInButton() {
 
 export function App({ adapter }) {
   return (
-    <AuthProvider adapter={adapter}>
-      <SignInButton />
-      <AuthDrawer adapter={adapter} hideTrigger />
-    </AuthProvider>
+    <>
+      <AuthProvider adapter={adapter}>
+        <SignInButton />
+        <AuthDrawer adapter={adapter} hideTrigger />
+      </AuthProvider>
+      <div id="auth-drawer-portal" />
+    </>
   );
 }
 ```

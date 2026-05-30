@@ -21,6 +21,7 @@ export default function RootLayout({
           <SiteHeader />
           {children}
         </AuthShell>
+        <div id="auth-drawer-portal" />
       </body>
     </html>
   );
