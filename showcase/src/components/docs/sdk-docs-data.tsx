@@ -459,6 +459,7 @@ export function Login() {
     gotchas: [
       "This adapter assumes a server-driven cookie session model, not a JWT-in-localStorage model.",
       "If your backend uses different field names, normalize them before returning from /user.",
+      "Because requests use credentials: \"include\", your server's CORS Access-Control-Allow-Origin must be the exact client origin (not *), or the browser blocks the response and the drawer reports a \"Failed to fetch\" error.",
     ],
     notes: (
       <>

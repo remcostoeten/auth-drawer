@@ -188,6 +188,7 @@ packages/auth-drawer/        Published React package
 showcase/                    Next.js docs, configurator, and playground
 examples/better-auth-nextjs/ Runnable Better Auth integration
 examples/custom-jwt-nextjs/  Runnable custom JWT (REST) integration
+examples/passport-express/   Runnable Express + Passport (cookie session) integration
 specs/                       Adapter and provider implementation notes
 docs/internal/               Project planning and release notes
 ```

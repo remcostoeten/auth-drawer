@@ -35,12 +35,20 @@ cp server/.env.example server/.env
 cp client/.env.example client/.env.local
 ```
 
-Edit `server/.env` — set a proper `SESSION_SECRET`:
+Edit `server/.env`:
 
-```bash
-# generate one:
-openssl rand -base64 32
-```
+- Set a proper `SESSION_SECRET`:
+
+  ```bash
+  # generate one:
+  openssl rand -base64 32
+  ```
+
+- Make sure `WEB_URL` matches the client origin (`http://localhost:3006`). This
+  is the origin allowed through CORS. Because the client sends
+  `credentials: "include"`, the browser requires an **exact** origin match — if
+  `WEB_URL` points anywhere else, requests fail with a `"Failed to fetch"` error
+  in the browser even though the server is running.
 
 ### 3. Run everything
 
