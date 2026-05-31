@@ -39,7 +39,10 @@ import { useOptionalAuth } from "./auth-provider";
 type Props = {
   config?: AuthConfig;
   adapter: AuthAdapter;
+  /** Applies to the built-in trigger button. Prefer `triggerClassName` for clarity. */
   className?: string;
+  /** Applies to the built-in trigger button. Takes precedence over `className`. */
+  triggerClassName?: string;
   hideTrigger?: boolean;
   open?: boolean;
   defaultOpen?: boolean;
@@ -229,6 +232,7 @@ function AuthDrawerContent({
   config,
   adapter,
   className,
+  triggerClassName,
   hideTrigger = false,
   open: controlledOpen,
   defaultOpen,
@@ -655,7 +659,7 @@ function AuthDrawerContent({
             "hover:bg-overlay-surface/20 hover:border-overlay-border/20",
             "focus-visible:ring-2 focus-visible:ring-overlay-border/20 focus-visible:outline-hidden",
             "border-overlay-border/10",
-            className,
+            triggerClassName ?? className,
           )}
         >
           <div className="relative flex items-center justify-center">

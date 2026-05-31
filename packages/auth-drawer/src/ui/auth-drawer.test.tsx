@@ -280,3 +280,144 @@ describe("AuthProvider actions", () => {
     expect(onResult).toHaveBeenCalledWith({ success: false, error: normalized });
   });
 });
+
+describe("AuthDrawer trigger visibility", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => { root.unmount(); });
+    document.body.removeChild(container);
+  });
+
+  it("renders the trigger button by default", () => {
+    const adapter = createAdapter();
+    act(() => { root.render(<AuthDrawer adapter={adapter} />); });
+    expect(container.querySelector("[aria-haspopup='dialog']")).toBeTruthy();
+  });
+
+  it("hides the trigger button when hideTrigger is true", () => {
+    const adapter = createAdapter();
+    act(() => { root.render(<AuthDrawer adapter={adapter} hideTrigger />); });
+    expect(container.querySelector("[aria-haspopup='dialog']")).toBeNull();
+  });
+
+  it("applies triggerClassName to the trigger button", () => {
+    const adapter = createAdapter();
+    act(() => { root.render(<AuthDrawer adapter={adapter} triggerClassName="my-trigger" />); });
+    expect(container.querySelector(".my-trigger")).toBeTruthy();
+  });
+
+  it("falls back to className when triggerClassName is not provided", () => {
+    const adapter = createAdapter();
+    act(() => { root.render(<AuthDrawer adapter={adapter} className="legacy-class" />); });
+    expect(container.querySelector(".legacy-class")).toBeTruthy();
+  });
+
+  it("triggerClassName takes precedence over className", () => {
+    const adapter = createAdapter();
+    act(() => {
+      root.render(<AuthDrawer adapter={adapter} className="old-class" triggerClassName="new-class" />);
+    });
+    expect(container.querySelector(".new-class")).toBeTruthy();
+    expect(container.querySelector(".old-class")).toBeNull();
+  });
+});
+
+describe("AuthDrawer adapter feature gating", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => { root.unmount(); });
+    document.body.removeChild(container);
+  });
+
+  it("hides the register switch when adapter has no signUp", () => {
+    const adapter = createAdapter({ signUp: undefined });
+    act(() => { root.render(<AuthDrawer adapter={adapter} defaultOpen />); });
+    const allText = document.body.textContent?.toLowerCase() ?? "";
+    expect(allText.includes("register")).toBe(false);
+  });
+
+  it("shows the register switch when adapter has signUp", () => {
+    const adapter = createAdapter({ signUp: vi.fn(async () => ({ success: true })) });
+    act(() => { root.render(<AuthDrawer adapter={adapter} defaultOpen />); });
+    const allText = document.body.textContent?.toLowerCase() ?? "";
+    expect(allText.includes("register")).toBe(true);
+  });
+});
+
+describe("AuthDrawer keyboard interaction", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => { root.unmount(); });
+    document.body.removeChild(container);
+  });
+
+  it("calls onOpenChange(false) when Escape is pressed while open", async () => {
+    const adapter = createAdapter();
+    const onOpenChange = vi.fn();
+    act(() => {
+      root.render(<AuthDrawer adapter={adapter} open onOpenChange={onOpenChange} />);
+    });
+
+    expect(document.body.querySelector('[role="dialog"]')).toBeTruthy();
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    });
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("does not call onOpenChange when a different key is pressed", async () => {
+    const adapter = createAdapter();
+    const onOpenChange = vi.fn();
+    act(() => {
+      root.render(<AuthDrawer adapter={adapter} open onOpenChange={onOpenChange} />);
+    });
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it("returns focus to the trigger button when drawer closes", async () => {
+    const adapter = createAdapter();
+    const onOpenChange = vi.fn();
+    act(() => {
+      root.render(<AuthDrawer adapter={adapter} open onOpenChange={onOpenChange} />);
+    });
+
+    const trigger = container.querySelector("[aria-haspopup='dialog']") as HTMLElement;
+
+    await act(async () => {
+      root.render(<AuthDrawer adapter={adapter} open={false} onOpenChange={onOpenChange} />);
+    });
+
+    expect(document.activeElement).toBe(trigger);
+  });
+});

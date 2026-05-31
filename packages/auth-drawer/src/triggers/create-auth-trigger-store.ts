@@ -180,7 +180,7 @@ function canFire(
 ) {
   if (!config) return false;
   if (config.once && record.fireCount > 0) return false;
-  if (config.cooldownMs && record.lastFiredAt > 0 && now - record.lastFiredAt < config.cooldownMs)
+  if (config.cooldownMs && record.fireCount > 0 && now - record.lastFiredAt < config.cooldownMs)
     return false;
   if (config.every && config.every > 1 && record.seenCount % config.every !== 0) return false;
   if (config.sampleRate !== undefined && random() > config.sampleRate) return false;
