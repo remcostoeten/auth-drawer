@@ -17,7 +17,7 @@
         "publish:auth-drawer": "npm publish -w @remcostoeten/auth-drawer --access public",
         "example:better-auth": "cd examples/better-auth-nextjs && bun install && bun run dev:all",
         "example:custom-jwt": "cd examples/custom-jwt-nextjs && bun install && bun run dev:all",
-        "example:passport": "cd examples/passport-express && bun run dev:all"
+        "example:passport": "bash examples/passport-express/dev.sh"
     },
     "devDependencies": {
         "turbo": "^2.5.4"
