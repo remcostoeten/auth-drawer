@@ -17,7 +17,7 @@
     "dev:all": "bash scripts/dev.sh"
   },
   "dependencies": {
-    "@remcostoeten/auth-drawer": "workspace:*",
+    "@remcostoeten/auth-drawer": "^0.2.1",
     "better-auth": "^1.6.11",
     "drizzle-orm": "^0.44.7",
     "framer-motion": "^12.38.0",
