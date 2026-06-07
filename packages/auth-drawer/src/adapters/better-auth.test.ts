@@ -31,6 +31,23 @@ describe("createBetterAuthAdapter", () => {
     expect(adapter.providers).toEqual(["github", "google"]);
   });
 
+  it("does not leak a Proxy client's options into providers (regression)", () => {
+    // A real Better Auth client is a Proxy where EVERY property access returns a
+    // truthy nested proxy (it lazily builds RPC paths). The old code did
+    // `?? client.options?.socialProviders ?? [...]`, so `providers` became a
+    // proxy — and the form later crashed on `providers.length > 0`
+    // ("Cannot convert object to primitive value").
+    const handler: ProxyHandler<() => void> = {
+      get: () => new Proxy(() => {}, handler),
+    };
+    const proxyClient = new Proxy(() => {}, handler) as never;
+
+    const adapter = createBetterAuthAdapter({ client: proxyClient });
+    expect(Array.isArray(adapter.providers)).toBe(true);
+    expect(adapter.providers).toEqual(["github", "google"]);
+    expect(() => (adapter.providers as string[]).length > 0).not.toThrow();
+  });
+
   it("forwards credentials and rememberMe to client.signIn.email", async () => {
     const client = makeClient();
     const adapter = createBetterAuthAdapter({ client, callbackURL: "/app" });

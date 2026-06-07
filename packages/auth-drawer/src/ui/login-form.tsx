@@ -115,7 +115,13 @@ function Form({
   const confirmLiveId = fieldErrorId(errorBaseId, "confirm-live");
   const formErrorId = fieldErrorId(errorBaseId, "form");
   const oauthErrorId = fieldErrorId(errorBaseId, "oauth");
-  const hasOAuthProviders = config.ui.auth.providers.length > 0;
+  // Defensive: never coerce an untrusted value. A misbehaving adapter could
+  // hand back a non-array `providers` (e.g. a Proxy), and `providers.length > 0`
+  // would throw and crash the whole form. Degrade to "no OAuth" instead.
+  const oauthProviders = Array.isArray(config.ui.auth.providers)
+    ? config.ui.auth.providers
+    : [];
+  const hasOAuthProviders = oauthProviders.length > 0;
   const requiresName = Boolean(adapter.requiresName && isRegister);
   const emailError = errors.fields.email;
   const passwordError = errors.fields.password;
@@ -463,7 +469,7 @@ function Form({
       {hasOAuthProviders && !isResetPassword ? (
         <>
           <OauthButtons
-            providers={config.ui.auth.providers}
+            providers={oauthProviders}
             layout={config.ui.auth.oauthLayout}
             visibleCount={config.ui.auth.oauthOverflow.visibleCount}
             showPreviewIcons={config.ui.auth.oauthOverflow.showPreviewIcons}

@@ -75,10 +75,13 @@ function readSavedSettings(): Partial<MotionSettings> {
 
 function resolveAuthGroup(config: AuthConfig | undefined, adapter: AuthAdapter) {
   const auth = config?.ui?.auth ?? {};
+  // Only accept an actual array from the adapter; some clients (e.g. a Better
+  // Auth Proxy client) can surface a non-array here.
+  const adapterProviders = Array.isArray(adapter.providers) ? adapter.providers : undefined;
   const providers =
     !adapter.signInWithOAuth
       ? []
-      : (adapter.providers ?? auth.providers ?? DEFAULT_CONFIG.ui.auth.providers);
+      : (adapterProviders ?? auth.providers ?? DEFAULT_CONFIG.ui.auth.providers);
 
   return {
     providers,
