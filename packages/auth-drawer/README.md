@@ -2,6 +2,13 @@
 
 Configurable React auth drawer and modal with OAuth, email/password, triggers, motion, and typed provider adapters.
 
+<p>
+  <img alt="npm version" src="https://shieldcn.dev/npm/@remcostoeten/auth-drawer.png" />
+  <img alt="npm downloads" src="https://shieldcn.dev/npm/dm/@remcostoeten/auth-drawer.png" />
+  <img alt="npm license" src="https://shieldcn.dev/npm/license/@remcostoeten/auth-drawer.png" />
+  <img alt="npm types" src="https://shieldcn.dev/npm/types/@remcostoeten/auth-drawer.png" />
+</p>
+
 ## Install
 
 ```bash
