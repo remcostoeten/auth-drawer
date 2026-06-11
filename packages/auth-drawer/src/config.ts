@@ -45,6 +45,16 @@ export const DEFAULT_CONFIG: ResolvedAuthConfig = {
         },
       },
     },
+    success: {
+      enabled: true,
+      minVisibleMs: 650,
+      maxVisibleMs: 3500,
+      messages: {
+        signIn: "Signed in",
+        signUp: "Account created",
+        oauth: "Signed in with provider",
+      },
+    },
     motion: {
       upwardResistance: 0.15,
       downwardThreshold: 0.25,

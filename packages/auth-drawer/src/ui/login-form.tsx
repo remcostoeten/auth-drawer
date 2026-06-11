@@ -7,7 +7,14 @@ import {
   hasAuthErrors,
   mergeAuthErrors,
 } from "../auth-errors";
-import type { AuthAdapter, FormMode, LoadingAction, OAuthProvider, ResolvedAuthConfig } from "../types";
+import type {
+  AuthAction,
+  AuthAdapter,
+  FormMode,
+  LoadingAction,
+  OAuthProvider,
+  ResolvedAuthConfig,
+} from "../types";
 import { EASE_OUT, MAX_STAGGER } from "../constants";
 import { useRememberMe } from "../hooks/use-remember-me";
 import { getPasswordMatchFeedback, validateCredentials } from "../validation";
@@ -21,7 +28,7 @@ import { RememberMe } from "./remember-me";
 import { ValidationMessage } from "./validation-message";
 
 type Props = {
-  onSuccess: () => void;
+  onSubmitSuccess: (action: AuthAction) => void;
   onAdapterSuccess?: NonNullable<AuthAdapter["onSuccess"]>;
   onAdapterError?: NonNullable<AuthAdapter["onError"]>;
   adapter: AuthAdapter;
@@ -67,16 +74,8 @@ function fieldErrorId(base: string, field: string) {
   return `${base}-${field}-error`;
 }
 
-/**
- * Renders the auth form and owns form-only UI state.
- *
- * @param props - Auth callbacks, ids, and resolved feature config.
- * @returns Complete credential and OAuth form.
- */
-type AuthAction = "signIn" | "signUp" | "signOut" | "oauth";
-
 function Form({
-  onSuccess,
+  onSubmitSuccess,
   onAdapterSuccess,
   onAdapterError,
   adapter,
@@ -178,7 +177,7 @@ function Form({
           }
           handleAdapterSuccess("oauth");
 
-          onSuccess();
+          onSubmitSuccess("oauth");
         } catch (error) {
           const normalized = adapter.normalizeError
             ? adapter.normalizeError(error)
@@ -190,7 +189,7 @@ function Form({
         }
       });
     },
-    [adapter, config, handleAdapterError, handleAdapterSuccess, onSuccess, startTransition],
+    [adapter, config, handleAdapterError, handleAdapterSuccess, onSubmitSuccess, startTransition],
   );
 
   const submitForm = useCallback(
@@ -266,7 +265,7 @@ function Form({
           }
 
           handleAdapterSuccess(action);
-          onSuccess();
+          onSubmitSuccess(action);
           return;
         } catch (error) {
           const backendError = adapter.normalizeError
@@ -288,7 +287,7 @@ function Form({
       handleAdapterSuccess,
       mode,
       name,
-      onSuccess,
+      onSubmitSuccess,
       password,
       rememberMe,
       requiresName,

@@ -102,6 +102,7 @@ export const NAV_ITEMS = [
   { label: "OAuth API", id: "api-oauth", depth: 1, group: "api" },
   { label: "Triggers API", id: "api-triggers", depth: 1, group: "api" },
   { label: "ui.copy", id: "api-copy", depth: 1, group: "api" },
+  { label: "ui.success", id: "api-success", depth: 1, group: "api" },
   { label: "ui.visual", id: "api-visual", depth: 1, group: "api" },
   { label: "ui.motion", id: "api-motion", depth: 1, group: "api" },
 ] as const satisfies readonly NavItem[];

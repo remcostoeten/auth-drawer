@@ -74,6 +74,12 @@ export const CONFIG_PROPS: PropDef[] = [
       "Custom footer below the form. Overrides copy.footer segments when set.",
   },
   {
+    name: "ui.success",
+    type: "AuthSuccessConfig",
+    description:
+      "Built-in success commit state after sign-in, sign-up, or OAuth. Controls how long the drawer stays visible before closing, plus success text and an opt-out toggle.",
+  },
+  {
     name: "ui.presentation",
     type: "AuthPresentationConfig",
     description: "Drawer or modal presentation plus default open behaviour.",

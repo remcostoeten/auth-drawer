@@ -22,6 +22,7 @@ type AuthUiConfig = {
   visual?: { backdrop?: AuthBackdropConfig };
   motion?: Partial<MotionSettings>; // low-level drag/entry/exit/layout tuning
   footer?: ReactNode;              // fully custom footer; overrides copy.footer
+  success?: AuthSuccessConfig;     // post-auth success commit timing and copy
 };
 ```
 
@@ -78,6 +79,24 @@ drag physics (`upwardResistance`, `downwardThreshold`, `velocityThreshold`,
 backdrop motion, and form layout (`formPaddingTop`, `formJustify`, etc.). Only set
 what you need; the rest come from defaults. Most apps never touch this.
 
+### `ui.success` — post-auth commit state
+
+After sign-in, sign-up, or OAuth succeeds, the drawer can show a brief success
+state before closing. Tune it with `ui.success`:
+
+```ts
+type AuthSuccessConfig = {
+  enabled?: boolean;               // default true
+  minVisibleMs?: number;           // default 650
+  maxVisibleMs?: number;           // default 3500
+  messages?: Partial<Record<"signIn" | "signUp" | "oauth", string>>;
+  footer?: ReactNode;              // replaces default success message
+};
+```
+
+Set `enabled: false` to close immediately on success. `onSuccess` callbacks still
+fire when the action completes; this only controls visible confirmation timing.
+
 ### `ui.copy` — text overrides
 
 Override any label, heading, button text, or message via `AuthCopyConfig`. Groups
@@ -112,6 +131,12 @@ overrides `copy.footer` segments). Use `formatCopy` / `resolveCopyGroup` /
       },
     },
     motion: { displayMode: "drawer", desktopWidth: "448px", desktopPosition: "center" /* + drag/entry/exit */ },
+    success: {
+      enabled: true,
+      minVisibleMs: 650,
+      maxVisibleMs: 3500,
+      messages: { signIn: "Signed in", signUp: "Account created", oauth: "Signed in with provider" },
+    },
   },
   triggers: {},
 }

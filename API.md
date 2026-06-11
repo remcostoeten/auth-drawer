@@ -21,6 +21,8 @@ import type {
   AuthBackdropConfig,
   AuthConfigGroup,
   AuthConfig,
+  AuthSuccessAction,
+  AuthSuccessConfig,
   AuthUiConfig,
   AuthTriggerConfig,
   AuthTriggerEvent,
@@ -208,6 +210,16 @@ Current defaults:
       desktopPosition: "center",
       // plus drag, entry, exit, backdrop motion, and form layout settings
     },
+    success: {
+      enabled: true,
+      minVisibleMs: 650,
+      maxVisibleMs: 3500,
+      messages: {
+        signIn: "Signed in",
+        signUp: "Account created",
+        oauth: "Signed in with provider",
+      },
+    },
   },
   triggers: {}
 }
@@ -295,7 +307,7 @@ Current behavior:
 - `adapter.useSession` is called once at the top of the drawer to suppress prompts for authenticated users.
 - Adapter action failures should return `{ success: false, error }`.
 - Thrown errors are passed through `adapter.normalizeError` or `config.normalizeError`.
-- On successful sign-in, sign-up, or OAuth, the drawer closes.
+- On successful sign-in, sign-up, or OAuth, the drawer shows a brief success commit state (when `ui.success.enabled` is true), then closes once the session is ready and the minimum visible duration has elapsed.
 - When the resolved provider list is empty (see precedence above), the OAuth button
   group and divider are omitted.
 
@@ -334,6 +346,45 @@ type AuthErrorCode =
 ```
 
 The default normalizer accepts strings, objects with `code/status/message`, and nested `{ error }` objects.
+
+## Success Commit (`ui.success`)
+
+After a successful sign-in, sign-up, or OAuth action, the drawer can show a short success state before closing. Disable it, tune timing, or override copy through `ui.success`.
+
+```ts
+type AuthSuccessConfig = {
+  enabled?: boolean;
+  minVisibleMs?: number;
+  maxVisibleMs?: number;
+  messages?: Partial<Record<AuthSuccessAction, string>>;
+  footer?: ReactNode;
+};
+
+type AuthSuccessAction = "signIn" | "signUp" | "oauth";
+```
+
+Defaults: `enabled: true`, `minVisibleMs: 650`, `maxVisibleMs: 3500`, with bundled messages for each action. Set `ui.success.enabled: false` to close immediately on success (previous behavior). Pass `ui.success.footer` to replace the default success message with a custom React node.
+
+```tsx
+<AuthDrawer
+  adapter={adapter}
+  config={{
+    ui: {
+      success: {
+        minVisibleMs: 650,
+        maxVisibleMs: 3500,
+        messages: {
+          signIn: "Welcome back",
+          signUp: "You're all set",
+          oauth: "Connected",
+        },
+      },
+    },
+  }}
+/>
+```
+
+Provider-level `onSuccess` / `adapter.onSuccess` callbacks still fire when the auth action completes; the success commit only controls visible confirmation timing before close.
 
 ## Email Autocomplete
 

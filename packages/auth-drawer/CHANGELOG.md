@@ -3,6 +3,27 @@
 All notable changes to `@remcostoeten/auth-drawer` are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.0
+
+### Added
+
+- Built-in success commit state after sign-in, sign-up, and OAuth completion.
+  The drawer now stays visible briefly after a successful auth action while the
+  session settles, and the timing is configurable via `ui.success`.
+- Public types for `AuthAction`, `AuthSuccessAction`, `AuthSuccessConfig`, and
+  `ResolvedAuthSuccessConfig`.
+
+### Changed
+
+- Successful auth submissions now keep the drawer open for a short, controlled
+  success state before closing, instead of disappearing immediately after the
+  callback fires.
+
+### Internal
+
+- Added timing helpers and tests for success-state resolution and close-delay
+  behavior.
+
 ## 0.2.3
 
 ### Fixed

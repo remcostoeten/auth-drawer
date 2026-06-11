@@ -1,4 +1,4 @@
-import { act } from "react";
+import { act, useEffect, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createAuthError, type AuthUiError } from "../auth-errors";
@@ -18,6 +18,56 @@ function createAdapter(overrides: Partial<AuthAdapter> = {}): AuthAdapter {
     signIn: vi.fn(async () => ({ success: true })),
     useSession: vi.fn(() => ({ data: null, isPending: false, error: null })),
     ...overrides,
+  };
+}
+
+function createSessionAwareAdapter(): AuthAdapter {
+  const listeners = new Set<() => void>();
+  const session = {
+    current: {
+      data: null as {
+        user: { id: string; email: string };
+        session: { id: string };
+      } | null,
+      isPending: false,
+      error: null as unknown,
+    },
+  };
+
+  function notify() {
+    listeners.forEach((listener) => listener());
+  }
+
+  return {
+    id: "test",
+    signIn: vi.fn(async () => {
+      session.current = {
+        data: {
+          user: { id: "user_1", email: "test@example.com" },
+          session: { id: "session_1" },
+        },
+        isPending: false,
+        error: null,
+      };
+      notify();
+      return { success: true, data: session.current.data };
+    }),
+    useSession() {
+      const [snapshot, setSnapshot] = useState(session.current);
+
+      useEffect(() => {
+        const listener = () => {
+          setSnapshot(session.current);
+        };
+
+        listeners.add(listener);
+        return () => {
+          listeners.delete(listener);
+        };
+      }, []);
+
+      return snapshot;
+    },
   };
 }
 
@@ -66,6 +116,7 @@ describe("AuthDrawer provider open state", () => {
     act(() => {
       root.unmount();
     });
+    vi.useRealTimers();
     document.body.removeChild(container);
   });
 
@@ -173,6 +224,52 @@ describe("AuthDrawer provider open state", () => {
     expect(adapter.onSuccess).toHaveBeenCalledWith("signIn");
     expect(providerSuccess).toHaveBeenCalledWith("signIn");
     expect(drawerSuccess).toHaveBeenCalledWith("signIn");
+  });
+
+  it("keeps the drawer open briefly after successful sign in before closing", async () => {
+    vi.useFakeTimers();
+    const adapter = createSessionAwareAdapter();
+
+    act(() => {
+      root.render(
+        <AuthProvider adapter={adapter}>
+          <ProviderControls />
+          <AuthDrawer adapter={adapter} hideTrigger />
+        </AuthProvider>,
+      );
+    });
+
+    await act(async () => {
+      container
+        .querySelector("button")
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const email = document.body.querySelector('input[type="email"]') as HTMLInputElement;
+    const password = document.body.querySelector('input[type="password"]') as HTMLInputElement;
+    const submit = document.body.querySelector('button[type="submit"]') as HTMLButtonElement;
+
+    await act(async () => {
+      setInputValue(email, credentials.email);
+      setInputValue(password, credentials.password);
+      submit.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(document.body.querySelector(".auth-drawer-success")?.textContent).toContain("Signed in");
+    expect(document.body.querySelector('[role="dialog"]')).toBeTruthy();
+
+    await act(async () => {
+      vi.advanceTimersByTime(650);
+    });
+
+    expect(document.body.querySelector('[role="dialog"]')).toBeTruthy();
+
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
+
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+    vi.useRealTimers();
   });
 });
 

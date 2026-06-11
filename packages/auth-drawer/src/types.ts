@@ -21,9 +21,38 @@ export type DrawerPosition = "center" | "left" | "right";
 export type FormMode = "login" | "register" | "resetPassword";
 
 /**
+ * Auth actions emitted by adapters and provider callbacks.
+ */
+export type AuthAction = "signIn" | "signUp" | "signOut" | "oauth";
+
+/**
+ * Auth actions that can produce a visible success state in the drawer.
+ */
+export type AuthSuccessAction = Exclude<AuthAction, "signOut">;
+
+/**
  * Current loading target for auth actions.
  */
 export type LoadingAction = OAuthProvider | "email" | "forgotPassword" | null;
+
+/**
+ * Success commit timing and copy shown after a successful auth submission.
+ */
+export type AuthSuccessConfig = {
+  enabled?: boolean;
+  minVisibleMs?: number;
+  maxVisibleMs?: number;
+  messages?: Partial<Record<AuthSuccessAction, string>>;
+  footer?: ReactNode;
+};
+
+export type ResolvedAuthSuccessConfig = {
+  enabled: boolean;
+  minVisibleMs: number;
+  maxVisibleMs: number;
+  messages: Record<AuthSuccessAction, string>;
+  footer?: ReactNode;
+};
 
 /**
  * Controls for collapsing extra OAuth providers behind a disclosure.
@@ -125,6 +154,10 @@ export type AuthUiConfig = {
    * Fully custom footer below the form. Overrides copy.footer segments.
    */
   footer?: ReactNode;
+  /**
+   * Success commit state shown after a successful auth submission.
+   */
+  success?: AuthSuccessConfig;
 };
 
 /**
@@ -444,11 +477,11 @@ export interface AuthAdapter {
   };
   normalizeError?: (error: unknown) => AuthUiError;
   /** Called after any successful auth action. */
-  onSuccess?: (action: "signIn" | "signUp" | "signOut" | "oauth") => void;
+  onSuccess?: (action: AuthAction) => void;
   /** Called after any failed auth action. */
   onError?: (
     error: AuthUiError,
-    action: "signIn" | "signUp" | "signOut" | "oauth",
+    action: AuthAction,
   ) => void;
 }
 
@@ -526,6 +559,7 @@ export type ResolvedAuthConfig = Omit<Required<AuthConfig>, "ui" | "triggers"> &
     };
     motion: MotionSettings;
     footer?: ReactNode;
+    success: ResolvedAuthSuccessConfig;
   };
   triggers: AuthTriggerConfig;
 };

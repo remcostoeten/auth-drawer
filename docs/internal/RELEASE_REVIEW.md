@@ -1,8 +1,10 @@
 # Auth Drawer Release Review
 
+> **Historical snapshot (2026-05-16).** Kept for audit context. Many blockers below were resolved in subsequent releases (package publishes at `0.2.x`, declarations ship in `dist/`, `API.md` uses package imports, `ui.success` documents the built-in success commit state). Treat open items as a backlog, not current release status.
+
 Date: 2026-05-16
 
-Verdict: not release ready. The app builds and the package tests pass, but the publish surface is incomplete and several public configuration areas are either too narrow, duplicated, or demo-only.
+Verdict at time of review: not release ready. The app builds and the package tests pass, but the publish surface is incomplete and several public configuration areas are either too narrow, duplicated, or demo-only.
 
 ## Verification Run
 

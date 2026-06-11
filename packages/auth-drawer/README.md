@@ -47,6 +47,23 @@ state. The drawer and `useAuth()` read the same adapter-backed session state.
 Put app-level success handling on `AuthProvider` (or `adapter.onSuccess`). Drawer
 submissions inside a provider already flow through the provider callbacks.
 
+The drawer also includes a built-in success commit state after sign-in,
+sign-up, and OAuth completion. Tune it with `ui.success`:
+
+```tsx
+<AuthDrawer
+  adapter={adapter}
+  config={{
+    ui: {
+      success: {
+        minVisibleMs: 650,
+        maxVisibleMs: 3500,
+      },
+    },
+  }}
+/>
+```
+
 Customize the bundled theme with CSS tokens:
 
 ```css

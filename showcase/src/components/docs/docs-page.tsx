@@ -37,6 +37,7 @@ import {
 } from "./props/auth-config-props";
 import { AUTH_DRAWER_PROPS, CONFIG_PROPS } from "./props/auth-drawer-props";
 import { COPY_CONFIG_PROPS } from "./props/copy-props";
+import { SUCCESS_CONFIG_PROPS } from "./props/auth-success-props";
 import {
   MOTION_BACKDROP_PROPS,
   MOTION_DRAG_PROPS,
@@ -594,6 +595,16 @@ function Shell({ adapter, children }) {
                   and normalized error copy.
                 </p>
                 <PropTable props={COPY_CONFIG_PROPS} />
+              </div>
+
+              <div id="api-success" className="scroll-mt-24">
+                <h3 className="mb-1 text-sm">ui.success — success commit</h3>
+                <p className="mb-3 text-xs text-foreground/50">
+                  Controls the brief success state shown after sign-in, sign-up,
+                  and OAuth. Use it to tune how long the drawer stays visible
+                  before it closes, or replace the default footer message.
+                </p>
+                <PropTable props={SUCCESS_CONFIG_PROPS} />
               </div>
 
               <div id="api-visual" className="scroll-mt-24">

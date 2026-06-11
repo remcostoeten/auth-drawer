@@ -6,6 +6,8 @@ import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
 import { authAdapter } from "@/lib/auth-adapter";
 import { authDrawerConfig } from "@/lib/auth-drawer-config";
 
+const SUCCESS_COMMIT_MS = 700;
+
 type AuthShellProps = {
   children: React.ReactNode;
 };
@@ -16,7 +18,9 @@ export function AuthShell({ children }: AuthShellProps) {
   const handleAuthSuccess = useCallback(
     (action: "signIn" | "signUp" | "signOut" | "oauth") => {
       if (action === "signIn" || action === "signUp" || action === "oauth") {
-        router.push("/dashboard");
+        window.setTimeout(() => {
+          router.push("/dashboard");
+        }, SUCCESS_COMMIT_MS);
       }
     },
     [router],
