@@ -24,7 +24,7 @@ When executing this roadmap, the agent **must** adhere to these syntax constrain
 >    export type FormMode = "login" | "register" | "resetPassword";
 >    ```
 
-Append the following adapter types to the end of [types.ts](file:///home/remcostoeten/dev/cozy-auth-drawer/packages/auth-drawer/src/types.ts):
+Append the following adapter types to the end of [types.ts](../../packages/auth-drawer/src/types.ts):
 
 ```typescript
 import type { AuthUiError, AuthErrorCode } from "./auth-errors";
@@ -173,25 +173,25 @@ export function createAdapter(partial: AuthAdapter): AuthAdapter {
 > Each adapter's error mapper function (e.g., `mapBetterAuthError`, `mapSupabaseError`) should be defined **inside** the adapter file itself, not in a shared errors module. The shared `errors.ts` only contains the generic `createAdapterError` utility.
 
 ### Task 2.1: Create `packages/auth-drawer/src/adapters/better-auth.ts`
-Implements the Better Auth adapter conforming to the design spec in [better-auth.md](file:///home/remcostoeten/dev/cozy-auth-drawer/specs/better-auth.md). Ensure dynamic check for plugins (`signIn.magicLink`, `emailOtp`, etc.) is fully typed.
+Implements the Better Auth adapter conforming to the design spec in [better-auth.md](../../specs/better-auth.md). Ensure dynamic check for plugins (`signIn.magicLink`, `emailOtp`, etc.) is fully typed.
 
 ### Task 2.2: Create `packages/auth-drawer/src/adapters/supabase.ts`
-Implements the Supabase adapter conforming to the design spec in [supabase.md](file:///home/remcostoeten/dev/cozy-auth-drawer/specs/supabase.md), using `onAuthStateChange` to update local React state.
+Implements the Supabase adapter conforming to the design spec in [supabase.md](../../specs/supabase.md), using `onAuthStateChange` to update local React state.
 
 ### Task 2.3: Create `packages/auth-drawer/src/adapters/next-auth.ts`
-Implements the Auth.js/NextAuth v4 adapter conforming to [next-auth.md](file:///home/remcostoeten/dev/cozy-auth-drawer/specs/next-auth.md).
+Implements the Auth.js/NextAuth v4 adapter conforming to [next-auth.md](../../specs/next-auth.md).
 
 ### Task 2.4: Create `packages/auth-drawer/src/adapters/clerk.ts`
-Implements the Clerk hook-based adapter conforming to [clerk.md](file:///home/remcostoeten/dev/cozy-auth-drawer/specs/clerk.md). **Note:** this adapter is a React hook (`useClerkAdapter`), not a plain factory function.
+Implements the Clerk adapter conforming to [clerk.md](../../specs/clerk.md). **Note:** Clerk hooks are called in the consumer component; the adapter itself is `createClerkAdapter({ client })`.
 
 ### Task 2.5: Create `packages/auth-drawer/src/adapters/firebase.ts`
-Implements the Firebase Auth adapter conforming to [firebase.md](file:///home/remcostoeten/dev/cozy-auth-drawer/specs/firebase.md).
+Implements the Firebase Auth adapter conforming to [firebase.md](../../specs/firebase.md).
 
 ### Task 2.6: Create `packages/auth-drawer/src/adapters/custom-jwt.ts`
-Implements the Custom JWT/REST adapter conforming to [custom-jwt.md](file:///home/remcostoeten/dev/cozy-auth-drawer/specs/custom-jwt.md).
+Implements the Custom JWT/REST adapter conforming to [custom-jwt.md](../../specs/custom-jwt.md).
 
 ### Task 2.7: Create `packages/auth-drawer/src/adapters/passport.ts`
-Implements the Passport.js adapter conforming to [passport.md](file:///home/remcostoeten/dev/cozy-auth-drawer/specs/passport.md).
+Implements the Passport.js adapter conforming to [passport.md](../../specs/passport.md).
 
 ### Task 2.8: Configure Exports in `packages/auth-drawer/package.json`
 Add tree-shakeable entries to exports object for all adapters:
@@ -272,7 +272,7 @@ Add tree-shakeable entries to exports object for all adapters:
 ## 5. Phase 4: Optional Capabilities
 
 ### Task 4.1: Create `packages/auth-drawer/src/ui/auth-provider.tsx`
-Create the global state context component and `useAuth()` hook using the spec outlined in [ADVANCED_ADAPTER_SUGGESTIONS.md](file:///home/remcostoeten/dev/cozy-auth-drawer/ADVANCED_ADAPTER_SUGGESTIONS.md).
+Create the global state context component and `useAuth()` hook using the spec outlined in [ADVANCED_ADAPTER_SUGGESTIONS.md](./ADVANCED_ADAPTER_SUGGESTIONS.md).
 
 ### Task 4.2: Create `packages/auth-drawer/src/adapters/mock.ts`
 Implement the sandbox mock adapter from Section 2 of the advanced suggestions guide.

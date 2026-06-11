@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { UserRound } from "lucide-react";
+import { CheckCircle2, UserRound } from "lucide-react";
 import { cn } from "../lib/utils";
 import { registerOverlay } from "../lib/overlay-registry";
 import {
@@ -20,11 +20,18 @@ import { resolveOAuthVisibleCount } from "../oauth-providers";
 import { resolveCopyGroup } from "../copy";
 import { normalizeAuthError } from "../auth-errors";
 import { useDraggableDrawer } from "../hooks/use-draggable-drawer";
+import {
+  getAuthSuccessCloseDelay,
+  resolveAuthSuccessConfig,
+  resolveAuthSuccessMessage,
+  type AuthSuccessState,
+} from "./auth-success";
 import type {
   AuthAdapter,
   AuthBackdropConfig,
   AuthConfig,
   AuthPresentationConfig,
+  AuthSuccessAction,
   AuthTriggerStore,
   MotionSettings,
   ResolvedAuthConfig,
@@ -39,7 +46,10 @@ import { useOptionalAuth } from "./auth-provider";
 type Props = {
   config?: AuthConfig;
   adapter: AuthAdapter;
+  /** Applies to the built-in trigger button. Prefer `triggerClassName` for clarity. */
   className?: string;
+  /** Applies to the built-in trigger button. Takes precedence over `className`. */
+  triggerClassName?: string;
   hideTrigger?: boolean;
   open?: boolean;
   defaultOpen?: boolean;
@@ -72,10 +82,13 @@ function readSavedSettings(): Partial<MotionSettings> {
 
 function resolveAuthGroup(config: AuthConfig | undefined, adapter: AuthAdapter) {
   const auth = config?.ui?.auth ?? {};
+  // Only accept an actual array from the adapter; some clients (e.g. a Better
+  // Auth Proxy client) can surface a non-array here.
+  const adapterProviders = Array.isArray(adapter.providers) ? adapter.providers : undefined;
   const providers =
     !adapter.signInWithOAuth
       ? []
-      : (adapter.providers ?? auth.providers ?? DEFAULT_CONFIG.ui.auth.providers);
+      : (adapterProviders ?? auth.providers ?? DEFAULT_CONFIG.ui.auth.providers);
 
   return {
     providers,
@@ -176,6 +189,19 @@ function resolvePresentationGroup(config?: AuthConfig): Required<AuthPresentatio
   };
 }
 
+function AuthSuccessBanner({
+  message,
+}: {
+  message: string;
+}) {
+  return (
+    <div className="auth-drawer-success" role="status" aria-live="polite">
+      <CheckCircle2 size={16} strokeWidth={1.8} aria-hidden="true" />
+      <span>{message}</span>
+    </div>
+  );
+}
+
 function parseEase(value: string) {
   try {
     return JSON.parse(value) as number[];
@@ -229,6 +255,7 @@ function AuthDrawerContent({
   config,
   adapter,
   className,
+  triggerClassName,
   hideTrigger = false,
   open: controlledOpen,
   defaultOpen,
@@ -251,6 +278,7 @@ function AuthDrawerContent({
     const backdrop = resolveBackdropGroup(config);
     const presentation = resolvePresentationGroup(config);
     const motion = resolveMotionSettings(config?.ui?.motion, backdrop, presentation.variant);
+    const success = resolveAuthSuccessConfig(config?.ui?.success);
 
     return {
       ...DEFAULT_CONFIG,
@@ -277,6 +305,7 @@ function AuthDrawerContent({
         },
         motion,
         footer: config?.ui?.footer,
+        success,
       },
     };
   }, [adapter, config]);
@@ -286,6 +315,7 @@ function AuthDrawerContent({
   );
   const [portalEl, setPortal] = useState<HTMLElement | null>(null);
   const [drawerMotion, setMotion] = useState<MotionSettings>(() => resolved.ui.motion);
+  const [successState, setSuccessState] = useState<AuthSuccessState | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -327,11 +357,92 @@ function AuthDrawerContent({
     };
   }, [adapter, auth]);
 
-  const closeDrawer = useCallback(() => setDrawerOpen(false), [setDrawerOpen]);
+  const clearSuccessState = useCallback(() => {
+    setSuccessState(null);
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    clearSuccessState();
+    setDrawerOpen(false);
+  }, [clearSuccessState, setDrawerOpen]);
+
   const openIfAllowed = useCallback(() => {
     if (isAuthenticated) return;
     setDrawerOpen(true);
   }, [isAuthenticated, setDrawerOpen]);
+
+  const handleAuthSuccess = useCallback((action: AuthSuccessAction) => {
+    if (!resolved.ui.success.enabled) {
+      closeDrawer();
+      return;
+    }
+
+    setSuccessState({ action, startedAt: Date.now() });
+  }, [closeDrawer, resolved.ui.success.enabled]);
+
+  const successFooter = useMemo(() => {
+    if (!successState) return null;
+
+    if (resolved.ui.success.footer) {
+      return resolved.ui.success.footer;
+    }
+
+    return (
+      <AuthSuccessBanner
+        message={resolveAuthSuccessMessage(successState.action, resolved.ui.success.messages)}
+      />
+    );
+  }, [resolved.ui.success.footer, resolved.ui.success.messages, successState]);
+
+  const formConfig = useMemo<ResolvedAuthConfig>(() => {
+    if (!successState) return resolved;
+
+    return {
+      ...resolved,
+      ui: {
+        ...resolved.ui,
+        auth: {
+          ...resolved.ui.auth,
+          showFooter: false,
+        },
+        footer: undefined,
+      },
+    };
+  }, [resolved, successState]);
+
+  useEffect(() => {
+    if (!successState || !resolved.ui.success.enabled) return;
+
+    const delay = getAuthSuccessCloseDelay({
+      success: successState,
+      config: resolved.ui.success,
+      now: Date.now(),
+      isAuthenticated,
+      isSessionPending: session.isPending,
+    });
+
+    if (delay === null) return;
+
+    if (delay === 0) {
+      clearSuccessState();
+      closeDrawer();
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      clearSuccessState();
+      closeDrawer();
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    clearSuccessState,
+    closeDrawer,
+    isAuthenticated,
+    resolved.ui.success,
+    session.isPending,
+    successState,
+  ]);
 
   useEffect(() => {
     const cleanups = [
@@ -605,14 +716,16 @@ function AuthDrawerContent({
               />
 
               <LoginForm
-                onSuccess={closeDrawer}
+                onSubmitSuccess={handleAuthSuccess}
                 onAdapterSuccess={onSuccess}
                 onAdapterError={onError}
                 adapter={formAdapter}
                 titleId={titleId}
                 descId={descId}
-                config={resolved}
+                config={formConfig}
               />
+
+              {successFooter ? <div className="mt-4">{successFooter}</div> : null}
             </motion.div>
 
             <div
@@ -655,7 +768,7 @@ function AuthDrawerContent({
             "hover:bg-overlay-surface/20 hover:border-overlay-border/20",
             "focus-visible:ring-2 focus-visible:ring-overlay-border/20 focus-visible:outline-hidden",
             "border-overlay-border/10",
-            className,
+            triggerClassName ?? className,
           )}
         >
           <div className="relative flex items-center justify-center">

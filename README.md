@@ -16,6 +16,13 @@ motion, validation states, and auth-provider glue for every app.
   <a href="./API.md"><strong>API reference</strong></a>
 </p>
 
+<p>
+  <img alt="npm version" src="https://shieldcn.dev/npm/@remcostoeten/auth-drawer.png" />
+  <img alt="npm downloads" src="https://shieldcn.dev/npm/dm/@remcostoeten/auth-drawer.png" />
+  <img alt="npm license" src="https://shieldcn.dev/npm/license/@remcostoeten/auth-drawer.png" />
+  <img alt="GitHub stars" src="https://shieldcn.dev/github/stars/remcostoeten/auth-drawer.png" />
+</p>
+
 ## What It Is
 
 `@remcostoeten/auth-drawer` is a provider-agnostic auth UI primitive. It ships a
@@ -188,6 +195,7 @@ packages/auth-drawer/        Published React package
 showcase/                    Next.js docs, configurator, and playground
 examples/better-auth-nextjs/ Runnable Better Auth integration
 examples/custom-jwt-nextjs/  Runnable custom JWT (REST) integration
+examples/passport-express/   Runnable Express + Passport (cookie session) integration
 specs/                       Adapter and provider implementation notes
 docs/internal/               Project planning and release notes
 ```

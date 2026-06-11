@@ -39,3 +39,20 @@
   transition-duration: 180ms;
   transition-timing-function: ease;
 }
+
+@layer components {
+  .auth-drawer-success {
+    margin-top: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: hsl(var(--text-on-overlay));
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .auth-drawer-success svg {
+    color: color-mix(in srgb, hsl(var(--surface-overlay-hover)) 42%, hsl(var(--text-on-overlay)));
+  }
+}

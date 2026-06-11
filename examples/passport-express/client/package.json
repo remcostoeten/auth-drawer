@@ -1,0 +1,27 @@
+{
+  "name": "passport-express-client",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3006",
+    "build": "next build",
+    "start": "next start --port 3006",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remcostoeten/auth-drawer": "^0.2.1",
+    "framer-motion": "^12.0.0",
+    "lucide-react": "^0.400.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -60,14 +60,14 @@ export const ADAPTER_CONTRACT = `type AuthAdapter = {
 };`;
 
 export const SNIPPET_FILENAMES: Record<string, string> = {
-  supabase: "components/auth/SupabaseLogin.tsx",
-  "better-auth": "components/auth/BetterAuthLogin.tsx",
-  "next-auth": "components/auth/NextAuthLogin.tsx",
-  clerk: "components/auth/ClerkLogin.tsx",
-  firebase: "components/auth/FirebaseLogin.tsx",
-  "custom-jwt": "components/auth/CustomJwtLogin.tsx",
-  passport: "components/auth/PassportLogin.tsx",
-  mock: "components/auth/MockLogin.tsx",
+  supabase: "components/auth/supabase-login.tsx",
+  "better-auth": "components/auth/better-auth-login.tsx",
+  "next-auth": "components/auth/next-auth-login.tsx",
+  clerk: "components/auth/clerk-login.tsx",
+  firebase: "components/auth/firebase-login.tsx",
+  "custom-jwt": "components/auth/custom-jwt-login.tsx",
+  passport: "components/auth/passport-login.tsx",
+  mock: "components/auth/mock-login.tsx",
 };
 
 export const SDK_DOCS: SdkDoc[] = [
@@ -193,7 +193,7 @@ export function Login() {
   useSession?: () => { data?: any; status?: "loading" | "authenticated" | "unauthenticated" }
 }`,
     setup: [
-      "Use redirect: false for credential sign-in so the drawer can close itself on success.",
+      "Use redirect: false for credential sign-in so the drawer can keep control of its success commit and close itself on success.",
       "Pass useSession to keep the drawer from showing when the user is already authenticated.",
       "Use callbackURL to control OAuth return behavior.",
     ],
@@ -459,6 +459,7 @@ export function Login() {
     gotchas: [
       "This adapter assumes a server-driven cookie session model, not a JWT-in-localStorage model.",
       "If your backend uses different field names, normalize them before returning from /user.",
+      "Because requests use credentials: \"include\", your server's CORS Access-Control-Allow-Origin must be the exact client origin (not *), or the browser blocks the response and the drawer reports a \"Failed to fetch\" error.",
     ],
     notes: (
       <>
@@ -598,7 +599,7 @@ export function createClient() {
     type: "single-file",
     docsUrl: "https://supabase.com/docs/reference/javascript/auth-signinwithpassword",
     file: {
-      name: "components/auth/SupabaseLogin.tsx",
+      name: "components/auth/supabase-login.tsx",
       lang: "tsx",
       code: `"use client";
 
@@ -607,7 +608,7 @@ import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/adapters/supaba
 import { createClient } from "@/lib/supabase/client";
 import { useMemo } from "react";
 
-export function SupabaseLogin() {
+export function Login() {
   const adapter = useMemo(() => {
     const origin = window.location.origin;
 
@@ -783,7 +784,7 @@ export function Providers({ children }: { children: ReactNode }) {
     type: "single-file",
     docsUrl: "https://authjs.dev/getting-started/session-management/login",
     file: {
-      name: "components/auth/NextAuthLogin.tsx",
+      name: "components/auth/next-auth-login.tsx",
       lang: "tsx",
       code: `"use client";
 
@@ -792,7 +793,7 @@ import { createNextAuthAdapter } from "@remcostoeten/auth-drawer/adapters/next-a
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
 
-export function NextAuthLogin() {
+export function Login() {
   const [open, setOpen] = useState(false);
 
   const adapter = useMemo(
@@ -918,7 +919,7 @@ http://localhost:3000/dashboard`,
     type: "single-file",
     docsUrl: "https://clerk.com/docs/reference/hooks/use-sign-in",
     file: {
-      name: "components/auth/ClerkLogin.tsx",
+      name: "components/auth/clerk-login.tsx",
       lang: "tsx",
       code: `"use client";
 
@@ -927,7 +928,7 @@ import { AuthDrawer } from "@remcostoeten/auth-drawer";
 import { createClerkAdapter } from "@remcostoeten/auth-drawer/adapters/clerk";
 import { useMemo } from "react";
 
-export function ClerkLogin() {
+export function Login() {
   const { signOut } = useClerk();
   const { signIn, setActive: setSignInActive } = useSignIn();
   const { signUp, setActive: setSignUpActive } = useSignUp();

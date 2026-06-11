@@ -31,3 +31,6 @@ test-results
 bun.lockb
 .vercel
 .env*.local
+
+# Local agent skill cache (canonical copy lives in skills/)
+.agents/

@@ -98,9 +98,21 @@ function result(data: unknown, error: unknown): AuthResult {
   return { success: true, data };
 }
 
+/** Default OAuth providers when none are configured explicitly. */
+const DEFAULT_OAUTH_PROVIDERS: OAuthProvider[] = ["github", "google"];
+
 export function createBetterAuthAdapter(options: BetterAuthAdapterOptions): AuthAdapter {
   const { client, callbackURL = "/", newUserCallbackURL, passwordResetRedirectTo } = options;
-  const providers = options.providers ?? client.options?.socialProviders ?? ["github", "google"];
+  // A real Better Auth client is a Proxy: every property access (including
+  // `client.options.socialProviders`) returns a truthy proxy that lazily builds
+  // an RPC path, so it can NOT be used with `??` to detect "unset" — it would
+  // poison `providers` with a non-array value that crashes ("Cannot convert
+  // object to primitive value") the first time the UI evaluates
+  // `providers.length`. Only trust it when it's an actual array.
+  const clientProviders = client.options?.socialProviders;
+  const providers =
+    options.providers ??
+    (Array.isArray(clientProviders) ? clientProviders : DEFAULT_OAUTH_PROVIDERS);
 
   const adapter: AuthAdapter = {
     id: "better-auth",

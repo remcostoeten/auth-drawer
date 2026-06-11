@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "auth-drawer": {
+      "source": "remcostoeten/auth-drawer",
+      "sourceType": "github",
+      "skillPath": "skills/auth-drawer/SKILL.md",
+      "computedHash": "0c95ab16b518f146ea947b685faca6760078a48e80a877233df83897043d37ff"
+    }
+  }
+}

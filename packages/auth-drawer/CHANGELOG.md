@@ -3,6 +3,48 @@
 All notable changes to `@remcostoeten/auth-drawer` are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.0
+
+### Added
+
+- Built-in success commit state after sign-in, sign-up, and OAuth completion.
+  The drawer now stays visible briefly after a successful auth action while the
+  session settles, and the timing is configurable via `ui.success`.
+- Public types for `AuthAction`, `AuthSuccessAction`, `AuthSuccessConfig`, and
+  `ResolvedAuthSuccessConfig`.
+
+### Changed
+
+- Successful auth submissions now keep the drawer open for a short, controlled
+  success state before closing, instead of disappearing immediately after the
+  callback fires.
+
+### Internal
+
+- Added timing helpers and tests for success-state resolution and close-delay
+  behavior.
+
+## 0.2.3
+
+### Fixed
+
+- **Better Auth adapter no longer crashes the drawer on open.** A real Better
+  Auth client (`createAuthClient`) is a Proxy, so `client.options?.socialProviders`
+  is a truthy proxy rather than `undefined`. The adapter's
+  `?? client.options?.socialProviders ?? [...]` therefore left `providers` as a
+  proxy, and the form's `providers.length > 0` coerced it, throwing
+  `Cannot convert object to primitive value` and white-screening the drawer the
+  moment it opened. The adapter now only uses `client.options.socialProviders`
+  when it is an actual array.
+- The login form and `resolveAuthGroup` defensively normalize `providers` to an
+  array, so a misbehaving adapter degrades to "no OAuth" instead of crashing.
+
+### Internal
+
+- Added a regression test that builds the Better Auth adapter from a
+  Proxy-shaped client (the real client's shape) — the prior tests used a plain
+  mock and never exercised this.
+
 ## 0.2.1
 
 ### Fixed

@@ -1,33 +1,24 @@
-Listed directory specs
-Listed directory cozy-auth-drawer
-Listed directory packages
-Viewed IMPLEMENTATION_ROADMAP.md:1-186
-
-Here's the prompt:
-
----
-
 ## Agent Implementation Prompt
 
 ```
 You are implementing the AuthAdapter system for the `@remcostoeten/auth-drawer` package.
-The repository is at: /home/remcostoeten/dev/cozy-auth-drawer
+The repository is at: /home/remcostoeten/dev/auth-drawer-primitive
 
 Before writing any code, read ALL of the following files in full:
 
-  /home/remcostoeten/dev/cozy-auth-drawer/IMPLEMENTATION_ROADMAP.md
-  /home/remcostoeten/dev/cozy-auth-drawer/DRY_ADAPTER_PLAN.md
-  /home/remcostoeten/dev/cozy-auth-drawer/ADVANCED_ADAPTER_SUGGESTIONS.md
-  /home/remcostoeten/dev/cozy-auth-drawer/specs/README.md
-  /home/remcostoeten/dev/cozy-auth-drawer/specs/better-auth.md
-  /home/remcostoeten/dev/cozy-auth-drawer/specs/supabase.md
-  /home/remcostoeten/dev/cozy-auth-drawer/specs/next-auth.md
-  /home/remcostoeten/dev/cozy-auth-drawer/specs/clerk.md
-  /home/remcostoeten/dev/cozy-auth-drawer/specs/firebase.md
-  /home/remcostoeten/dev/cozy-auth-drawer/specs/custom-jwt.md
-  /home/remcostoeten/dev/cozy-auth-drawer/specs/passport.md
-  /home/remcostoeten/dev/cozy-auth-drawer/packages/auth-drawer/src/types.ts
-  /home/remcostoeten/dev/cozy-auth-drawer/packages/auth-drawer/src/auth-errors.ts
+  docs/internal/IMPLEMENTATION_ROADMAP.md
+  docs/internal/DRY_ADAPTER_PLAN.md
+  docs/internal/ADVANCED_ADAPTER_SUGGESTIONS.md
+  specs/README.md
+  specs/better-auth.md
+  specs/supabase.md
+  specs/next-auth.md
+  specs/clerk.md
+  specs/firebase.md
+  specs/custom-jwt.md
+  specs/passport.md
+  packages/auth-drawer/src/types.ts
+  packages/auth-drawer/src/auth-errors.ts
 
 Then explore the existing source tree under packages/auth-drawer/src/ to understand what
 already exists before touching anything.

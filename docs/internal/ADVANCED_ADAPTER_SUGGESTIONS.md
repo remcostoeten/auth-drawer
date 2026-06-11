@@ -21,7 +21,7 @@ By wrapping adapters inside a React Context, we decouple session state from the 
   └──────────────┘     └──────────────┘     └──────────────┘
 ```
 
-### Context Implementation (`AuthProvider.tsx`)
+### Context Implementation (`auth-provider.tsx`)
 
 ```typescript
 import { createContext, useContext, useMemo, useState, ReactNode } from "react";
@@ -121,7 +121,7 @@ export function useAuth() {
 
 ---
 
-## 2. Built-in Sandbox Mocking (`mockAdapter.ts`)
+## 2. Built-in Sandbox Mocking (`mock.ts`)
 
 To allow developers to design, build, and test UI styling or mock edge cases locally without connecting a database or cloud instance, package a first-party `mockAdapter`.
 
@@ -371,7 +371,7 @@ End-users can now customize the theme dynamically in two ways:
 #### Option 1: Global CSS Override
 Developers can easily customize the styles inside their own stylesheets:
 ```css
-/* App.css (Host Application) */
+/* app.css (Host Application) */
 .cad-theme-root {
   --cad-primary: #ec4899; /* Changes all primary buttons/highlights to pink */
   --cad-input-bg: #09090b;

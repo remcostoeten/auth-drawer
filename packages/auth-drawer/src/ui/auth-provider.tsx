@@ -1,8 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { normalizeAuthError, type AuthUiError } from "../auth-errors";
-import type { AuthAdapter, AuthResult, AuthSessionState } from "../types";
-
-type AuthAction = "signIn" | "signUp" | "signOut" | "oauth";
+import type { AuthAction, AuthAdapter, AuthResult, AuthSessionState } from "../types";
 
 interface AuthContextType {
   user: AuthSessionState["user"] | null;
