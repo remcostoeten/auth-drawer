@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { cn } from "../lib/utils";
 import { registerOverlay } from "../lib/overlay-registry";
 import {
@@ -23,7 +23,6 @@ import { useDraggableDrawer } from "../hooks/use-draggable-drawer";
 import {
   getAuthSuccessCloseDelay,
   resolveAuthSuccessConfig,
-  resolveAuthSuccessMessage,
   type AuthSuccessState,
 } from "./auth-success";
 import type {
@@ -85,10 +84,14 @@ function resolveAuthGroup(config: AuthConfig | undefined, adapter: AuthAdapter) 
   // Only accept an actual array from the adapter; some clients (e.g. a Better
   // Auth Proxy client) can surface a non-array here.
   const adapterProviders = Array.isArray(adapter.providers) ? adapter.providers : undefined;
-  const providers =
-    !adapter.signInWithOAuth
-      ? []
-      : (adapterProviders ?? auth.providers ?? DEFAULT_CONFIG.ui.auth.providers);
+  // config.ui.auth.providers is the user's explicit display list; adapterProviders is
+  // the capability declaration. When both are set, take the intersection so the UI
+  // never shows a provider the adapter doesn't support. When only one is set, use it.
+  const providers = !adapter.signInWithOAuth
+    ? []
+    : auth.providers && adapterProviders
+      ? auth.providers.filter((p) => adapterProviders.includes(p))
+      : auth.providers ?? adapterProviders ?? DEFAULT_CONFIG.ui.auth.providers;
 
   return {
     providers,
@@ -187,19 +190,6 @@ function resolvePresentationGroup(config?: AuthConfig): Required<AuthPresentatio
     ...DEFAULT_CONFIG.ui.presentation,
     ...config?.ui?.presentation,
   };
-}
-
-function AuthSuccessBanner({
-  message,
-}: {
-  message: string;
-}) {
-  return (
-    <div className="auth-drawer-success" role="status" aria-live="polite">
-      <CheckCircle2 size={16} strokeWidth={1.8} aria-hidden="true" />
-      <span>{message}</span>
-    </div>
-  );
 }
 
 function parseEase(value: string) {
@@ -382,17 +372,8 @@ function AuthDrawerContent({
 
   const successFooter = useMemo(() => {
     if (!successState) return null;
-
-    if (resolved.ui.success.footer) {
-      return resolved.ui.success.footer;
-    }
-
-    return (
-      <AuthSuccessBanner
-        message={resolveAuthSuccessMessage(successState.action, resolved.ui.success.messages)}
-      />
-    );
-  }, [resolved.ui.success.footer, resolved.ui.success.messages, successState]);
+    return resolved.ui.success.footer ?? null;
+  }, [resolved.ui.success.footer, successState]);
 
   const formConfig = useMemo<ResolvedAuthConfig>(() => {
     if (!successState) return resolved;

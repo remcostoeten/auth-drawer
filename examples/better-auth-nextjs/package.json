@@ -17,7 +17,7 @@
     "dev:all": "bash scripts/dev.sh"
   },
   "dependencies": {
-    "@remcostoeten/auth-drawer": "^0.2.1",
+    "@remcostoeten/auth-drawer": "workspace:*",
     "better-auth": "^1.6.11",
     "drizzle-orm": "^0.44.7",
     "framer-motion": "^12.38.0",
@@ -33,11 +33,15 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "^1.0.0",
+    "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "kysely": "0.28.17"
   },
   "ignoreScripts": [
     "sharp",

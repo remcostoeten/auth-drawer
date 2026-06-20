@@ -6,6 +6,11 @@ import type { OAuthProvider } from "./oauth-providers";
 export type { OAuthProvider };
 
 /**
+ * A renderable OAuth provider icon — a React component, a JSX element, or an image URL string.
+ */
+export type OAuthIconSource = ComponentType<{ className?: string }> | ReactNode | string;
+
+/**
  * Supported desktop display strategies for the auth surface.
  */
 export type DrawerMode = "drawer" | "modal";

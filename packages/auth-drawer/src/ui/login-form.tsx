@@ -18,7 +18,7 @@ import type {
 import { EASE_OUT, MAX_STAGGER } from "../constants";
 import { useRememberMe } from "../hooks/use-remember-me";
 import { getPasswordMatchFeedback, validateCredentials } from "../validation";
-import { AuthButton } from "./auth-button";
+import { AuthButton, type ButtonFeedback } from "./auth-button";
 import { AuthFooter } from "./auth-footer";
 import { ConfirmPasswordField } from "./confirm-password-field";
 import { EmailField } from "./email-field";
@@ -96,6 +96,8 @@ function Form({
   const [errors, setErrors] = useState<AuthErrorState>(EMPTY_AUTH_ERRORS);
   const [nameError, setNameError] = useState("");
   const [notice, setNotice] = useState("");
+  const [oauthSuccessProvider, setOauthSuccessProvider] = useState<OAuthProvider | null>(null);
+  const [submitSuccessAction, setSubmitSuccessAction] = useState<"signIn" | "signUp" | null>(null);
   const errorBaseId = useId();
 
   const isRegister = mode === "register";
@@ -112,7 +114,6 @@ function Form({
   const passwordErrorId = fieldErrorId(errorBaseId, "password");
   const confirmErrorId = fieldErrorId(errorBaseId, "confirm");
   const confirmLiveId = fieldErrorId(errorBaseId, "confirm-live");
-  const formErrorId = fieldErrorId(errorBaseId, "form");
   const oauthErrorId = fieldErrorId(errorBaseId, "oauth");
   // Defensive: never coerce an untrusted value. A misbehaving adapter could
   // hand back a non-array `providers` (e.g. a Proxy), and `providers.length > 0`
@@ -138,6 +139,13 @@ function Form({
   const formError = errors.form;
   const oauthError = errors.oauth;
   const isLoading = isPending || loadingAction !== null;
+  const buttonFeedback: ButtonFeedback | undefined = formError
+    ? { status: "error", message: formError.message }
+    : notice
+      ? { status: "success", message: notice }
+      : submitSuccessAction
+        ? { status: "success", message: config.ui.success.messages[submitSuccessAction] }
+        : undefined;
 
   const handleAdapterError = useCallback(
     (error: AuthUiError, action: AuthAction) => {
@@ -160,6 +168,7 @@ function Form({
       setAction(provider);
       setErrors(EMPTY_AUTH_ERRORS);
       setNotice("");
+      setOauthSuccessProvider(null);
 
       startTransition(async () => {
         try {
@@ -176,7 +185,7 @@ function Form({
             return;
           }
           handleAdapterSuccess("oauth");
-
+          setOauthSuccessProvider(provider);
           onSubmitSuccess("oauth");
         } catch (error) {
           const normalized = adapter.normalizeError
@@ -265,6 +274,7 @@ function Form({
           }
 
           handleAdapterSuccess(action);
+          setSubmitSuccessAction(action);
           onSubmitSuccess(action);
           return;
         } catch (error) {
@@ -300,6 +310,8 @@ function Form({
     setErrors(EMPTY_AUTH_ERRORS);
     setNameError("");
     setNotice("");
+    setSubmitSuccessAction(null);
+    setOauthSuccessProvider(null);
   }, []);
 
   const acceptEmail = useCallback((value: string) => {
@@ -476,7 +488,10 @@ function Form({
             isLoading={isLoading}
             copy={config.ui.copy.oauth}
             onAction={runOAuth}
+            successProvider={oauthSuccessProvider}
+            successMessage={config.ui.success.messages.oauth}
           />
+          <ValidationMessage id={oauthErrorId} error={oauthError?.message} />
 
           <motion.div
             className="mb-6 flex items-center gap-3"
@@ -617,15 +632,24 @@ function Form({
           </div>
         )}
 
-        <ValidationMessage id={formErrorId} error={formError?.message} />
-        <ValidationMessage id={`${errorBaseId}-notice`} tone="success" error={notice} />
-        <ValidationMessage id={oauthErrorId} error={oauthError?.message} />
+        {/* Screen reader announcements for form-level feedback */}
+        {formError && (
+          <span className="sr-only" role="alert" aria-live="assertive">
+            {formError.message}
+          </span>
+        )}
+        {notice && !formError && (
+          <span className="sr-only" role="status" aria-live="polite">
+            {notice}
+          </span>
+        )}
 
         <AuthButton
           type="submit"
           variant="primary"
           isLoading={loadingAction === "email"}
           disabled={isLoading}
+          feedback={buttonFeedback}
         >
           {formCopy.submit}
         </AuthButton>

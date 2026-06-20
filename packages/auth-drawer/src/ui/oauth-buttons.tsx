@@ -10,7 +10,7 @@ import {
   type OAuthProvider,
 } from "../oauth-providers";
 import type { LoadingAction, ProviderDef } from "../types";
-import { AuthButton } from "./auth-button";
+import { AuthButton, type ButtonFeedback } from "./auth-button";
 
 type Props = {
   providers: OAuthProvider[];
@@ -21,6 +21,8 @@ type Props = {
   isLoading: boolean;
   copy: ResolvedAuthOAuthCopy;
   onAction: (provider: OAuthProvider) => void;
+  successProvider?: OAuthProvider | null;
+  successMessage?: string;
 };
 
 const LIST_VARIANTS = {
@@ -40,6 +42,8 @@ type ProviderButtonProps = {
   copy: ResolvedAuthOAuthCopy;
   onAction: (provider: OAuthProvider) => void;
   variant: "primary" | "outline-solid";
+  successProvider?: OAuthProvider | null;
+  successMessage?: string;
 };
 
 function ProviderButton({
@@ -50,6 +54,8 @@ function ProviderButton({
   copy,
   onAction,
   variant,
+  successProvider,
+  successMessage,
 }: ProviderButtonProps) {
   const items = resolveOAuthProviders([provider]);
   const item = items[0];
@@ -58,6 +64,10 @@ function ProviderButton({
   const Icon = item.icon;
   const providerLabel = copy.providers[provider];
   const continueLabel = formatCopy(copy.continueWith, { provider: providerLabel });
+  const feedback: ButtonFeedback | undefined =
+    successProvider === item.id
+      ? { status: "success", message: successMessage ?? "Signed in" }
+      : undefined;
 
   return (
     <AuthButton
@@ -69,6 +79,7 @@ function ProviderButton({
       onClick={() => onAction(item.id)}
       ariaLabel={continueLabel}
       className={layout === "row" ? "gap-2 px-3" : undefined}
+      feedback={feedback}
     >
       <span className="whitespace-nowrap">
         {layout === "row" ? providerLabel : continueLabel}
@@ -90,6 +101,8 @@ function ProviderList({
   copy,
   onAction,
   primaryProvider = "github",
+  successProvider,
+  successMessage,
 }: ProviderListProps) {
   return (
     <>
@@ -103,6 +116,8 @@ function ProviderList({
           copy={copy}
           onAction={onAction}
           variant={provider === primaryProvider ? "primary" : "outline-solid"}
+          successProvider={successProvider}
+          successMessage={successMessage}
         />
       ))}
     </>
@@ -182,6 +197,8 @@ export function OauthButtons({
   isLoading,
   copy,
   onAction,
+  successProvider,
+  successMessage,
 }: Props) {
   const [showAll, setShowAll] = useState(false);
   const registered = resolveOAuthProviders(providers);
@@ -210,6 +227,8 @@ export function OauthButtons({
           copy={copy}
           onAction={onAction}
           primaryProvider={primaryProvider}
+          successProvider={successProvider}
+          successMessage={successMessage}
         />
       </div>
 
@@ -242,6 +261,8 @@ export function OauthButtons({
                     isLoading={isLoading}
                     copy={copy}
                     onAction={onAction}
+                    successProvider={successProvider}
+                    successMessage={successMessage}
                   />
                 </div>
               </motion.div>

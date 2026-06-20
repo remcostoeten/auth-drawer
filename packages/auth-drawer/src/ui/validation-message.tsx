@@ -33,14 +33,14 @@ export function ValidationMessage({
           id={id}
           role={role}
           aria-live={live ? "polite" : undefined}
-          initial={{ opacity: 0, y: -3, scale: 0.985 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -3, scale: 0.985 }}
+          initial={{ opacity: 0, y: -3 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -3 }}
           transition={{ duration: 0.18, ease: EASE_OUT }}
           className={cn(
             "mt-1.5 flex items-center gap-1.5 text-[0.8125rem]",
             variant === "chip" &&
-              "inline-flex rounded-full border border-overlay-border/12 bg-overlay-surface/45 px-2.5 py-1 text-[0.76rem] leading-none",
+              "flex w-fit rounded-full border border-overlay-border/12 bg-overlay-surface/45 px-2.5 py-1 text-[0.76rem] leading-none",
             tone === "error"
               ? variant === "chip"
                 ? "text-overlay-error"
