@@ -64,6 +64,7 @@ export function AuthButton({
       disabled={disabled || isLoading}
       aria-label={ariaLabel}
       aria-busy={isLoading || undefined}
+      data-feedback-status={isLoading ? "loading" : (feedback?.status ?? "idle")}
       className={cn(
         BASE,
         VARIANTS[variant],
