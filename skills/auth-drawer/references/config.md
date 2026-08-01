@@ -30,9 +30,10 @@ type AuthUiConfig = {
 
 ```ts
 type AuthConfigGroup = {
-  providers?: OAuthProvider[];     // [] disables OAuth entirely
+  providers?: AuthProviderEntry[];  // [] disables OAuth entirely
   oauthLayout?: "row" | "column";
   oauthOverflow?: { visibleCount?: number; showPreviewIcons?: boolean };
+  showProviderIcons?: boolean;      // default logo visibility, default true
   allowRegister?: boolean;
   showRememberMe?: boolean;
   initialMode?: "login" | "register" | "resetPassword";
@@ -43,7 +44,47 @@ type AuthConfigGroup = {
 };
 ```
 
-Valid `OAuthProvider` values: `github`, `google`, `apple`, `discord`, `tiktok`.
+Built-in `OAuthProvider` ids (each ships an icon + label): `github`, `google`,
+`apple`, `discord`, `tiktok`, `x`, `facebook`, `microsoft`, `gitlab`, `twitch`,
+`linkedin`, `spotify`, `slack`, `reddit`, `notion`, `figma`. The type also
+accepts **any other string** for custom providers.
+
+**Provider entries** can be a bare id or a rich object — use the object form for
+custom icons, labels, light/dark logos, or to hide a logo:
+
+```ts
+type OAuthIconSource =
+  | ComponentType<{ className?: string }>  // component
+  | ReactElement                           // <MyLogo />
+  | string;                                // image URL -> <img>
+
+type OAuthProviderConfig = {
+  id: OAuthProvider;            // built-in id or any custom string
+  label?: string;              // overrides default/copy label
+  showIcon?: boolean;          // overrides showProviderIcons for this provider
+  icon?: OAuthIconSource;      // logo for all themes
+  iconLight?: OAuthIconSource; // logo on light surfaces (falls back to icon)
+  iconDark?: OAuthIconSource;  // logo on dark surfaces (falls back to icon)
+};
+
+type AuthProviderEntry = OAuthProvider | OAuthProviderConfig;
+```
+
+```ts
+providers: [
+  "github",                                              // built-in icon + label
+  { id: "google", label: "Continue with Google" },
+  { id: "acme", label: "Acme SSO", icon: "/acme.svg" }, // custom image logo
+  { id: "sso", label: "Company SSO", showIcon: false }, // label-only button
+  { id: "keycloak", label: "Keycloak",
+    iconLight: "/keycloak-dark.svg",                     // light surfaces
+    iconDark: "/keycloak-white.svg" },                   // dark surfaces (.dark)
+]
+```
+
+- **No logos:** set `showProviderIcons: false` (global) or `showIcon: false` (per provider).
+- **Light/dark:** `iconLight`/`iconDark` switch via the `.dark` ancestor class (CSS, SSR-safe). Built-in monochrome marks use `currentColor` and adapt automatically.
+- Custom provider ids must match what the adapter's `signInWithOAuth(provider)` expects.
 
 > Note: these flags refine UI that the **adapter already enables**. They cannot
 > reveal a tab the adapter doesn't support — e.g. `allowRegister: true` does
@@ -81,19 +122,25 @@ what you need; the rest come from defaults. Most apps never touch this.
 
 ### `ui.success` — post-auth commit state
 
-After sign-in, sign-up, or OAuth succeeds, the drawer can show a brief success
-state before closing. Tune it with `ui.success`:
+After sign-in, sign-up, or OAuth succeeds, the drawer does **not** close
+immediately. It stays open through the connecting/loading phase, shows a
+confirmation once the session is fully loaded, then closes — so the drawer never
+disappears before the session is ready. Tune it with `ui.success`:
 
 ```ts
 type AuthSuccessConfig = {
-  enabled?: boolean;               // default true
-  minVisibleMs?: number;           // default 650
-  maxVisibleMs?: number;           // default 3500
+  enabled?: boolean;               // default true; false = close immediately on success
+  minVisibleMs?: number;           // dwell AFTER the session is ready (ms), default 900
+  maxVisibleMs?: number;           // failsafe cap while the session is pending (ms), default 3500
   messages?: Partial<Record<"signIn" | "signUp" | "oauth", string>>;
   footer?: ReactNode;              // replaces default success message
 };
 ```
 
+`minVisibleMs` is measured from when the session becomes ready (authenticated
+and no longer pending), not from when the banner appears — so the confirmation
+never flashes and vanishes the instant auth completes. `maxVisibleMs` only kicks
+in while the session is still pending, as a failsafe for one that never loads.
 Set `enabled: false` to close immediately on success. `onSuccess` callbacks still
 fire when the action completes; this only controls visible confirmation timing.
 
@@ -113,6 +160,7 @@ overrides `copy.footer` segments). Use `formatCopy` / `resolveCopyGroup` /
     auth: {
       providers: ["github", "google"],
       oauthLayout: "column",
+      showProviderIcons: true,
       allowRegister: true,
       showRememberMe: true,
       initialMode: "login",
@@ -133,7 +181,7 @@ overrides `copy.footer` segments). Use `formatCopy` / `resolveCopyGroup` /
     motion: { displayMode: "drawer", desktopWidth: "448px", desktopPosition: "center" /* + drag/entry/exit */ },
     success: {
       enabled: true,
-      minVisibleMs: 650,
+      minVisibleMs: 900,
       maxVisibleMs: 3500,
       messages: { signIn: "Signed in", signUp: "Account created", oauth: "Signed in with provider" },
     },

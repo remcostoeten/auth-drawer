@@ -11,16 +11,16 @@ export const SUCCESS_CONFIG_PROPS: PropDef[] = [
   {
     name: "minVisibleMs",
     type: "number",
-    default: "650",
+    default: "900",
     description:
-      "Minimum time the success state stays visible before the drawer closes once the session is ready.",
+      "How long the confirmation stays visible after the session is fully loaded, before the drawer closes. Measured from when the session becomes ready, so the success state never flashes and vanishes the instant auth completes.",
   },
   {
     name: "maxVisibleMs",
     type: "number",
     default: "3500",
     description:
-      "Maximum time the drawer will hold the success state before closing, even if the session is slow to settle.",
+      "Failsafe cap: the longest the drawer waits for the session to load before closing anyway. Only applies while the session is still pending.",
   },
   {
     name: "messages.signIn",

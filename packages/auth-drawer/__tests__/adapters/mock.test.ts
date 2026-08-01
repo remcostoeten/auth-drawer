@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createMockAdapter } from "./mock";
+import { createMockAdapter } from "../../src/adapters/mock";
 
 describe("createMockAdapter", () => {
   it("exposes its id, providers, and demo credentials", () => {

@@ -1,8 +1,8 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { AuthSessionState } from "../types";
-import { createRevalidatingSession } from "./revalidating-session";
+import type { AuthSessionState } from "../../src/types";
+import { createRevalidatingSession } from "../../src/adapters/revalidating-session";
 
 const session: AuthSessionState = {
   user: { id: "1", email: "a@b.co", name: "Ada" },

@@ -88,28 +88,149 @@ npm install react react-dom framer-motion lucide-react
 Styles ship with the package import. For most apps there is no separate CSS file
 to wire.
 
-## Quick Start
+## LLM-guided setup
+
+This repo ships an [Agent Skill](https://skills.sh/) so coding agents (Cursor,
+Claude Code, Codex, and [60+ others](https://github.com/vercel-labs/skills#supported-agents))
+can wire up Auth Drawer end-to-end — pick an adapter, create `auth-adapter.ts`,
+mount `AuthProvider` / `AuthDrawer`, and configure triggers or theming without
+you spelling out every file.
+
+**Install the skill** (project-scoped, recommended for teams):
+
+```bash
+npx skills add remcostoeten/auth-drawer --skill auth-drawer
+```
+
+**Target a specific agent** (non-interactive):
+
+```bash
+# Cursor
+npx skills add remcostoeten/auth-drawer --skill auth-drawer -a cursor -y
+
+# Claude Code
+npx skills add remcostoeten/auth-drawer --skill auth-drawer -a claude-code -y
+```
+
+**Preview what's in the repo** before installing:
+
+```bash
+npx skills add remcostoeten/auth-drawer --list
+```
+
+**Try once without installing** (prints a skill prompt you can paste, or starts
+an agent session when combined with `--agent`):
+
+```bash
+npx skills use remcostoeten/auth-drawer@auth-drawer
+```
+
+After install, ask your agent in plain language — for example:
+
+- *"Add auth drawer with Better Auth to this Next.js app."*
+- *"Wire up Passport cookie sessions with auth drawer — API is on port 4000."*
+- *"Add a Supabase login drawer with GitHub and Google OAuth."*
+
+The skill lives in [`skills/auth-drawer/`](./skills/auth-drawer/) and includes
+reference docs for [adapters](./skills/auth-drawer/references/adapters.md),
+[config](./skills/auth-drawer/references/config.md),
+[errors](./skills/auth-drawer/references/errors.md), and
+[triggers](./skills/auth-drawer/references/triggers.md). Installs are tracked in
+[`skills-lock.json`](./skills-lock.json) (commit it for reproducible team
+setups).
+
+Browse more skills at [skills.sh](https://skills.sh/) or search:
+`npx skills find auth drawer`.
+
+## What `adapter={adapter}` means
+
+`AuthDrawer` is UI only — forms, OAuth buttons, validation, motion, and error
+display. It does **not** talk to your auth backend by itself.
+
+An **adapter** is the object that connects that UI to your auth stack. You build
+it once with a provider-specific factory (`createBetterAuthAdapter`,
+`createPassportAdapter`, etc.), then pass the same instance to both
+`AuthProvider` and `AuthDrawer`:
 
 ```tsx
-import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
-import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
+<AuthProvider adapter={adapter}>   {/* session + drawer controls via useAuth() */}
+  <AuthDrawer adapter={adapter} /> {/* renders the sign-in surface */}
+</AuthProvider>
+```
+
+The adapter implements a small contract: `signIn`, optional `signUp` /
+`signInWithOAuth` / `signOut`, `useSession`, and error normalization. The drawer
+calls those methods when the user submits the form or clicks an OAuth button.
+`AuthProvider` calls `useSession()` once and exposes the result through
+`useAuth()`.
+
+Pick the factory that matches your backend, configure it with your client or API
+URLs, export the result as `authAdapter`, and wire it into your app shell.
+
+## Quick start (Better Auth)
+
+This is the most common setup: Better Auth runs in the same Next.js app, and the
+adapter wraps the `better-auth/react` client.
+
+**`lib/auth-client.ts`**
+
+```ts
 import { createAuthClient } from "better-auth/react";
 
-const client = createAuthClient();
-const adapter = createBetterAuthAdapter({ client });
+export const authClient = createAuthClient();
+```
 
-export function App() {
+**`lib/auth-adapter.ts`**
+
+```ts
+import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
+import { authClient } from "@/lib/auth-client";
+
+export const authAdapter = createBetterAuthAdapter({
+  client: authClient,
+  providers: ["github", "google"],
+  callbackURL: "/dashboard",
+  passwordResetRedirectTo: "/reset-password",
+  requireName: true,
+});
+```
+
+**`components/auth-shell.tsx`**
+
+```tsx
+"use client";
+
+import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
+import { authAdapter } from "@/lib/auth-adapter";
+
+export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider adapter={adapter}>
-      <Header />
-      <AuthDrawer adapter={adapter} />
-      <div id="auth-drawer-portal" />
+    <AuthProvider adapter={authAdapter}>
+      {children}
+      <AuthDrawer adapter={authAdapter} hideTrigger />
     </AuthProvider>
   );
 }
 ```
 
-Use the provider hook from anywhere inside the tree:
+**`app/layout.tsx`**
+
+```tsx
+import { AuthShell } from "@/components/auth-shell";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <AuthShell>{children}</AuthShell>
+        <div id="auth-drawer-portal" />
+      </body>
+    </html>
+  );
+}
+```
+
+Open the drawer from anywhere under `AuthProvider`:
 
 ```tsx
 import { useAuth } from "@remcostoeten/auth-drawer";
@@ -125,10 +246,44 @@ function Header() {
 }
 ```
 
+Runnable reference: [`examples/better-auth-nextjs`](./examples/better-auth-nextjs).
+Step-by-step guide: [live docs → Better Auth](https://auth-drawer.remcostoeten.nl/docs#sdk-better-auth).
+
 > [!TIP]
 > Add `<div id="auth-drawer-portal" />` near your app root. The drawer can render
 > without it, but the portal keeps the overlay above page content and makes
 > scroll locking predictable.
+
+## Alternative setup (Passport + separate API)
+
+When auth lives on a different server (Express, Fastify, etc.) with cookie
+sessions, the adapter points at REST endpoints instead of an SDK client. Every
+request uses `credentials: "include"` so session cookies flow between origins.
+
+**`lib/auth-adapter.ts`**
+
+```ts
+import { createPassportAdapter } from "@remcostoeten/auth-drawer/adapters/passport";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+export const authAdapter = createPassportAdapter({
+  loginUrl: `${API_URL}/login`,
+  registerUrl: `${API_URL}/register`,
+  logoutUrl: `${API_URL}/logout`,
+  userProfileUrl: `${API_URL}/user`,
+  requireName: true,
+  fetcher: (url, init) => fetch(url, { ...init, credentials: "include" }),
+});
+```
+
+The `AuthShell` / `AuthProvider` / `AuthDrawer` wiring is identical to Better
+Auth — only the adapter factory and its options change.
+
+Runnable reference: [`examples/passport-express`](./examples/passport-express)
+(Express + Passport.js backend, Next.js frontend). Also see
+[`examples/custom-jwt-nextjs`](./examples/custom-jwt-nextjs) for a hand-rolled
+JWT REST API in the same Next.js app.
 
 ## Adapters
 
@@ -139,23 +294,24 @@ import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/adapters/supaba
 import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
 import { createNextAuthAdapter } from "@remcostoeten/auth-drawer/adapters/next-auth";
 import { createClerkAdapter } from "@remcostoeten/auth-drawer/adapters/clerk";
+import { createPassportAdapter } from "@remcostoeten/auth-drawer/adapters/passport";
+import { createCustomJwtAdapter } from "@remcostoeten/auth-drawer/adapters/custom-jwt";
 import { createMockAdapter } from "@remcostoeten/auth-drawer/adapters/mock";
 ```
 
-Available adapter entry points:
+| Auth backend | Import path | Typical adapter input |
+| --- | --- | --- |
+| Better Auth | `@remcostoeten/auth-drawer/adapters/better-auth` | `better-auth/react` client |
+| Supabase | `@remcostoeten/auth-drawer/adapters/supabase` | Browser Supabase client |
+| Auth.js / NextAuth | `@remcostoeten/auth-drawer/adapters/next-auth` | `signIn` / `signOut` / `useSession` from `next-auth/react` |
+| Clerk | `@remcostoeten/auth-drawer/adapters/clerk` | Clerk hooks wired into a `client` object |
+| Firebase Auth | `@remcostoeten/auth-drawer/adapters/firebase` | Modular Firebase auth functions |
+| Custom JWT / REST | `@remcostoeten/auth-drawer/adapters/custom-jwt` | `baseUrl` + REST endpoint paths |
+| Passport sessions | `@remcostoeten/auth-drawer/adapters/passport` | Login/register/logout/user URLs |
+| Mock adapter | `@remcostoeten/auth-drawer/adapters/mock` | In-memory demo handlers |
 
-| Auth backend | Import path |
-| --- | --- |
-| Better Auth | `@remcostoeten/auth-drawer/adapters/better-auth` |
-| Supabase | `@remcostoeten/auth-drawer/adapters/supabase` |
-| Auth.js / NextAuth | `@remcostoeten/auth-drawer/adapters/next-auth` |
-| Clerk | `@remcostoeten/auth-drawer/adapters/clerk` |
-| Firebase Auth | `@remcostoeten/auth-drawer/adapters/firebase` |
-| Custom JWT / REST | `@remcostoeten/auth-drawer/adapters/custom-jwt` |
-| Passport sessions | `@remcostoeten/auth-drawer/adapters/passport` |
-| Mock adapter | `@remcostoeten/auth-drawer/adapters/mock` |
-
-Provider-specific setup guides live in the docs and in the `specs/` directory.
+Provider-specific setup guides live in the [live docs](https://auth-drawer.remcostoeten.nl/docs#sdk-adapters)
+and in [`specs/`](./specs/).
 
 ## Configuration
 
@@ -171,8 +327,7 @@ Most teams start with defaults and override only the parts that matter:
         allowRegister: true,
       },
       presentation: {
-        mode: "drawer",
-        desktopPosition: "center",
+        variant: "drawer",
       },
       copy: {
         login: {
@@ -188,16 +343,20 @@ Most teams start with defaults and override only the parts that matter:
 The full API reference is in [API.md](./API.md), and the live configurator can
 generate a starter config from the docs UI.
 
-## Monorepo Layout
+## Monorepo layout
 
 ```text
-packages/auth-drawer/        Published React package
-showcase/                    Next.js docs, configurator, and playground
-examples/better-auth-nextjs/ Runnable Better Auth integration
-examples/custom-jwt-nextjs/  Runnable custom JWT (REST) integration
-examples/passport-express/   Runnable Express + Passport (cookie session) integration
-specs/                       Adapter and provider implementation notes
-docs/internal/               Project planning and release notes
+packages/auth-drawer/          Published React package (adapters, UI, styles)
+showcase/                      Next.js docs site, configurator, and playground
+examples/
+  better-auth-nextjs/          Better Auth + Drizzle + PostgreSQL (same-app auth)
+  custom-jwt-nextjs/             Hand-rolled JWT REST API + Drizzle + PostgreSQL
+  passport-express/            Express + Passport.js API + Next.js client (split stack)
+specs/                         Adapter contracts and provider implementation notes
+skills/auth-drawer/            Agent skill for LLM-guided integration (install via npx skills)
+docs/
+  assets/                      README demo GIFs
+  internal/                    Planning and release notes
 ```
 
 ## Development

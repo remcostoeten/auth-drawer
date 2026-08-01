@@ -3,10 +3,17 @@ import type { PropDef } from "./types";
 export const OAUTH_AUTH_PROPS: PropDef[] = [
   {
     name: "providers",
-    type: "OAuthProvider[]",
+    type: "AuthProviderEntry[]",
     default: '["github", "google"]',
     description:
-      "Built-in provider ids in display order. Pass an empty array to hide OAuth entirely. See the OAuth docs section for overflow behaviour.",
+      "Provider entries in display order. Each is a bare id (16 built-ins ship with icons: github, google, apple, discord, tiktok, x, facebook, microsoft, gitlab, twitch, linkedin, spotify, slack, reddit, notion, figma) or an object { id, label?, icon?, iconLight?, iconDark?, showIcon? } for custom providers, custom icons/images, light/dark logos, or label-only buttons. Pass an empty array to hide OAuth entirely.",
+  },
+  {
+    name: "showProviderIcons",
+    type: "boolean",
+    default: "true",
+    description:
+      "Default logo visibility for all OAuth buttons. Per-provider showIcon (object entry form) overrides this. Set false for label-only buttons.",
   },
   {
     name: "oauthLayout",

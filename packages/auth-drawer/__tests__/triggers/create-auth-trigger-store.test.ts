@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createAuthTriggerStore } from "./create-auth-trigger-store";
+import { createAuthTriggerStore } from "../../src/triggers/create-auth-trigger-store";
 
 function makeStore(opts?: Parameters<typeof createAuthTriggerStore>[0]) {
   return createAuthTriggerStore({ namespace: "test", ...opts });

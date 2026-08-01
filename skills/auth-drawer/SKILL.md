@@ -176,9 +176,13 @@ over `DEFAULT_CONFIG`. Two namespaces:
 ```
 
 `ui.auth.providers` may be `[]` to disable OAuth entirely (the button group and
-divider disappear). Valid providers: `github`, `google`, `apple`, `discord`,
-`tiktok`. For the full config tree, defaults, theming, and copy overrides, read
-**`references/config.md`**.
+divider disappear). Built-in providers (each with a bundled icon): `github`,
+`google`, `apple`, `discord`, `tiktok`, `x`, `facebook`, `microsoft`, `gitlab`,
+`twitch`, `linkedin`, `spotify`, `slack`, `reddit`, `notion`, `figma`. Each entry
+can also be an object for **custom providers** (any id) with a custom icon, image
+URL, light/dark logo variants, or no logo (`showProviderIcons: false` globally or
+`showIcon: false` per provider). For the full provider entry shape, config tree,
+defaults, theming, and copy overrides, read **`references/config.md`**.
 
 ## Triggers (auto-opening the surface)
 
@@ -224,6 +228,16 @@ backend errors; for a custom adapter, return the `AuthUiError` object literal
 - **Success callbacks inside a provider** — drawer submissions already invoke
   `AuthProvider`'s `onSuccess`. Prefer provider-level (or `adapter.onSuccess`)
   handlers for redirects; `AuthDrawer`'s `onSuccess` is optional and stacks on top.
+- **The drawer waits for the session before closing** — on success it does not
+  close instantly. It stays open through the connecting/loading phase (driven by
+  `adapter.useSession().isPending`), shows a confirmation once the session is
+  fully loaded, then closes. So an accurate `isPending` from `useSession` matters:
+  if a custom adapter hard-codes `isPending: false` while the session is actually
+  still resolving, the drawer can close early. Tune the confirmation via
+  `ui.success` (`minVisibleMs` = dwell after the session is ready, default 900;
+  `maxVisibleMs` = failsafe cap while pending, default 3500), or set
+  `ui.success.enabled: false` to close immediately on success. Details in
+  **`references/config.md`**.
 - **Don't reach into the package internals** — the public API is exactly what the
   main export and the `adapters/*` subpaths expose. Build against those.
 

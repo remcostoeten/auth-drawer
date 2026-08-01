@@ -34,7 +34,7 @@ export type BackdropState = Required<AuthBackdropConfig> & {
   gradient: Required<NonNullable<AuthBackdropConfig["gradient"]>>;
 };
 
-export function arraysEqual(a: readonly string[], b: readonly string[]) {
+export function arraysEqual<T>(a: readonly T[], b: readonly T[]) {
   return a.length === b.length && a.every((v, i) => v === b[i]);
 }
 

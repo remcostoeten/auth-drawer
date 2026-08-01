@@ -106,7 +106,7 @@ export const docsCorpus: DocsSnippet[] = [
     id: "api-auth-drawer",
     title: "AuthDrawer props",
     href: "/docs#api",
-    body: "AuthDrawer top-level props include config, adapter, open, defaultOpen, onOpenChange, hideTrigger, onSuccess, and onError. The config can also enable a built-in success commit state via ui.success so successful sign-in, sign-up, and OAuth actions stay visible briefly before the drawer closes. When adapter is present, unsupported UI is hidden automatically and registration can request a name field via adapter.requiresName.",
+    body: "AuthDrawer top-level props include config, adapter, open, defaultOpen, onOpenChange, hideTrigger, onSuccess, and onError. The config can also enable a built-in success commit state via ui.success so successful sign-in, sign-up, and OAuth actions keep the drawer open until the session is fully loaded, show a confirmation, then close. When adapter is present, unsupported UI is hidden automatically and registration can request a name field via adapter.requiresName.",
   },
   {
     id: "api-auth-provider",
@@ -130,7 +130,7 @@ export const docsCorpus: DocsSnippet[] = [
     id: "api-success",
     title: "ui.success config",
     href: "/docs#api-success",
-    body: "ui.success controls the post-auth success commit state: enable or disable it, set the minimum visible duration before close, cap the maximum hold time, and override the success text for sign-in, sign-up, and OAuth actions.",
+    body: "ui.success controls the post-auth success commit state: the drawer stays open until the session is fully loaded, shows a confirmation, then closes. Enable or disable it, set minVisibleMs (the dwell after the session is ready, default 900), cap the maximum hold time with maxVisibleMs (failsafe while pending, default 3500), and override the success text for sign-in, sign-up, and OAuth actions.",
   },
   {
     id: "api-visual",

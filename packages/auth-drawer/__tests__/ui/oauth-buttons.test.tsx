@@ -1,8 +1,8 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_COPY } from "../copy";
-import { OauthButtons } from "./oauth-buttons";
+import { DEFAULT_COPY } from "../../src/copy";
+import { OauthButtons } from "../../src/ui/oauth-buttons";
 
 describe("OauthButtons", () => {
   let container: HTMLDivElement;

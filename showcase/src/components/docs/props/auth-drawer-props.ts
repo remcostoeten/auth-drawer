@@ -77,7 +77,7 @@ export const CONFIG_PROPS: PropDef[] = [
     name: "ui.success",
     type: "AuthSuccessConfig",
     description:
-      "Built-in success commit state after sign-in, sign-up, or OAuth. Controls how long the drawer stays visible before closing, plus success text and an opt-out toggle.",
+      "Built-in success commit state after sign-in, sign-up, or OAuth. The drawer stays open until the session is fully loaded, shows a confirmation, then closes. Controls the post-ready dwell, failsafe cap, success text, and an opt-out toggle.",
   },
   {
     name: "ui.presentation",

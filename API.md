@@ -166,6 +166,58 @@ the drawer resolves OAuth buttons with
 factory (e.g. `createBetterAuthAdapter({ providers: [] })`) or keep both lists in
 sync — config alone cannot hide OAuth if the adapter still advertises providers.
 
+### OAuth providers, logos, and custom entries
+
+`ui.auth.providers` accepts a bare id or a rich entry object. Bare built-in ids
+render a bundled icon + default label; custom ids render with your own icon/label.
+
+```ts
+type OAuthIconSource =
+  | ComponentType<{ className?: string }> // a component
+  | ReactElement                          // an element, e.g. <MyLogo />
+  | string;                               // an image URL → rendered as <img>
+
+type OAuthProviderConfig = {
+  id: OAuthProvider;            // built-in id or any custom string
+  label?: string;              // overrides default / copy label
+  showIcon?: boolean;          // overrides ui.auth.showProviderIcons
+  icon?: OAuthIconSource;      // logo for all themes
+  iconLight?: OAuthIconSource; // logo on light surfaces (falls back to icon)
+  iconDark?: OAuthIconSource;  // logo on dark surfaces (falls back to icon)
+};
+
+type AuthProviderEntry = OAuthProvider | OAuthProviderConfig;
+```
+
+- **With logo:** built-in ids include one; custom ids supply `icon`/`iconSrc-as-string`.
+- **Without logo:** set `ui.auth.showProviderIcons: false` globally, or `showIcon: false` per provider.
+- **Light/dark:** provide `iconLight`/`iconDark`. The drawer renders both and toggles them via the package's class-based dark mode (a `.dark` ancestor) in CSS — SSR-safe, no flash. Built-in monochrome marks use `currentColor`, so they adapt without variants.
+- **Custom icon/img:** pass a component, an element, or an image URL string.
+
+```tsx
+<AuthDrawer
+  adapter={adapter}
+  config={{
+    ui: {
+      auth: {
+        showProviderIcons: true,
+        providers: [
+          "github",                                   // built-in icon + label
+          { id: "google", label: "Continue with Google" },
+          { id: "acme", label: "Acme SSO", icon: "/acme.svg" },
+          { id: "keycloak", label: "Keycloak",
+            iconLight: "/keycloak-dark.svg",          // shown on light surfaces
+            iconDark: "/keycloak-white.svg" },        // shown on dark surfaces
+          { id: "okta", label: "Okta", showIcon: false },
+        ],
+      },
+    },
+  }}
+/>
+```
+
+Provider ids must match what your adapter's `signInWithOAuth(provider)` expects.
+
 Defaults come from `DEFAULT_CONFIG`.
 
 Current defaults:
@@ -176,6 +228,7 @@ Current defaults:
     auth: {
       providers: ["github", "google"],
       oauthLayout: "column",
+      showProviderIcons: true,
       allowRegister: true,
       showRememberMe: true,
       initialMode: "login",
@@ -212,7 +265,7 @@ Current defaults:
     },
     success: {
       enabled: true,
-      minVisibleMs: 650,
+      minVisibleMs: 900,
       maxVisibleMs: 3500,
       messages: {
         signIn: "Signed in",
@@ -307,7 +360,7 @@ Current behavior:
 - `adapter.useSession` is called once at the top of the drawer to suppress prompts for authenticated users.
 - Adapter action failures should return `{ success: false, error }`.
 - Thrown errors are passed through `adapter.normalizeError` or `config.normalizeError`.
-- On successful sign-in, sign-up, or OAuth, the drawer shows a brief success commit state (when `ui.success.enabled` is true), then closes once the session is ready and the minimum visible duration has elapsed.
+- On successful sign-in, sign-up, or OAuth, the drawer stays open through the connecting/loading phase, shows a success commit state (when `ui.success.enabled` is true), and closes only once the session is fully loaded and the post-ready dwell (`minVisibleMs`) has elapsed — so it never disappears before the session is ready.
 - When the resolved provider list is empty (see precedence above), the OAuth button
   group and divider are omitted.
 
@@ -349,21 +402,23 @@ The default normalizer accepts strings, objects with `code/status/message`, and 
 
 ## Success Commit (`ui.success`)
 
-After a successful sign-in, sign-up, or OAuth action, the drawer can show a short success state before closing. Disable it, tune timing, or override copy through `ui.success`.
+After a successful sign-in, sign-up, or OAuth action, the drawer does not close immediately. It stays open through the connecting/loading phase, shows a confirmation once the session is fully loaded, then closes — so the drawer never disappears before the session is ready. Disable it, tune timing, or override copy through `ui.success`.
 
 ```ts
 type AuthSuccessConfig = {
-  enabled?: boolean;
-  minVisibleMs?: number;
-  maxVisibleMs?: number;
+  enabled?: boolean;       // default true; false closes immediately on success
+  minVisibleMs?: number;   // dwell after the session is ready (ms), default 900
+  maxVisibleMs?: number;   // failsafe cap while the session is pending (ms), default 3500
   messages?: Partial<Record<AuthSuccessAction, string>>;
-  footer?: ReactNode;
+  footer?: ReactNode;      // custom node in place of the default banner
 };
 
 type AuthSuccessAction = "signIn" | "signUp" | "oauth";
 ```
 
-Defaults: `enabled: true`, `minVisibleMs: 650`, `maxVisibleMs: 3500`, with bundled messages for each action. Set `ui.success.enabled: false` to close immediately on success (previous behavior). Pass `ui.success.footer` to replace the default success message with a custom React node.
+`minVisibleMs` is measured from the moment the session becomes ready (authenticated and no longer pending), not from when the banner appears — so the confirmation never flashes and vanishes the instant auth completes. `maxVisibleMs` only applies while the session is still pending, as a failsafe for a session that never loads.
+
+Defaults: `enabled: true`, `minVisibleMs: 900`, `maxVisibleMs: 3500`, with bundled messages for each action. Set `ui.success.enabled: false` to close immediately on success (pre-0.3 behavior). Pass `ui.success.footer` to replace the default success message with a custom React node.
 
 ```tsx
 <AuthDrawer
@@ -371,7 +426,7 @@ Defaults: `enabled: true`, `minVisibleMs: 650`, `maxVisibleMs: 3500`, with bundl
   config={{
     ui: {
       success: {
-        minVisibleMs: 650,
+        minVisibleMs: 900,
         maxVisibleMs: 3500,
         messages: {
           signIn: "Welcome back",
@@ -433,7 +488,14 @@ const config = {
 ## Supported Values
 
 ```ts
-type OAuthProvider = "github" | "google" | "apple" | "discord" | "tiktok";
+// Built-in provider ids ship with an icon + default label. The type also
+// accepts any other string for custom providers.
+type KnownOAuthProvider =
+  | "github" | "google" | "apple" | "discord" | "tiktok"
+  | "x" | "facebook" | "microsoft" | "gitlab" | "twitch"
+  | "linkedin" | "spotify" | "slack" | "reddit" | "notion" | "figma";
+type OAuthProvider = KnownOAuthProvider | (string & {});
+
 type DrawerMode = "drawer" | "modal";
 type DrawerPosition = "center" | "left" | "right";
 type FormMode = "login" | "register" | "resetPassword";

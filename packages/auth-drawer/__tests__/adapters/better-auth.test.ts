@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createBetterAuthAdapter } from "./better-auth";
+import { createBetterAuthAdapter } from "../../src/adapters/better-auth";
 
 function makeClient(overrides: Record<string, any> = {}) {
   return {

@@ -600,9 +600,11 @@ function Shell({ adapter, children }) {
               <div id="api-success" className="scroll-mt-24">
                 <h3 className="mb-1 text-sm">ui.success — success commit</h3>
                 <p className="mb-3 text-xs text-foreground/50">
-                  Controls the brief success state shown after sign-in, sign-up,
-                  and OAuth. Use it to tune how long the drawer stays visible
-                  before it closes, or replace the default footer message.
+                  After sign-in, sign-up, or OAuth, the drawer stays open through
+                  the connecting/loading phase, shows a confirmation once the
+                  session is fully loaded, then closes — so it never disappears
+                  before the session is ready. Tune the dwell and copy here, or
+                  replace the default footer message.
                 </p>
                 <PropTable props={SUCCESS_CONFIG_PROPS} />
               </div>

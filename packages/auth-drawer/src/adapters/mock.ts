@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { AuthAdapter, AuthSessionState } from "../types";
 import { createAdapterError } from "../errors";
+import { OAUTH_PROVIDER_IDS } from "../oauth-providers";
 
 export interface MockAdapterOptions {
   latencyMs?: number;
@@ -30,7 +31,7 @@ export function createMockAdapter(options: MockAdapterOptions = {}): AuthAdapter
 
   return {
     id: "mock",
-    providers: ["github", "google", "discord"],
+    providers: [...OAUTH_PROVIDER_IDS],
     demoCredentials: {
       email: mockEmail,
       password: mockPassword,

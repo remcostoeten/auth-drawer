@@ -55,4 +55,24 @@
   .auth-drawer-success svg {
     color: color-mix(in srgb, hsl(var(--surface-overlay-hover)) 42%, hsl(var(--text-on-overlay)));
   }
+
+  /* Light/dark OAuth logo variants. Toggled by the package's class-based dark
+     mode (a `.dark` ancestor); SSR-safe, no flash. */
+  .auth-oauth-logo-light {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .auth-oauth-logo-dark {
+    display: none;
+    align-items: center;
+  }
+
+  .dark .auth-oauth-logo-light {
+    display: none;
+  }
+
+  .dark .auth-oauth-logo-dark {
+    display: inline-flex;
+  }
 }

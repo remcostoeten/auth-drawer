@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_COPY } from "./copy";
-import { getPasswordMatchFeedback, validateCredentials } from "./validation";
+import { DEFAULT_COPY } from "../src/copy";
+import { getPasswordMatchFeedback, validateCredentials } from "../src/validation";
 
 describe("validateCredentials", () => {
   it("returns field errors for empty login credentials", () => {

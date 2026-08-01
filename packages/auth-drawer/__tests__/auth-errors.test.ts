@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeAuthError } from "./auth-errors";
+import { normalizeAuthError } from "../src/auth-errors";
 
 describe("normalizeAuthError", () => {
   it("maps Supabase-style invalid credential errors", () => {

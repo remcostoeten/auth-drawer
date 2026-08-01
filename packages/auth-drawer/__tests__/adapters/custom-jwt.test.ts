@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createCustomJwtAdapter } from "./custom-jwt";
+import { createCustomJwtAdapter } from "../../src/adapters/custom-jwt";
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

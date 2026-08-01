@@ -4,7 +4,7 @@ import {
   getAuthSuccessCloseDelay,
   resolveAuthSuccessConfig,
   resolveAuthSuccessMessage,
-} from "./auth-success";
+} from "../../src/ui/auth-success";
 
 describe("resolveAuthSuccessConfig", () => {
   it("resolves the default commit timing and copy", () => {

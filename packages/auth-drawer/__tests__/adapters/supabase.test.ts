@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createSupabaseAdapter } from "./supabase";
+import { createSupabaseAdapter } from "../../src/adapters/supabase";
 
 function makeSupabase(overrides: Record<string, any> = {}) {
   return {
