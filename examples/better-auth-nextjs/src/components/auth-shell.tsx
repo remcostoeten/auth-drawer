@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
-import { AuthDrawer, AuthProvider, useAuth } from "@remcostoeten/auth-drawer";
+import { AuthDrawer, AuthProvider, useAuth, type AuthAction } from "@remcostoeten/auth-drawer/react";
 import { authAdapter } from "@/lib/auth-adapter";
 import { authDrawerConfig } from "@/lib/auth-drawer-config";
 
@@ -11,13 +11,13 @@ type AuthShellProps = {
 };
 
 export function AuthShell({ children }: AuthShellProps) {
-  // A fresh sign-in/up/oauth sets this; the redirect waits until the Better
+  // A fresh sign-in, sign-up, OAuth or passkey login sets this; the redirect waits until the Better
   // Auth session has actually settled (see RedirectAfterAuth).
   const pendingRedirectRef = useRef(false);
 
   const handleAuthSuccess = useCallback(
-    (action: "signIn" | "signUp" | "signOut" | "oauth") => {
-      if (action === "signIn" || action === "signUp" || action === "oauth") {
+    (action: AuthAction) => {
+      if (action !== "signOut") {
         pendingRedirectRef.current = true;
       }
     },

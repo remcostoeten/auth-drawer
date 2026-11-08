@@ -1,4 +1,4 @@
-import type { AuthConfig } from "@remcostoeten/auth-drawer";
+import type { AuthConfig } from "@remcostoeten/auth-drawer/react";
 import { oauthProviders } from "@/lib/oauth-providers";
 
 export const authDrawerConfig = {

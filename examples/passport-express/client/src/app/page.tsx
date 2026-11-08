@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@remcostoeten/auth-drawer";
+import { useAuth } from "@remcostoeten/auth-drawer/react";
 import Link from "next/link";
 
 export default function HomePage() {

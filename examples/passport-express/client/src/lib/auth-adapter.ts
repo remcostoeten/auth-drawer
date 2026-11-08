@@ -1,4 +1,4 @@
-import { createPassportAdapter } from "@remcostoeten/auth-drawer/adapters/passport";
+import { createPassportAdapter } from "@remcostoeten/auth-drawer/react/adapters/passport";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 

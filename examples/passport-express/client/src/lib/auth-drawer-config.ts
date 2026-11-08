@@ -1,4 +1,4 @@
-import type { AuthConfig } from "@remcostoeten/auth-drawer";
+import type { AuthConfig } from "@remcostoeten/auth-drawer/react";
 
 export const authDrawerConfig = {
   ui: {

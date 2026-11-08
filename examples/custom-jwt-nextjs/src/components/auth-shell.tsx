@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
-import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
+import { AuthDrawer, AuthProvider, type AuthAction } from "@remcostoeten/auth-drawer/react";
 import { authAdapter } from "@/lib/auth-adapter";
 import { authDrawerConfig } from "@/lib/auth-drawer-config";
 
@@ -16,8 +16,8 @@ export function AuthShell({ children }: AuthShellProps) {
   const router = useRouter();
 
   const handleAuthSuccess = useCallback(
-    (action: "signIn" | "signUp" | "signOut" | "oauth") => {
-      if (action === "signIn" || action === "signUp" || action === "oauth") {
+    (action: AuthAction) => {
+      if (action !== "signOut") {
         window.setTimeout(() => {
           router.push("/dashboard");
         }, SUCCESS_COMMIT_MS);

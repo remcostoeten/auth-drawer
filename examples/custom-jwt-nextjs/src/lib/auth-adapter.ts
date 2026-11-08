@@ -1,4 +1,4 @@
-import { createCustomJwtAdapter } from "@remcostoeten/auth-drawer/adapters/custom-jwt";
+import { createCustomJwtAdapter } from "@remcostoeten/auth-drawer/react/adapters/custom-jwt";
 import { oauthProviders } from "@/lib/oauth-providers";
 
 /**

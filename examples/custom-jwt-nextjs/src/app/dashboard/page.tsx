@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@remcostoeten/auth-drawer";
+import { useAuth } from "@remcostoeten/auth-drawer/react";
 
 export default function DashboardPage() {
   const { user, isPending, openDrawer } = useAuth();

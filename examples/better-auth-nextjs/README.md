@@ -21,24 +21,17 @@ The dev server runs on **http://localhost:3005** (not 3000). Set `BETTER_AUTH_UR
 
 ## OAuth
 
-`src/lib/oauth-providers.ts` ships a showcase set — `github`, `google`,
-`discord`, `twitch`, `gitlab`, `spotify` — so the drawer renders the new v0.3
-provider icons out of the box. The same list drives both the Better Auth server
+`src/lib/oauth-providers.ts` ships a showcase set (`github`, `google`,
+`discord`, `x`). The same list drives both the Better Auth server
 (`src/lib/auth.ts`) and `createBetterAuthAdapter`, so UI and backend stay
 aligned. Each provider is **env-gated**: it shows in the drawer immediately, and
 real sign-in starts working once you add its `*_CLIENT_ID` / `*_CLIENT_SECRET`
-to `.env` (see `.env.example`). Trim the list — or set it to `[]` — for an
+to `.env` (see `.env.example`). Trim the list, or set it to `[]`, for an
 email/password-only demo.
 
-v0.3 ships bundled icons for 16 providers (`github`, `google`, `apple`,
-`discord`, `tiktok`, `x`, `facebook`, `microsoft`, `gitlab`, `twitch`,
-`linkedin`, `spotify`, `slack`, `reddit`, `notion`, `figma`); monochrome marks
-adapt to light/dark automatically. `ui.auth.providers` also accepts object
-entries for **custom providers, custom/light-dark logos, or label-only buttons**
-— see the commented example in `src/lib/auth-drawer-config.ts`. (That rich form
-applies when the adapter doesn't advertise its own provider list; the Better
-Auth adapter does, so the bare ids win here. Use `showProviderIcons: false` to
-drop logos globally.)
+The drawer ships icons for `github`, `google`, `apple`, `discord`, `tiktok` and
+`x`. Better Auth calls the X provider `twitter`; the adapter and `src/lib/auth.ts`
+handle the mapping.
 
 ## Sign-in flow (loading + success)
 

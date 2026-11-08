@@ -1,4 +1,4 @@
-import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
+import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/better-auth";
 import { authClient } from "@/lib/auth-client";
 import { oauthProviders } from "@/lib/oauth-providers";
 

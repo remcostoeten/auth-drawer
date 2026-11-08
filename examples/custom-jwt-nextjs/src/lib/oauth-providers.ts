@@ -1,4 +1,4 @@
-import type { OAuthProvider } from "@remcostoeten/auth-drawer";
+import type { OAuthProvider } from "@remcostoeten/auth-drawer/react";
 
 /**
  * OAuth providers to surface in the drawer. For the custom-JWT adapter, OAuth

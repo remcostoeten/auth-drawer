@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@remcostoeten/auth-drawer";
+import { useAuth } from "@remcostoeten/auth-drawer/react";
 
 export function OpenDashboardButton() {
   const { user, isPending, openDrawer } = useAuth();

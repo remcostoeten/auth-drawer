@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@remcostoeten/auth-drawer";
+import { useAuth } from "@remcostoeten/auth-drawer/react";
 
 export function SiteHeader() {
   const { user, isPending, openDrawer, signOut } = useAuth();
