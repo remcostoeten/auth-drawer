@@ -15,7 +15,7 @@ import {
   type AuthConfig,
   type AuthConfigGroup,
 } from "@/components/auth/auth-drawer";
-import { createMockAdapter } from "@remcostoeten/auth-drawer/adapters/mock";
+import { createMockAdapter } from "@remcostoeten/auth-drawer/react/adapters/mock";
 import { Configurator } from "./configurator/configurator";
 import { OAUTH_OVERFLOW_PROVIDERS } from "./configurator/constants";
 import {
@@ -60,8 +60,8 @@ import {
 import { PropTable, Section } from "./ui/section";
 
 const MINIMAL_USAGE_CODE = `import { createAuthClient } from "better-auth/react";
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/better-auth";
 
 // Created from your Better Auth config, usually exported from "@/lib/auth-client".
 const client = createAuthClient();
@@ -423,7 +423,7 @@ export function DocsPage() {
                     Without it, the drawer still works but renders inline.
                   </p>
                   <pre className="overflow-x-auto rounded-[6px] bg-background p-3 text-[0.7rem] text-foreground/72">
-                    {`import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
+                    {`import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer/react";
 
 function Shell({ adapter, children }) {
   return (

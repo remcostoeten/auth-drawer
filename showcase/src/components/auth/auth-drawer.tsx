@@ -3,7 +3,7 @@ import {
   DEFAULT_CONFIG as PACKAGE_DEFAULT_CONFIG,
   DEFAULT_COPY as PACKAGE_DEFAULT_COPY,
   OAUTH_PROVIDER_IDS as PACKAGE_OAUTH_PROVIDER_IDS,
-} from "@remcostoeten/auth-drawer";
+} from "@remcostoeten/auth-drawer/react";
 import type { ComponentType } from "react";
 import type {
   AuthAdapter,
@@ -11,15 +11,15 @@ import type {
   OAuthProvider,
   ResolvedAuthConfig,
   AuthTriggerStore,
-} from "../../../../packages/auth-drawer/src/types";
-import type { ResolvedAuthCopyConfig } from "../../../../packages/auth-drawer/src/copy";
+} from "../../../../packages/auth-drawer/src/react/types";
+import type { ResolvedAuthCopyConfig } from "../../../../packages/auth-drawer/src/react/copy";
 
 export {
   createAuthTriggerStore,
   defaultLabelForOAuthProvider,
   resolveOAuthVisibleCount,
   useScrollOpenTrigger,
-} from "@remcostoeten/auth-drawer";
+} from "@remcostoeten/auth-drawer/react";
 
 export type AuthDrawerProps = {
   config?: AuthConfig;
@@ -38,7 +38,7 @@ export const DEFAULT_CONFIG = PACKAGE_DEFAULT_CONFIG as unknown as ResolvedAuthC
 export const DEFAULT_COPY = PACKAGE_DEFAULT_COPY as unknown as ResolvedAuthCopyConfig;
 export const OAUTH_PROVIDER_IDS = PACKAGE_OAUTH_PROVIDER_IDS as unknown as readonly OAuthProvider[];
 
-export type { AuthCopyConfig } from "../../../../packages/auth-drawer/src/copy";
+export type { AuthCopyConfig } from "../../../../packages/auth-drawer/src/react/copy";
 export type { AuthAdapter, AuthConfig, AuthTriggerStore, OAuthProvider, ResolvedAuthCopyConfig };
 export type {
   AuthBackdropConfig,
@@ -52,4 +52,4 @@ export type {
   DrawerMode,
   DrawerPosition,
   MotionSettings,
-} from "../../../../packages/auth-drawer/src/types";
+} from "../../../../packages/auth-drawer/src/react/types";

@@ -1,7 +1,7 @@
 ---
 name: auth-drawer
 description: >-
-  Integrate the @remcostoeten/auth-drawer React library (a sign-in/sign-up
+  Integrate the @remcostoeten/auth-drawer library (React, with a SolidJS entry point) (a sign-in/sign-up
   drawer or modal) into a consumer app. Use this whenever the user wants to add
   a login/signup/auth surface, an "auth drawer" or "auth modal", wrap their app
   in AuthProvider, render <AuthDrawer>, call useAuth(), pick or write an auth
@@ -15,7 +15,7 @@ description: >-
 
 # Auth Drawer Integration
 
-`@remcostoeten/auth-drawer` is a headless-ish React auth surface — a drawer or
+`@remcostoeten/auth-drawer` is a headless-ish React auth surface, a drawer or
 modal with email/password, OAuth buttons, registration, forgot-password, and
 configurable triggers. It does **not** talk to any auth backend directly.
 Instead an **adapter** bridges the UI to whatever auth engine the app uses. Your
@@ -25,20 +25,27 @@ job is to wire three things together correctly and pick the right adapter.
 
 The library splits cleanly into UI and backend:
 
-- **UI** (`AuthDrawer`, `AuthProvider`, `useAuth`) — ships with the package.
-- **Adapter** — an object implementing `AuthAdapter`. Either use a prebuilt one
-  (`@remcostoeten/auth-drawer/adapters/<name>`) or build a custom one with
+- **UI** (`AuthDrawer`, `AuthProvider`, `useAuth`), ships with the package.
+- **Adapter**, an object implementing `AuthAdapter`. Either use a prebuilt one
+  (`@remcostoeten/auth-drawer/react/adapters/<name>`) or build a custom one with
   `createAdapter`. The adapter is the **only** integration point with the auth
   backend.
-- **Config** (`AuthConfig`) — purely declarative: how the surface looks
+- **Config** (`AuthConfig`), purely declarative: how the surface looks
   (`ui.*`) and what opens it (`triggers.*`). Never auth logic.
 
 The drawer uses **feature detection** on the adapter: it shows or hides UI based
 on which optional methods the adapter implements. Implement `signUp` and the
 Register tab appears; implement `signInWithOAuth` and OAuth buttons appear;
-implement `requestPasswordReset` and the forgot-password link appears. This is
-why choosing/shaping the adapter is the most consequential step — don't try to
+implement `requestPasswordReset` and the forgot-password link appears; implement
+`features.magicLink` and the passwordless email-link flow appears. This is
+why choosing/shaping the adapter is the most consequential step, don't try to
 toggle these via config.
+
+For a **passwordless backend** (magic link only), omit `signIn` entirely and
+implement `features.magicLink.signIn(email)`. The password field is then never
+rendered and the drawer opens in magic-link mode, ending in a "check your inbox"
+state with a throttled resend. Implement both and the user can switch between
+them. Details in `references/adapters.md`.
 
 ```sh
 # pick the user's package manager (check for bun.lock / pnpm-lock.yaml / package-lock.json)
@@ -46,11 +53,26 @@ bun add @remcostoeten/auth-drawer
 ```
 
 Peer dependencies the host app must already have (install if missing):
-`react` (^18 || ^19), `react-dom`, `framer-motion` (^12), `lucide-react`.
+`react` (^18 || ^19), `react-dom`, `framer-motion` (^12), `lucide-react`. All peers
+are optional at the package level, so nothing warns when one is missing.
+
+**Entry points.** Import React code from `@remcostoeten/auth-drawer/react` and its
+adapters from `@remcostoeten/auth-drawer/react/adapters/<name>`. The bare
+`@remcostoeten/auth-drawer`, `/adapters/<name>` and `/styles.css` paths still work
+as deprecated aliases of those, so leave them alone in existing code but write new
+code against `/react`.
+
+**SolidJS.** For a Solid app use `@remcostoeten/auth-drawer/solid` instead. It
+takes the same config and props, `useAuth()` returns accessors (`auth.user()`),
+adapters come from `@remcostoeten/auth-drawer/solid/adapters/<name>`, and the only
+peer is `solid-js` ^1.9 (motion is CSS, there is no `framer-motion`). Clients that
+expose their session only through a Solid accessor go through `bindSolidSession`.
+Everything else in this skill (adapter choice, config, triggers, errors) applies
+unchanged. The framework-free logic is available as `@remcostoeten/auth-drawer/core`.
 
 **Styles are included out of the box.** The package entry imports its bundled
 CSS as a side effect (and `package.json` marks `*.css` as side-effecting), so
-just importing from `@remcostoeten/auth-drawer` brings the styles with it — no
+just importing from `@remcostoeten/auth-drawer/react` brings the styles with it, no
 manual CSS import needed.
 
 Only reach for the standalone export in special cases:
@@ -58,30 +80,30 @@ Only reach for the standalone export in special cases:
 ```ts
 // Optional. Use only if your bundler strips CSS side effects, or you want to
 // control stylesheet order explicitly:
-import "@remcostoeten/auth-drawer/styles.css";
+import "@remcostoeten/auth-drawer/react/styles.css";
 // Or, for Tailwind projects that prefer the source layer over the prebuilt CSS:
-import "@remcostoeten/auth-drawer/styles/tailwind.css";
+import "@remcostoeten/auth-drawer/react/styles/tailwind.css";
 ```
 
 ## Minimal wiring (the happy path)
 
 Three pieces. Build them in this order.
 
-**1. Create the adapter** (see `references/adapters.md` to choose — start with
+**1. Create the adapter** (see `references/adapters.md` to choose, start with
 `createMockAdapter` if the backend isn't ready):
 
 ```ts
-import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
+import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/better-auth";
 import { authClient } from "@/lib/auth-client";
 
 export const authAdapter = createBetterAuthAdapter({ client: authClient });
 ```
 
-**2. Wrap the app in `AuthProvider`** — it calls `adapter.useSession()` once and
+**2. Wrap the app in `AuthProvider`**, it calls `adapter.useSession()` once and
 exposes session + drawer controls through context:
 
 ```tsx
-import { AuthProvider } from "@remcostoeten/auth-drawer";
+import { AuthProvider } from "@remcostoeten/auth-drawer/react";
 import { authAdapter } from "./auth-adapter";
 
 export function App({ children }) {
@@ -92,7 +114,7 @@ export function App({ children }) {
 **3. Render `<AuthDrawer>`** somewhere inside the provider:
 
 ```tsx
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
 
 <AuthDrawer adapter={authAdapter} />;
 ```
@@ -106,7 +128,7 @@ controlled state.
 **Read session + open the drawer from anywhere** under the provider:
 
 ```tsx
-import { useAuth } from "@remcostoeten/auth-drawer";
+import { useAuth } from "@remcostoeten/auth-drawer/react";
 
 function Header() {
   const { user, isPending, openDrawer, signOut } = useAuth();
@@ -117,7 +139,7 @@ function Header() {
 }
 ```
 
-`useAuth()` throws if called outside `AuthProvider` — keep the provider above
+`useAuth()` throws if called outside `AuthProvider`, keep the provider above
 every consumer.
 
 ## CSS token customization
@@ -137,15 +159,15 @@ app CSS. Do not document or invent a `cad-*` theme API.
 
 | Backend | Import | Factory |
 | :-- | :-- | :-- |
-| Better Auth | `.../adapters/better-auth` | `createBetterAuthAdapter({ client })` |
-| Supabase | `.../adapters/supabase` | `createSupabaseAdapter({ supabase })` |
-| Clerk | `.../adapters/clerk` | `createClerkAdapter({ client })` |
-| NextAuth / Auth.js | `.../adapters/next-auth` | `createNextAuthAdapter({ client })` |
-| Firebase | `.../adapters/firebase` | `createFirebaseAdapter({ auth, ...fns })` |
-| Custom JWT / REST | `.../adapters/custom-jwt` | `createCustomJwtAdapter({ baseUrl })` |
-| Passport (session) | `.../adapters/passport` | `createPassportAdapter({ ... })` |
-| Mock / demo | `.../adapters/mock` | `createMockAdapter()` |
-| Anything else | (main export) | `createAdapter({ id, signIn, useSession, ... })` |
+| Better Auth | `.../react/adapters/better-auth` | `createBetterAuthAdapter({ client })` |
+| Supabase | `.../react/adapters/supabase` | `createSupabaseAdapter({ supabase })` |
+| Clerk | `.../react/adapters/clerk` | `createClerkAdapter({ client })` |
+| NextAuth / Auth.js | `.../react/adapters/next-auth` | `createNextAuthAdapter({ client })` |
+| Firebase | `.../react/adapters/firebase` | `createFirebaseAdapter({ auth, ...fns })` |
+| Custom JWT / REST | `.../react/adapters/custom-jwt` | `createCustomJwtAdapter({ baseUrl })` |
+| Passport (session) | `.../react/adapters/passport` | `createPassportAdapter({ ... })` |
+| Mock / demo | `.../react/adapters/mock` | `createMockAdapter()` |
+| Anything else | (`/react` export) | `createAdapter({ id, signIn, useSession, ... })` |
 
 All paths are subpath imports under `@remcostoeten/auth-drawer`. For exact option
 shapes, OAuth handling, and `createAdapter` custom-adapter rules (including which
@@ -157,11 +179,11 @@ Hooks), read **`references/adapters.md`** before writing adapter code.
 Pass a `config?: AuthConfig` to `AuthDrawer`. Everything is optional and merged
 over `DEFAULT_CONFIG`. Two namespaces:
 
-- `config.ui.*` — appearance & form behavior: `auth` (providers, register/remember
+- `config.ui.*`, appearance & form behavior: `auth` (providers, register/remember
   flags, initial mode, email autocomplete), `copy` (all labels/messages),
   `presentation` (`variant: "drawer" | "modal"`, `defaultOpen`), `visual.backdrop`,
   `motion`, and a custom `footer`.
-- `config.triggers.*` — rules that auto-open the surface.
+- `config.triggers.*`, rules that auto-open the surface.
 
 ```tsx
 <AuthDrawer
@@ -206,9 +228,9 @@ backend errors; for a custom adapter, return the `AuthUiError` object literal
 
 ## Common gotchas
 
-- **Don't manually add the CSS import** unless you have a reason — styles come in
+- **Don't manually add the CSS import** unless you have a reason, styles come in
   automatically via the package's side-effecting entry. Only import
-  `@remcostoeten/auth-drawer/styles.css` explicitly if your bundler strips CSS
+  `@remcostoeten/auth-drawer/react/styles.css` explicitly if your bundler strips CSS
   side effects and the drawer renders unstyled.
 - **`useAuth()` outside the provider** → throws. The provider must wrap every
   consumer, including the component that renders `<AuthDrawer>` if it reads context.
@@ -216,19 +238,19 @@ backend errors; for a custom adapter, return the `AuthUiError` object literal
   registration (omit `signUp` on the adapter). For OAuth, the drawer prefers
   `adapter.providers` over `config.ui.auth.providers`; pass `providers: []` on the
   adapter factory, omit `signInWithOAuth`, or keep both lists aligned.
-- **`useSession` must follow the Rules of Hooks** — it is a React hook called
+- **`useSession` must follow the Rules of Hooks**, it is a React hook called
   inside the provider. A custom adapter's `useSession` may not call other hooks
   conditionally. If you have no reactive session, return a static
   `{ data: null, isPending: false, error: null }` (this is what `createAdapter`
   defaults to).
-- **SSR / Next.js** — `AuthProvider`, `AuthDrawer`, and `useAuth` are client-side.
+- **SSR / Next.js**, `AuthProvider`, `AuthDrawer`, and `useAuth` are client-side.
   Put them in a `"use client"` boundary. Add `<div id="auth-drawer-portal" />` in
   your root layout so the drawer portals above page content (without it, the drawer
   still works but renders inline).
-- **Success callbacks inside a provider** — drawer submissions already invoke
+- **Success callbacks inside a provider**, drawer submissions already invoke
   `AuthProvider`'s `onSuccess`. Prefer provider-level (or `adapter.onSuccess`)
   handlers for redirects; `AuthDrawer`'s `onSuccess` is optional and stacks on top.
-- **The drawer waits for the session before closing** — on success it does not
+- **The drawer waits for the session before closing**, on success it does not
   close instantly. It stays open through the connecting/loading phase (driven by
   `adapter.useSession().isPending`), shows a confirmation once the session is
   fully loaded, then closes. So an accurate `isPending` from `useSession` matters:
@@ -238,16 +260,16 @@ backend errors; for a custom adapter, return the `AuthUiError` object literal
   `maxVisibleMs` = failsafe cap while pending, default 3500), or set
   `ui.success.enabled: false` to close immediately on success. Details in
   **`references/config.md`**.
-- **Don't reach into the package internals** — the public API is exactly what the
+- **Don't reach into the package internals**, the public API is exactly what the
   main export and the `adapters/*` subpaths expose. Build against those.
 
 ## Reference files
 
-- `references/adapters.md` — every prebuilt adapter's options, the `AuthAdapter`
+- `references/adapters.md`, every prebuilt adapter's options, the `AuthAdapter`
   contract, and how to write a custom adapter with `createAdapter`.
-- `references/config.md` — the full `AuthConfig` tree, `DEFAULT_CONFIG`, theming
+- `references/config.md`, the full `AuthConfig` tree, `DEFAULT_CONFIG`, theming
   (`visual`/`motion`), copy overrides, and email autocomplete.
-- `references/triggers.md` — the trigger store, declarative trigger config,
+- `references/triggers.md`, the trigger store, declarative trigger config,
   `useScrollOpenTrigger`, emit patterns, and `TriggerPolicy`.
-- `references/errors.md` — `AuthResult`, `AuthUiError`, all error codes, and
+- `references/errors.md`, `AuthResult`, `AuthUiError`, all error codes, and
   `normalizeError`.

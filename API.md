@@ -5,7 +5,13 @@ See [CHANGELOG.md](./packages/auth-drawer/CHANGELOG.md) for version history.
 
 ## Entry Points
 
-Everything is imported directly from the published package:
+Everything is imported directly from the published package. The examples below use the
+React entry point, `@remcostoeten/auth-drawer/react`. The SolidJS entry point,
+`@remcostoeten/auth-drawer/solid`, takes the same config tree and props, with accessors from
+`useAuth()` and `JSX.Element` where React takes `ReactNode`. `@remcostoeten/auth-drawer/core` holds
+the framework-free logic, documented in [docs/core.md](./packages/auth-drawer/docs/core.md). The
+bare `@remcostoeten/auth-drawer` import and the unprefixed `/adapters/<name>` and `/styles.css`
+paths are deprecated aliases of the React entry point.
 
 ```ts
 import {
@@ -16,7 +22,7 @@ import {
   DEFAULT_CONFIG,
   createAuthTriggerStore,
   useScrollOpenTrigger,
-} from "@remcostoeten/auth-drawer";
+} from "@remcostoeten/auth-drawer/react";
 import type {
   AuthBackdropConfig,
   AuthConfigGroup,
@@ -31,11 +37,11 @@ import type {
   DrawerPosition,
   OAuthProvider,
   AuthVisualConfig,
-} from "@remcostoeten/auth-drawer";
+} from "@remcostoeten/auth-drawer/react";
 ```
 
 Adapter factories are imported from their own subpaths, e.g.
-`@remcostoeten/auth-drawer/adapters/better-auth`.
+`@remcostoeten/auth-drawer/react/adapters/better-auth`.
 
 ## Component
 
@@ -90,7 +96,7 @@ type AuthDrawerProps = {
 `useAuth().closeDrawer()` and reuses the provider's adapter-backed session state.
 
 ```tsx
-import { AuthDrawer, AuthProvider, useAuth } from "@remcostoeten/auth-drawer";
+import { AuthDrawer, AuthProvider, useAuth } from "@remcostoeten/auth-drawer/react";
 
 function HeaderButton() {
   const { openDrawer } = useAuth();
@@ -138,7 +144,7 @@ type AuthContextValue = {
 implements them, mirroring the drawer's own feature detection.
 
 ```tsx
-import { useOptionalAuth } from "@remcostoeten/auth-drawer";
+import { useOptionalAuth } from "@remcostoeten/auth-drawer/react";
 
 function AccountBadge() {
   const auth = useOptionalAuth();
@@ -164,7 +170,7 @@ the drawer resolves OAuth buttons with
 `adapter.providers ?? config.ui.auth.providers ?? DEFAULT_CONFIG.ui.auth.providers`
 (when the adapter implements `signInWithOAuth`). Pass `providers` on the adapter
 factory (e.g. `createBetterAuthAdapter({ providers: [] })`) or keep both lists in
-sync — config alone cannot hide OAuth if the adapter still advertises providers.
+sync, config alone cannot hide OAuth if the adapter still advertises providers.
 
 ### OAuth providers, logos, and custom entries
 
@@ -191,7 +197,7 @@ type AuthProviderEntry = OAuthProvider | OAuthProviderConfig;
 
 - **With logo:** built-in ids include one; custom ids supply `icon`/`iconSrc-as-string`.
 - **Without logo:** set `ui.auth.showProviderIcons: false` globally, or `showIcon: false` per provider.
-- **Light/dark:** provide `iconLight`/`iconDark`. The drawer renders both and toggles them via the package's class-based dark mode (a `.dark` ancestor) in CSS — SSR-safe, no flash. Built-in monochrome marks use `currentColor`, so they adapt without variants.
+- **Light/dark:** provide `iconLight`/`iconDark`. The drawer renders both and toggles them via the package's class-based dark mode (a `.dark` ancestor) in CSS, SSR-safe, no flash. Built-in monochrome marks use `currentColor`, so they adapt without variants.
 - **Custom icon/img:** pass a component, an element, or an image URL string.
 
 ```tsx
@@ -238,10 +244,14 @@ Current defaults:
         enabled: true,
         domains: ["gmail.com", "outlook.com", "hotmail.com", "icloud.com", "yahoo.com"],
       },
+      magicLink: { enabled: true, resendMs: 30000 },
+      passkey: { enabled: true },
+      showLastUsed: true,
     },
     presentation: {
       variant: "drawer",
       defaultOpen: false,
+      dismissible: true,
     },
     visual: {
       backdrop: {
@@ -310,11 +320,11 @@ type AuthAdapter = {
   signInWithOAuth?: (provider: string) => Promise<AuthResult>;
   requestPasswordReset?: (email: string) => Promise<AuthResult>;
   resetPassword?: (input: ResetPasswordInput) => Promise<AuthResult>;
-  useSession: () => {
-    data: AuthSessionState | null;
-    isPending: boolean;
-    error: unknown;
+  session: {
+    getSnapshot: () => { data: AuthSessionState | null; isPending: boolean; error: unknown };
+    subscribe: (listener: () => void) => () => void;
   };
+  useSession?: () => { data: AuthSessionState | null; isPending: boolean; error: unknown };
   normalizeError?: (error: unknown) => AuthUiError;
   onSuccess?: (action: "signIn" | "signUp" | "signOut" | "oauth") => void;
   onError?: (
@@ -357,10 +367,10 @@ Current behavior:
 - `adapter.signInWithOAuth` is required to show OAuth provider buttons.
 - `adapter.requestPasswordReset` is required to show the forgot-password action.
 - `adapter.resetPassword` receives a `ResetPasswordInput` with the new password.
-- `adapter.useSession` is called once at the top of the drawer to suppress prompts for authenticated users.
+- The drawer reads `adapter.useSession` when the adapter has one and `adapter.session` otherwise, once at the top, to suppress prompts for authenticated users.
 - Adapter action failures should return `{ success: false, error }`.
 - Thrown errors are passed through `adapter.normalizeError` or `config.normalizeError`.
-- On successful sign-in, sign-up, or OAuth, the drawer stays open through the connecting/loading phase, shows a success commit state (when `ui.success.enabled` is true), and closes only once the session is fully loaded and the post-ready dwell (`minVisibleMs`) has elapsed — so it never disappears before the session is ready.
+- On successful sign-in, sign-up, or OAuth, the drawer stays open through the connecting/loading phase, shows a success commit state (when `ui.success.enabled` is true), and closes only once the session is fully loaded and the post-ready dwell (`minVisibleMs`) has elapsed, so it never disappears before the session is ready.
 - When the resolved provider list is empty (see precedence above), the OAuth button
   group and divider are omitted.
 
@@ -402,7 +412,7 @@ The default normalizer accepts strings, objects with `code/status/message`, and 
 
 ## Success Commit (`ui.success`)
 
-After a successful sign-in, sign-up, or OAuth action, the drawer does not close immediately. It stays open through the connecting/loading phase, shows a confirmation once the session is fully loaded, then closes — so the drawer never disappears before the session is ready. Disable it, tune timing, or override copy through `ui.success`.
+After a successful sign-in, sign-up, or OAuth action, the drawer does not close immediately. It stays open through the connecting/loading phase, shows a confirmation once the session is fully loaded, then closes, so the drawer never disappears before the session is ready. Disable it, tune timing, or override copy through `ui.success`.
 
 ```ts
 type AuthSuccessConfig = {
@@ -416,7 +426,7 @@ type AuthSuccessConfig = {
 type AuthSuccessAction = "signIn" | "signUp" | "oauth";
 ```
 
-`minVisibleMs` is measured from the moment the session becomes ready (authenticated and no longer pending), not from when the banner appears — so the confirmation never flashes and vanishes the instant auth completes. `maxVisibleMs` only applies while the session is still pending, as a failsafe for a session that never loads.
+`minVisibleMs` is measured from the moment the session becomes ready (authenticated and no longer pending), not from when the banner appears, so the confirmation never flashes and vanishes the instant auth completes. `maxVisibleMs` only applies while the session is still pending, as a failsafe for a session that never loads.
 
 Defaults: `enabled: true`, `minVisibleMs: 900`, `maxVisibleMs: 3500`, with bundled messages for each action. Set `ui.success.enabled: false` to close immediately on success (pre-0.3 behavior). Pass `ui.success.footer` to replace the default success message with a custom React node.
 
@@ -552,8 +562,8 @@ type CustomTriggerConfig = TriggerPolicy & {
 
 Triggers split into two roles:
 
-1. **Config** (`config.triggers.*`) — declare which rules are active and their policy.
-2. **Events** (`triggerStore.emit(...)`) — tell the store that something happened.
+1. **Config** (`config.triggers.*`), declare which rules are active and their policy.
+2. **Events** (`triggerStore.emit(...)`), tell the store that something happened.
 
 `AuthDrawer` creates or accepts a trigger store, registers every configured rule, and opens the surface when the store decides a rule should fire.
 
@@ -563,12 +573,12 @@ Triggers split into two roles:
 | :--- | :--- | :--- |
 | Page load | `triggers.pageLoad` | `AuthDrawer` on mount (respects `delayMs`) |
 | Click | `triggers.click` | `AuthDrawer` when `selector` matches a document event |
-| Scroll | `triggers.scrollOpen` | Host app — usually `useScrollOpenTrigger` + `emit` |
-| Auth state | `triggers.state` | Host app — API clients, route guards, session checks |
-| Idle | `triggers.idle` | Host app — your idle detector |
-| Custom | `triggers.custom` | Host app — any named channel you define |
+| Scroll | `triggers.scrollOpen` | Host app, usually `useScrollOpenTrigger` + `emit` |
+| Auth state | `triggers.state` | Host app, API clients, route guards, session checks |
+| Idle | `triggers.idle` | Host app, your idle detector |
+| Custom | `triggers.custom` | Host app, any named channel you define |
 
-`pageLoad` and `click` can work without a shared store if you pass no `triggerStore` prop — `AuthDrawer` creates one internally. For scroll, state, idle, and custom rules, create one store and pass it to both the drawer and the code that emits events.
+`pageLoad` and `click` can work without a shared store if you pass no `triggerStore` prop, `AuthDrawer` creates one internally. For scroll, state, idle, and custom rules, create one store and pass it to both the drawer and the code that emits events.
 
 ### Shared store wiring
 
@@ -578,7 +588,7 @@ import {
   createAuthTriggerStore,
   useScrollOpenTrigger,
   type AuthConfig,
-} from "@remcostoeten/auth-drawer";
+} from "@remcostoeten/auth-drawer/react";
 import { useMemo, useRef } from "react";
 
 const triggerStore = createAuthTriggerStore();
@@ -647,11 +657,11 @@ triggerStore.emit({
 
 Every trigger kind extends `TriggerPolicy`:
 
-- **`once`** — fire at most once per scope bucket.
-- **`cooldownMs`** — minimum time between firings.
-- **`scope`** — eligibility bucket: `session` (in-memory), `day`, `week`, or `install` (localStorage).
-- **`every`** — fire only on every Nth matching event.
-- **`sampleRate`** — random gate between `0` and `1`.
+- **`once`**, fire at most once per scope bucket.
+- **`cooldownMs`**, minimum time between firings.
+- **`scope`**, eligibility bucket: `session` (in-memory), `day`, `week`, or `install` (localStorage).
+- **`every`**, fire only on every Nth matching event.
+- **`sampleRate`**, random gate between `0` and `1`.
 
 `scrollOpen.once` defaults to `true` when omitted. Other kinds default `once` to `false`.
 
@@ -686,11 +696,11 @@ type AuthTriggerEvent =
 
 Matching rules:
 
-- **`scrollOpen`** — fires when `event.progress >= config.threshold` (default `0.25`).
-- **`state`** — fires when `event.state === config.state`.
-- **`idle`** — fires when `event.idleMs >= config.idleMs`.
-- **`custom`** — fires when `event.event === config.event`.
-- **`click`** — fires when selector/event match; if `config.selector` is set, the target must match.
+- **`scrollOpen`**, fires when `event.progress >= config.threshold` (default `0.25`).
+- **`state`**, fires when `event.state === config.state`.
+- **`idle`**, fires when `event.idleMs >= config.idleMs`.
+- **`custom`**, fires when `event.event === config.event`.
+- **`click`**, fires when selector/event match; if `config.selector` is set, the target must match.
 
 ### Store API
 
@@ -709,7 +719,7 @@ store.snapshot(); // seenCounts, fireCounts, lastSeenAt, lastFiredAt
 store.clear(kind?);
 ```
 
-Use `createAuthTriggerStore()` when a scene or host app needs to emit trigger events into the drawer from outside React props — for example paywall scenes, router middleware, or vanilla DOM blockers.
+Use `createAuthTriggerStore()` when a scene or host app needs to emit trigger events into the drawer from outside React props, for example paywall scenes, router middleware, or vanilla DOM blockers.
 
 ### useScrollOpenTrigger
 

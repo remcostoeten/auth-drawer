@@ -1,10 +1,10 @@
 import { useRef } from "react";
 import { Edit3, Search, Smartphone, Sparkles } from "lucide-react";
-import { useScrollOpenTrigger } from "@remcostoeten/auth-drawer";
+import { useScrollOpenTrigger } from "@remcostoeten/auth-drawer/react";
 import type {
   AuthTriggerConfig,
   AuthTriggerStore,
-} from "../../../../../../packages/auth-drawer/src/types";
+} from "../../../../../../packages/auth-drawer/src/react/types";
 
 type Props = {
   onOpenAuth: () => void;

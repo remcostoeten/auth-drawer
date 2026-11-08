@@ -975,7 +975,7 @@ export function SdkDocsSection() {
         <div className="mt-4 rounded-[8px] border border-foreground/10 bg-foreground/[0.03] overflow-hidden">
           <div className="bg-foreground/[0.02] px-4 py-2.5 border-b border-foreground/10 flex items-center justify-between">
             <span className="font-mono text-[0.68rem] text-foreground/45">
-              packages/auth-drawer/src/types.ts
+              packages/auth-drawer/src/react/types.ts
             </span>
             <span className="text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-foreground/40">
               Required adapter contract

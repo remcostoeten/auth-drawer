@@ -3,9 +3,11 @@
     "private": true,
     "type": "module",
     "workspaces": [
-        "packages/*",
+        "packages/auth-drawer",
         "showcase",
-        "examples/better-auth-nextjs"
+        "examples/better-auth-nextjs",
+        "examples/solid-vite",
+        "examples/react-vite"
     ],
     "scripts": {
         "build": "turbo run build",
@@ -16,6 +18,8 @@
         "test": "turbo run test",
         "typecheck": "turbo run typecheck",
         "publish:auth-drawer": "npm publish -w @remcostoeten/auth-drawer --access public",
+        "example:react": "cd examples/react-vite && bun run dev",
+        "example:solid": "cd examples/solid-vite && bun run dev",
         "example:better-auth": "cd examples/better-auth-nextjs && bun install && bun run dev:all",
         "example:custom-jwt": "cd examples/custom-jwt-nextjs && bun install && bun run dev:all",
         "example:passport": "bash examples/passport-express/dev.sh"

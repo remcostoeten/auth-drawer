@@ -2,16 +2,16 @@
 
 An adapter is the single bridge between `AuthDrawer`'s UI and an auth backend.
 Either use a prebuilt factory (subpath import under
-`@remcostoeten/auth-drawer/adapters/<name>`) or build one with `createAdapter`.
+`@remcostoeten/auth-drawer/react/adapters/<name>`) or build one with `createAdapter`.
 
 ## The `AuthAdapter` contract
 
 ```ts
 type AuthAdapter = {
-  id: string;                       // required — stable identifier, e.g. "supabase"
+  id: string;                       // required, stable identifier, e.g. "supabase"
   providers?: OAuthProvider[];      // which OAuth buttons to offer
   requiresName?: boolean;           // collect a name field during registration
-  signIn: (input: CredentialAuthInput) => Promise<AuthResult>;           // required
+  signIn?: (input: CredentialAuthInput) => Promise<AuthResult>;          // required unless passwordless
   useSession: () => {                                                    // required (a hook!)
     data: AuthSessionState | null;
     isPending: boolean;
@@ -43,10 +43,11 @@ type AuthSessionState = {
 };
 ```
 
-**Required:** `id`, `signIn`, `useSession`. Everything else is optional and drives
-feature detection.
+**Required:** `id` and `useSession`, plus `signIn`, unless the backend is
+passwordless, in which case omit `signIn` and implement `features.magicLink`
+instead. Everything else is optional and drives feature detection.
 
-### Feature detection — what each method reveals
+### Feature detection, what each method reveals
 
 The drawer decides which UI to show from which methods exist. This is the key
 behavior to internalize:
@@ -57,7 +58,8 @@ behavior to internalize:
 | `signInWithOAuth` (+ `providers`) | the OAuth button group |
 | `requestPasswordReset` | the forgot-password link |
 | `resetPassword` | accepts a new password in reset mode |
-| `features.magicLink` / `emailOtp` / `anonymous` | the corresponding extra flows |
+| `features.magicLink` | the passwordless email-link flow (see below) |
+| `features.emailOtp` / `anonymous` | reserved; no UI yet |
 
 Don't try to toggle these through `config`. To hide registration, omit `signUp`.
 To hide OAuth, omit `signInWithOAuth`, pass `providers: []` on the adapter
@@ -67,7 +69,7 @@ factory, or keep `adapter.providers` and `config.ui.auth.providers` aligned
 ### `useSession` is a React hook
 
 `useSession` is called once inside `AuthProvider`/`AuthDrawer` to suppress the
-prompt for already-authenticated users. It must obey the Rules of Hooks — no
+prompt for already-authenticated users. It must obey the Rules of Hooks, no
 conditional hook calls. If the backend has no reactive session, return a static
 `{ data: null, isPending: false, error: null }`.
 
@@ -80,14 +82,61 @@ conditional hook calls. If the backend has no reactive session, return a static
 - On a successful `signIn`/`signUp`/OAuth, the drawer closes automatically.
 - `signIn` runs only after local email/password validation passes.
 
-## `createAdapter` — custom adapters
+### Magic link, the passwordless flow
+
+Implement `features.magicLink.signIn(email)` and the drawer renders an email-only
+form plus a "check your inbox" state with a throttled resend and a "use a
+different email" escape.
+
+- **Omit `signIn`** and the password field is never rendered: the drawer opens
+  directly in magic-link mode. This is the shape to use for a magic-link-only
+  backend.
+- **Keep both** and the password form shows a link that switches to the
+  magic-link form and back.
+- Sending a link leaves the drawer open and fires **no** `onSuccess`, no session
+  exists until the user follows the link. Errors are routed like any other
+  adapter error (`target: "email"` lands on the field, `"form"` on the button).
+- Tune it with `ui.auth.magicLink` (`enabled`, `resendMs`) and relabel every
+  string with `copy.magicLink`. `ui.auth.initialMode: "magicLink"` opens in that
+  mode; it degrades to `"login"` when the adapter has no magic-link support.
+- `useAuth().signInWithMagicLink(email)` drives the same call from your own UI.
+
+```ts
+export const authAdapter = createAdapter({
+  id: "my-backend",
+  features: {
+    magicLink: {
+      async signIn(email) {
+        const res = await fetch("/api/auth/magic-link", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        if (!res.ok) {
+          return {
+            success: false,
+            error: { code: "rate_limited", target: "form", message: "Try again shortly." },
+          };
+        }
+        return { success: true };
+      },
+    },
+  },
+  useSession,
+});
+```
+
+`features.emailOtp` and `features.anonymous` are declared in the type but have no
+UI yet, implementing them changes nothing on screen.
+
+## `createAdapter`, custom adapters
 
 Use `createAdapter` to fill in safe defaults for the methods you omit. It only
 requires the fields you implement; `useSession` defaults to a static null
 session and `signOut` defaults to a page reload.
 
 ```ts
-import { createAdapter } from "@remcostoeten/auth-drawer";
+import { createAdapter } from "@remcostoeten/auth-drawer/react";
 
 export const myAdapter = createAdapter({
   id: "my-backend",
@@ -99,7 +148,7 @@ export const myAdapter = createAdapter({
       body: JSON.stringify({ email, password, rememberMe }),
     });
     if (!res.ok) {
-      // AuthUiError is a plain object — see errors.md for codes and targets
+      // AuthUiError is a plain object, see errors.md for codes and targets
       return {
         success: false,
         error: { code: "invalid_credentials", target: "form", message: "Invalid email or password." },
@@ -109,7 +158,7 @@ export const myAdapter = createAdapter({
   },
   // optional: add signUp / signInWithOAuth / requestPasswordReset to reveal more UI
   useSession() {
-    // a real hook — wire to your session source, or omit to default to null
+    // a real hook, wire to your session source, or omit to default to null
     return { data: null, isPending: false, error: null };
   },
 });
@@ -124,10 +173,10 @@ custom adapter returns the `AuthUiError` object literal directly (or uses
 
 All factories return an `AuthAdapter`. Each accepts a typed options object.
 
-### Better Auth — `createBetterAuthAdapter`
+### Better Auth, `createBetterAuthAdapter`
 
 ```ts
-import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
+import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/better-auth";
 
 createBetterAuthAdapter({
   client,                       // the Better Auth client (required)
@@ -142,10 +191,10 @@ createBetterAuthAdapter({
 Auto-detects and wires `magicLink`, `emailOtp`, and `anonymous` from the client if
 those methods exist. Maps Better Auth error codes to `AuthUiError`.
 
-### Supabase — `createSupabaseAdapter`
+### Supabase, `createSupabaseAdapter`
 
 ```ts
-import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/adapters/supabase";
+import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/react/adapters/supabase";
 
 createSupabaseAdapter({
   supabase,                     // the Supabase client (required)
@@ -156,10 +205,10 @@ createSupabaseAdapter({
 });
 ```
 
-### Clerk — `createClerkAdapter`
+### Clerk, `createClerkAdapter`
 
 ```ts
-import { createClerkAdapter } from "@remcostoeten/auth-drawer/adapters/clerk";
+import { createClerkAdapter } from "@remcostoeten/auth-drawer/react/adapters/clerk";
 
 createClerkAdapter({
   client,                       // Clerk client (required)
@@ -169,10 +218,10 @@ createClerkAdapter({
 });
 ```
 
-### NextAuth / Auth.js — `createNextAuthAdapter`
+### NextAuth / Auth.js, `createNextAuthAdapter`
 
 ```ts
-import { createNextAuthAdapter } from "@remcostoeten/auth-drawer/adapters/next-auth";
+import { createNextAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/next-auth";
 
 createNextAuthAdapter({
   client,                       // NextAuth client (signIn/signOut/useSession) (required)
@@ -182,13 +231,13 @@ createNextAuthAdapter({
 });
 ```
 
-### Firebase — `createFirebaseAdapter`
+### Firebase, `createFirebaseAdapter`
 
 Firebase's modular SDK is tree-shaken, so you pass the functions in rather than a
 client object:
 
 ```ts
-import { createFirebaseAdapter } from "@remcostoeten/auth-drawer/adapters/firebase";
+import { createFirebaseAdapter } from "@remcostoeten/auth-drawer/react/adapters/firebase";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
   signOut, sendPasswordResetEmail, updatePassword, signInWithRedirect, GoogleAuthProvider,
@@ -208,13 +257,13 @@ createFirebaseAdapter({
 });
 ```
 
-### Custom JWT / REST — `createCustomJwtAdapter`
+### Custom JWT / REST, `createCustomJwtAdapter`
 
 For a plain REST backend that issues a JWT. Stores the token in `localStorage`
 under `tokenStorageKey` and sends it as a Bearer token.
 
 ```ts
-import { createCustomJwtAdapter } from "@remcostoeten/auth-drawer/adapters/custom-jwt";
+import { createCustomJwtAdapter } from "@remcostoeten/auth-drawer/react/adapters/custom-jwt";
 
 createCustomJwtAdapter({
   baseUrl?: string,             // base for the default endpoint paths
@@ -232,12 +281,12 @@ createCustomJwtAdapter({
 });
 ```
 
-### Passport (session cookies) — `createPassportAdapter`
+### Passport (session cookies), `createPassportAdapter`
 
 For a session-cookie Passport.js backend (no token storage).
 
 ```ts
-import { createPassportAdapter } from "@remcostoeten/auth-drawer/adapters/passport";
+import { createPassportAdapter } from "@remcostoeten/auth-drawer/react/adapters/passport";
 
 createPassportAdapter({
   loginUrl?: string,
@@ -249,16 +298,16 @@ createPassportAdapter({
 });
 ```
 
-### Mock — `createMockAdapter`
+### Mock, `createMockAdapter`
 
 For demos, Storybook, and local UI work before the backend exists. Holds an
 in-memory authenticated flag and a fake user.
 
 ```ts
-import { createMockAdapter } from "@remcostoeten/auth-drawer/adapters/mock";
+import { createMockAdapter } from "@remcostoeten/auth-drawer/react/adapters/mock";
 
 createMockAdapter({
-  latencyMs?: number,           // default 800 — simulate network delay
+  latencyMs?: number,           // default 800, simulate network delay
   mockEmail?: string,           // default "admin@example.com"
   mockPassword?: string,        // default "password"
   requireName?: boolean,

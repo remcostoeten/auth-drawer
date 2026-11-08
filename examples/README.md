@@ -12,6 +12,8 @@ Then ask it to match one of the examples below (e.g. *"Set up auth drawer like t
 
 | Example | Stack | Docs |
 | --- | --- | --- |
+| [react-vite](./react-vite) | Vite, React, mock adapter (`@remcostoeten/auth-drawer/react`) | Run `bun run example:react` |
+| [solid-vite](./solid-vite) | Vite, Solid, mock adapter (`@remcostoeten/auth-drawer/solid`) | Run `bun run example:solid` |
 | [better-auth-nextjs](./better-auth-nextjs) | Next.js 16, Better Auth, Drizzle, PostgreSQL | [SDK adapters → Better Auth](https://auth-drawer.remcostoeten.nl/docs#sdk-better-auth) |
 | [custom-jwt-nextjs](./custom-jwt-nextjs) | Next.js 16, custom JWT REST API, jose, Drizzle, PostgreSQL | [SDK adapters → Custom JWT](https://auth-drawer.remcostoeten.nl/docs#sdk-custom-jwt) |
 | [passport-express](./passport-express) | Express + Passport.js API, Next.js 15 client, Drizzle, PostgreSQL | [SDK adapters → Passport](https://auth-drawer.remcostoeten.nl/docs#sdk-passport) |
@@ -19,6 +21,8 @@ Then ask it to match one of the examples below (e.g. *"Set up auth drawer like t
 Run from the repo root:
 
 ```bash
+bun run example:react         # React drawer, mock adapter
+bun run example:solid         # Solid drawer, mock adapter
 bun run example:better-auth   # Better Auth example (port 3005)
 bun run example:custom-jwt    # Custom JWT example
 bun run example:passport      # Passport Express + Next.js client

@@ -1,0 +1,21 @@
+{
+  "name": "solid-vite-example",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remcostoeten/auth-drawer": "workspace:*",
+    "solid-js": "^1.9.9"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0",
+    "vite-plugin-solid": "^2.11.9"
+  }
+}

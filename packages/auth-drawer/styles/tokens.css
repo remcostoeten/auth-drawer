@@ -11,6 +11,7 @@
     --text-on-overlay-subtle: 26 10% 46%;
     --border-overlay: 28 12% 54%;
     --error-on-overlay: 0 72% 45%;
+    --focus-on-overlay: var(--text-on-overlay);
   }
 
   .dark {
@@ -25,5 +26,6 @@
     --text-on-overlay-subtle: 0 0% 48%;
     --border-overlay: 0 0% 100%;
     --error-on-overlay: 0 80% 75%;
+    --focus-on-overlay: var(--text-on-overlay);
   }
 }

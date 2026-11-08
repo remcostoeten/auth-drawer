@@ -26,7 +26,7 @@ type AuthUiConfig = {
 };
 ```
 
-### `ui.auth` — form behavior and providers
+### `ui.auth`, form behavior and providers
 
 ```ts
 type AuthConfigGroup = {
@@ -36,11 +36,12 @@ type AuthConfigGroup = {
   showProviderIcons?: boolean;      // default logo visibility, default true
   allowRegister?: boolean;
   showRememberMe?: boolean;
-  initialMode?: "login" | "register" | "resetPassword";
+  initialMode?: "login" | "register" | "resetPassword" | "magicLink";
   showForgotPassword?: boolean;
   showLivePasswordMatch?: boolean;
   showFooter?: boolean;
   emailAutocomplete?: { enabled?: boolean; domains?: string[] };
+  magicLink?: { enabled?: boolean; resendMs?: number };
 };
 ```
 
@@ -49,7 +50,7 @@ Built-in `OAuthProvider` ids (each ships an icon + label): `github`, `google`,
 `linkedin`, `spotify`, `slack`, `reddit`, `notion`, `figma`. The type also
 accepts **any other string** for custom providers.
 
-**Provider entries** can be a bare id or a rich object — use the object form for
+**Provider entries** can be a bare id or a rich object, use the object form for
 custom icons, labels, light/dark logos, or to hide a logo:
 
 ```ts
@@ -87,19 +88,24 @@ providers: [
 - Custom provider ids must match what the adapter's `signInWithOAuth(provider)` expects.
 
 > Note: these flags refine UI that the **adapter already enables**. They cannot
-> reveal a tab the adapter doesn't support — e.g. `allowRegister: true` does
+> reveal a tab the adapter doesn't support, e.g. `allowRegister: true` does
 > nothing if the adapter has no `signUp`. See adapters.md feature detection.
 
-### `ui.presentation` — drawer or modal
+### `ui.presentation`, drawer or modal
 
 ```ts
 type AuthPresentationConfig = {
   variant?: "drawer" | "modal";   // default "drawer"
   defaultOpen?: boolean;          // open on mount (uncontrolled)
+  dismissible?: boolean;          // default true; false removes the close button,
+                                  // backdrop-click, escape, and drag-to-close
 };
+
+Set `dismissible: false` when auth *is* the page (a `/login` route) and there is
+nothing behind the surface to return to.
 ```
 
-### `ui.visual.backdrop` — backdrop styling
+### `ui.visual.backdrop`, backdrop styling
 
 ```ts
 type AuthBackdropConfig = {
@@ -110,9 +116,9 @@ type AuthBackdropConfig = {
 };
 ```
 
-### `ui.motion` — drag/animation/layout (advanced)
+### `ui.motion`, drag/animation/layout (advanced)
 
-`Partial<MotionSettings>` — fine-grained Framer Motion + layout tuning. Keys
+`Partial<MotionSettings>`, fine-grained Framer Motion + layout tuning. Keys
 include `displayMode`, `desktopWidth`, `desktopPosition` (`center`/`left`/`right`),
 drag physics (`upwardResistance`, `downwardThreshold`, `velocityThreshold`,
 `snapStiffness`, `snapDamping`, `snapMass`), entry/exit timing (`entryDuration`,
@@ -120,11 +126,11 @@ drag physics (`upwardResistance`, `downwardThreshold`, `velocityThreshold`,
 backdrop motion, and form layout (`formPaddingTop`, `formJustify`, etc.). Only set
 what you need; the rest come from defaults. Most apps never touch this.
 
-### `ui.success` — post-auth commit state
+### `ui.success`, post-auth commit state
 
 After sign-in, sign-up, or OAuth succeeds, the drawer does **not** close
 immediately. It stays open through the connecting/loading phase, shows a
-confirmation once the session is fully loaded, then closes — so the drawer never
+confirmation once the session is fully loaded, then closes, so the drawer never
 disappears before the session is ready. Tune it with `ui.success`:
 
 ```ts
@@ -138,17 +144,20 @@ type AuthSuccessConfig = {
 ```
 
 `minVisibleMs` is measured from when the session becomes ready (authenticated
-and no longer pending), not from when the banner appears — so the confirmation
+and no longer pending), not from when the banner appears, so the confirmation
 never flashes and vanishes the instant auth completes. `maxVisibleMs` only kicks
 in while the session is still pending, as a failsafe for one that never loads.
 Set `enabled: false` to close immediately on success. `onSuccess` callbacks still
 fire when the action completes; this only controls visible confirmation timing.
 
-### `ui.copy` — text overrides
+### `ui.copy`, text overrides
 
 Override any label, heading, button text, or message via `AuthCopyConfig`. Groups
-include fields, form, oauth, rememberMe, forgotPassword, footer, validation,
-close, and trigger copy. For a fully custom footer node, use `ui.footer` (it
+include fields, form, oauth, magicLink, rememberMe, forgotPassword, footer,
+validation, close, and trigger copy. The `magicLink` group covers the whole
+passwordless flow: `title`, `subtitle`, `submit`, `switchToLink`,
+`switchToPassword`, `sentTitle`, `sentSubtitle` (`{{email}}`), `resend`,
+`resending`, `resendCountdown` (`{{seconds}}`), and `useAnotherEmail`. For a fully custom footer node, use `ui.footer` (it
 overrides `copy.footer` segments). Use `formatCopy` / `resolveCopyGroup` /
 `DEFAULT_COPY` (exported from the package) if you need to compute copy.
 
@@ -170,8 +179,9 @@ overrides `copy.footer` segments). Use `formatCopy` / `resolveCopyGroup` /
         enabled: true,
         domains: ["gmail.com", "outlook.com", "hotmail.com", "icloud.com", "yahoo.com"],
       },
+      magicLink: { enabled: true, resendMs: 30000 },
     },
-    presentation: { variant: "drawer", defaultOpen: false },
+    presentation: { variant: "drawer", defaultOpen: false, dismissible: true },
     visual: {
       backdrop: {
         color: "#070708", opacity: 0.85, blur: 6,
@@ -228,15 +238,15 @@ customization.
 
 `AuthDrawer` props beyond `adapter`/`config`:
 
-- `hideTrigger?: boolean` — hide the built-in floating trigger button; open the
+- `hideTrigger?: boolean`, hide the built-in floating trigger button; open the
   drawer from your own UI instead.
-- `open?: boolean` + `onOpenChange?: (open) => void` — controlled mode. If you
+- `open?: boolean` + `onOpenChange?: (open) => void`, controlled mode. If you
   pass `open`, it takes precedence over provider-managed and uncontrolled state,
   and you must update it from `onOpenChange` (fires on drag-dismiss, backdrop
   click, Escape, close button).
-- `defaultOpen?: boolean` — uncontrolled initial open state (ignored if `open`
+- `defaultOpen?: boolean`, uncontrolled initial open state (ignored if `open`
   is set).
-- `className?: string` — classes on the built-in trigger button.
-- `onSuccess` / `onError` — lifecycle callbacks (`action` is
+- `className?: string`, classes on the built-in trigger button.
+- `onSuccess` / `onError`, lifecycle callbacks (`action` is
   `"signIn" | "signUp" | "signOut" | "oauth"`).
-- `triggerStore?: AuthTriggerStore` — see triggers.md.
+- `triggerStore?: AuthTriggerStore`, see triggers.md.

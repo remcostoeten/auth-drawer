@@ -1,7 +1,7 @@
 {
   "name": "@remcostoeten/auth-drawer",
-  "version": "0.4.0",
-  "description": "Configurable React auth drawer and modal with OAuth, triggers, motion, and typed provider adapters.",
+  "version": "0.6.0",
+  "description": "Auth drawer and modal for React and SolidJS with OAuth, triggers, motion, a framework-free core and typed provider adapters.",
   "license": "MIT",
   "author": "Remco Stoeten",
   "repository": {
@@ -15,12 +15,15 @@
   },
   "keywords": [
     "react",
+    "solid",
+    "solidjs",
     "auth",
     "authentication",
     "drawer",
     "modal",
     "oauth",
     "sign-in",
+    "headless",
     "better-auth",
     "supabase",
     "clerk",
@@ -30,49 +33,276 @@
     "access": "public"
   },
   "type": "module",
+  "main": "./dist/react/index.js",
+  "module": "./dist/react/index.js",
+  "types": "./dist/react/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "adapters/better-auth": [
+        "./dist/react/adapters/better-auth.d.ts"
+      ],
+      "react/adapters/better-auth": [
+        "./dist/react/adapters/better-auth.d.ts"
+      ],
+      "solid/adapters/better-auth": [
+        "./dist/solid/adapters/better-auth.d.ts"
+      ],
+      "core/adapters/better-auth": [
+        "./dist/core/adapters/better-auth.d.ts"
+      ],
+      "adapters/supabase": [
+        "./dist/react/adapters/supabase.d.ts"
+      ],
+      "react/adapters/supabase": [
+        "./dist/react/adapters/supabase.d.ts"
+      ],
+      "solid/adapters/supabase": [
+        "./dist/solid/adapters/supabase.d.ts"
+      ],
+      "core/adapters/supabase": [
+        "./dist/core/adapters/supabase.d.ts"
+      ],
+      "adapters/next-auth": [
+        "./dist/react/adapters/next-auth.d.ts"
+      ],
+      "react/adapters/next-auth": [
+        "./dist/react/adapters/next-auth.d.ts"
+      ],
+      "solid/adapters/next-auth": [
+        "./dist/solid/adapters/next-auth.d.ts"
+      ],
+      "core/adapters/next-auth": [
+        "./dist/core/adapters/next-auth.d.ts"
+      ],
+      "adapters/clerk": [
+        "./dist/react/adapters/clerk.d.ts"
+      ],
+      "react/adapters/clerk": [
+        "./dist/react/adapters/clerk.d.ts"
+      ],
+      "solid/adapters/clerk": [
+        "./dist/solid/adapters/clerk.d.ts"
+      ],
+      "core/adapters/clerk": [
+        "./dist/core/adapters/clerk.d.ts"
+      ],
+      "adapters/firebase": [
+        "./dist/react/adapters/firebase.d.ts"
+      ],
+      "react/adapters/firebase": [
+        "./dist/react/adapters/firebase.d.ts"
+      ],
+      "solid/adapters/firebase": [
+        "./dist/solid/adapters/firebase.d.ts"
+      ],
+      "core/adapters/firebase": [
+        "./dist/core/adapters/firebase.d.ts"
+      ],
+      "adapters/custom-jwt": [
+        "./dist/react/adapters/custom-jwt.d.ts"
+      ],
+      "react/adapters/custom-jwt": [
+        "./dist/react/adapters/custom-jwt.d.ts"
+      ],
+      "solid/adapters/custom-jwt": [
+        "./dist/solid/adapters/custom-jwt.d.ts"
+      ],
+      "core/adapters/custom-jwt": [
+        "./dist/core/adapters/custom-jwt.d.ts"
+      ],
+      "adapters/passport": [
+        "./dist/react/adapters/passport.d.ts"
+      ],
+      "react/adapters/passport": [
+        "./dist/react/adapters/passport.d.ts"
+      ],
+      "solid/adapters/passport": [
+        "./dist/solid/adapters/passport.d.ts"
+      ],
+      "core/adapters/passport": [
+        "./dist/core/adapters/passport.d.ts"
+      ],
+      "adapters/mock": [
+        "./dist/react/adapters/mock.d.ts"
+      ],
+      "react/adapters/mock": [
+        "./dist/react/adapters/mock.d.ts"
+      ],
+      "solid/adapters/mock": [
+        "./dist/solid/adapters/mock.d.ts"
+      ],
+      "core/adapters/mock": [
+        "./dist/core/adapters/mock.d.ts"
+      ],
+      "react": [
+        "./dist/react/index.d.ts"
+      ],
+      "solid": [
+        "./dist/solid/index.d.ts"
+      ],
+      "core": [
+        "./dist/core/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
+    "./solid": {
+      "types": "./dist/solid/index.d.ts",
+      "solid": "./dist/solid/source/index.jsx",
+      "import": "./dist/solid/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
     },
     "./adapters/better-auth": {
-      "import": "./dist/adapters/better-auth.js",
-      "types": "./dist/adapters/better-auth.d.ts"
+      "types": "./dist/react/adapters/better-auth.d.ts",
+      "import": "./dist/react/adapters/better-auth.js"
     },
     "./adapters/supabase": {
-      "import": "./dist/adapters/supabase.js",
-      "types": "./dist/adapters/supabase.d.ts"
+      "types": "./dist/react/adapters/supabase.d.ts",
+      "import": "./dist/react/adapters/supabase.js"
     },
     "./adapters/next-auth": {
-      "import": "./dist/adapters/next-auth.js",
-      "types": "./dist/adapters/next-auth.d.ts"
+      "types": "./dist/react/adapters/next-auth.d.ts",
+      "import": "./dist/react/adapters/next-auth.js"
     },
     "./adapters/clerk": {
-      "import": "./dist/adapters/clerk.js",
-      "types": "./dist/adapters/clerk.d.ts"
+      "types": "./dist/react/adapters/clerk.d.ts",
+      "import": "./dist/react/adapters/clerk.js"
     },
     "./adapters/firebase": {
-      "import": "./dist/adapters/firebase.js",
-      "types": "./dist/adapters/firebase.d.ts"
+      "types": "./dist/react/adapters/firebase.d.ts",
+      "import": "./dist/react/adapters/firebase.js"
     },
     "./adapters/custom-jwt": {
-      "import": "./dist/adapters/custom-jwt.js",
-      "types": "./dist/adapters/custom-jwt.d.ts"
+      "types": "./dist/react/adapters/custom-jwt.d.ts",
+      "import": "./dist/react/adapters/custom-jwt.js"
     },
     "./adapters/passport": {
-      "import": "./dist/adapters/passport.js",
-      "types": "./dist/adapters/passport.d.ts"
+      "types": "./dist/react/adapters/passport.d.ts",
+      "import": "./dist/react/adapters/passport.js"
     },
     "./adapters/mock": {
-      "import": "./dist/adapters/mock.js",
-      "types": "./dist/adapters/mock.d.ts"
+      "types": "./dist/react/adapters/mock.d.ts",
+      "import": "./dist/react/adapters/mock.js"
     },
-    "./styles.css": "./dist/styles.css",
-    "./styles/tailwind.css": "./styles/tailwind.css"
+    "./react/adapters/better-auth": {
+      "types": "./dist/react/adapters/better-auth.d.ts",
+      "import": "./dist/react/adapters/better-auth.js"
+    },
+    "./react/adapters/supabase": {
+      "types": "./dist/react/adapters/supabase.d.ts",
+      "import": "./dist/react/adapters/supabase.js"
+    },
+    "./react/adapters/next-auth": {
+      "types": "./dist/react/adapters/next-auth.d.ts",
+      "import": "./dist/react/adapters/next-auth.js"
+    },
+    "./react/adapters/clerk": {
+      "types": "./dist/react/adapters/clerk.d.ts",
+      "import": "./dist/react/adapters/clerk.js"
+    },
+    "./react/adapters/firebase": {
+      "types": "./dist/react/adapters/firebase.d.ts",
+      "import": "./dist/react/adapters/firebase.js"
+    },
+    "./react/adapters/custom-jwt": {
+      "types": "./dist/react/adapters/custom-jwt.d.ts",
+      "import": "./dist/react/adapters/custom-jwt.js"
+    },
+    "./react/adapters/passport": {
+      "types": "./dist/react/adapters/passport.d.ts",
+      "import": "./dist/react/adapters/passport.js"
+    },
+    "./react/adapters/mock": {
+      "types": "./dist/react/adapters/mock.d.ts",
+      "import": "./dist/react/adapters/mock.js"
+    },
+    "./solid/adapters/better-auth": {
+      "types": "./dist/solid/adapters/better-auth.d.ts",
+      "import": "./dist/solid/adapters/better-auth.js"
+    },
+    "./solid/adapters/supabase": {
+      "types": "./dist/solid/adapters/supabase.d.ts",
+      "import": "./dist/solid/adapters/supabase.js"
+    },
+    "./solid/adapters/next-auth": {
+      "types": "./dist/solid/adapters/next-auth.d.ts",
+      "import": "./dist/solid/adapters/next-auth.js"
+    },
+    "./solid/adapters/clerk": {
+      "types": "./dist/solid/adapters/clerk.d.ts",
+      "import": "./dist/solid/adapters/clerk.js"
+    },
+    "./solid/adapters/firebase": {
+      "types": "./dist/solid/adapters/firebase.d.ts",
+      "import": "./dist/solid/adapters/firebase.js"
+    },
+    "./solid/adapters/custom-jwt": {
+      "types": "./dist/solid/adapters/custom-jwt.d.ts",
+      "import": "./dist/solid/adapters/custom-jwt.js"
+    },
+    "./solid/adapters/passport": {
+      "types": "./dist/solid/adapters/passport.d.ts",
+      "import": "./dist/solid/adapters/passport.js"
+    },
+    "./solid/adapters/mock": {
+      "types": "./dist/solid/adapters/mock.d.ts",
+      "import": "./dist/solid/adapters/mock.js"
+    },
+    "./core/adapters/better-auth": {
+      "types": "./dist/core/adapters/better-auth.d.ts",
+      "import": "./dist/core/adapters/better-auth.js"
+    },
+    "./core/adapters/supabase": {
+      "types": "./dist/core/adapters/supabase.d.ts",
+      "import": "./dist/core/adapters/supabase.js"
+    },
+    "./core/adapters/next-auth": {
+      "types": "./dist/core/adapters/next-auth.d.ts",
+      "import": "./dist/core/adapters/next-auth.js"
+    },
+    "./core/adapters/clerk": {
+      "types": "./dist/core/adapters/clerk.d.ts",
+      "import": "./dist/core/adapters/clerk.js"
+    },
+    "./core/adapters/firebase": {
+      "types": "./dist/core/adapters/firebase.d.ts",
+      "import": "./dist/core/adapters/firebase.js"
+    },
+    "./core/adapters/custom-jwt": {
+      "types": "./dist/core/adapters/custom-jwt.d.ts",
+      "import": "./dist/core/adapters/custom-jwt.js"
+    },
+    "./core/adapters/passport": {
+      "types": "./dist/core/adapters/passport.d.ts",
+      "import": "./dist/core/adapters/passport.js"
+    },
+    "./core/adapters/mock": {
+      "types": "./dist/core/adapters/mock.d.ts",
+      "import": "./dist/core/adapters/mock.js"
+    },
+    "./styles.css": "./dist/react/styles.css",
+    "./styles/tailwind.css": "./styles/react/tailwind.css",
+    "./react/styles.css": "./dist/react/styles.css",
+    "./react/styles/tailwind.css": "./styles/react/tailwind.css",
+    "./solid/styles.css": "./dist/solid/styles.css",
+    "./solid/styles/tailwind.css": "./styles/solid/tailwind.css",
+    "./core/tokens.css": "./styles/tokens.css"
   },
   "files": [
     "dist",
     "styles",
+    "docs",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
@@ -81,24 +311,46 @@
     "**/*.css"
   ],
   "scripts": {
-    "build": "NODE_ENV=production tailwindcss -i ./styles/build.css -o ./styles/bundle.css --minify && NODE_ENV=production vite build && tsc -p tsconfig.build.json && node ./scripts/stamp-css-import.mjs",
-    "dev": "vite build --watch",
-    "prepublishOnly": "npm run build && npm test",
+    "build": "rm -rf dist && bun run build:core && bun run build:react && bun run build:solid",
+    "build:core": "NODE_ENV=production node ./node_modules/rolldown-vite/bin/vite.js build -c vite.core.config.ts && tsc -p src/core/tsconfig.build.json",
+    "build:react": "NODE_ENV=production tailwindcss -i ./styles/react/build.css -o ./styles/react/bundle.css --minify && NODE_ENV=production node ./node_modules/rolldown-vite/bin/vite.js build -c vite.react.config.ts && tsc -p src/react/tsconfig.build.json && node ./scripts/stamp-react-css-import.mjs",
+    "build:solid": "NODE_ENV=production tsup --config tsup.solid.config.ts && NODE_ENV=production tailwindcss -i ./styles/solid/build.css -o ./dist/solid/styles.css --minify && node ./scripts/stamp-solid-css-import.mjs",
+    "dev": "node ./node_modules/rolldown-vite/bin/vite.js build -c vite.react.config.ts --watch",
+    "prepublishOnly": "bun run build && bun run test",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -p src/core/tsconfig.json && tsc -p src/react/tsconfig.json && tsc -p src/solid/tsconfig.json"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
     "framer-motion": "^12.0.0",
-    "lucide-react": "^0.400.0"
+    "lucide-react": ">=0.400.0 <2",
+    "solid-js": "^1.9.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "framer-motion": {
+      "optional": true
+    },
+    "lucide-react": {
+      "optional": true
+    },
+    "solid-js": {
+      "optional": true
+    }
   },
   "dependencies": {
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "@solidjs/testing-library": "^0.8.10",
     "@tailwindcss/cli": "^4.3.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/react": "^19.2.7",
@@ -110,8 +362,13 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "rolldown-vite": "^7.3.1",
+    "solid-js": "^1.9.9",
     "tailwindcss": "^4.3.0",
+    "tsup": "^8.5.0",
+    "tsup-preset-solid": "^2.2.0",
     "typescript": "^5.8.3",
+    "vite": "^7.0.0",
+    "vite-plugin-solid": "^2.11.9",
     "vitest": "^4.1.6"
   }
 }

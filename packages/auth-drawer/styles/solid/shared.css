@@ -1,0 +1,353 @@
+@custom-variant dark (&:is(.dark *));
+
+@custom-variant fine-hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
+@theme inline {
+  --color-overlay-bg: hsl(var(--surface-overlay));
+  --color-overlay-surface: hsl(var(--surface-overlay-raised));
+  --color-overlay-surface-hover: hsl(var(--surface-overlay-hover));
+  --color-overlay-border: hsl(var(--border-overlay));
+  --color-overlay-text: hsl(var(--text-on-overlay));
+  --color-overlay-muted: hsl(var(--text-on-overlay-muted));
+  --color-overlay-subtle: hsl(var(--text-on-overlay-subtle));
+  --color-overlay-error: hsl(var(--error-on-overlay));
+  --color-overlay-focus: hsl(var(--focus-on-overlay));
+
+  --font-display: ui-sans-serif, system-ui, sans-serif;
+
+  --animate-spinner: spinner 0.6s linear infinite;
+
+  @keyframes spinner {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+@layer components {
+  .auth-drawer-focus-scope,
+  .auth-drawer-focus-scope * {
+    outline: none !important;
+    outline-offset: 0 !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .auth-drawer-success {
+    margin-top: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: hsl(var(--text-on-overlay));
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .auth-drawer-success svg {
+    color: color-mix(in srgb, hsl(var(--surface-overlay-hover)) 42%, hsl(var(--text-on-overlay)));
+  }
+
+  .auth-oauth-logo-light {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .auth-oauth-logo-dark {
+    display: none;
+    align-items: center;
+  }
+
+  .dark .auth-oauth-logo-light {
+    display: none;
+  }
+
+  .dark .auth-oauth-logo-dark {
+    display: inline-flex;
+  }
+}
+
+:root {
+  --auth-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --auth-ease-char: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --auth-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --auth-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+}
+
+@keyframes auth-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes auth-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--auth-rise-y, 5px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes auth-char-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--auth-char-y, 12px));
+    filter: blur(var(--auth-char-blur, 8px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes auth-slide-x {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes auth-swap-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes auth-icon-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-18deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes auth-check-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-15deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes auth-check-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes auth-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes auth-collapse-in {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+@keyframes auth-collapse-out {
+  from {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+@keyframes auth-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: var(--auth-backdrop-opacity, 1);
+  }
+}
+
+@keyframes auth-backdrop-out {
+  from {
+    opacity: var(--auth-backdrop-opacity, 1);
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes auth-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--auth-entry-y, 100px)) scale(var(--auth-entry-scale, 1));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes auth-panel-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(var(--auth-exit-y, 100px)) scale(var(--auth-exit-scale, 1));
+  }
+}
+
+.auth-fade {
+  animation: auth-fade 0.3s ease-out both;
+  animation-delay: calc(0.05s + var(--auth-i, 0) * 0.04s);
+}
+
+.auth-rise {
+  animation: auth-rise 0.3s var(--auth-ease-out) both;
+  animation-delay: calc(0.05s + var(--auth-i, 0) * 0.04s);
+}
+
+.auth-title-char {
+  display: inline-block;
+  white-space: pre;
+  animation: auth-char-in 0.5s var(--auth-ease-char) both;
+  animation-delay: calc(var(--auth-char, 0) * 0.02s);
+}
+
+.auth-subtitle-char {
+  display: inline-block;
+  --auth-char-y: 8px;
+  --auth-char-blur: 4px;
+  animation: auth-char-in 0.4s ease-out both;
+  animation-delay: calc(0.2s + var(--auth-word, 0) * 0.05s + var(--auth-char, 0) * 0.01s);
+}
+
+.auth-suggestion-char {
+  display: inline-block;
+  animation: auth-slide-x 0.2s ease-out both;
+  animation-delay: calc(var(--auth-char, 0) * 0.01s);
+}
+
+.auth-swap-in {
+  animation: auth-swap-in 0.18s var(--auth-ease-char) both;
+}
+
+.auth-icon-in {
+  display: inline-block;
+  animation: auth-icon-in 0.25s var(--auth-ease-out) both;
+}
+
+.auth-check-in {
+  animation: auth-check-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.auth-check-draw {
+  stroke-dasharray: 1;
+  animation: auth-check-draw 0.25s ease-out 0.05s both;
+}
+
+.auth-message-in {
+  animation: auth-message-in 0.18s var(--auth-ease-out) both;
+}
+
+.auth-collapse {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.auth-collapse > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.auth-collapse[data-state="open"] {
+  animation: auth-collapse-in 0.2s ease both;
+}
+
+.auth-collapse[data-state="closing"] {
+  animation: auth-collapse-out 0.2s ease both;
+}
+
+/* backwards fill: a finished fill-forward animation makes an ancestor a backdrop root and disables backdrop-filter */
+.auth-drawer-overlay {
+  animation: auth-fade 0.22s var(--auth-ease-out) backwards;
+}
+
+.auth-drawer-backdrop[data-state="open"] {
+  animation: auth-backdrop-in 0.25s var(--auth-ease-out) both;
+}
+
+.auth-drawer-backdrop[data-state="closing"] {
+  animation: auth-backdrop-out 0.26s var(--auth-ease-exit) 0.06s both;
+}
+
+.auth-drawer-panel[data-state="open"] {
+  animation: auth-panel-in var(--auth-entry-duration, 0.9s) var(--auth-entry-ease, var(--auth-ease-out))
+    var(--auth-entry-delay, 0s) backwards;
+}
+
+.auth-drawer-panel[data-state="closing"] {
+  animation: auth-panel-out 0.26s var(--auth-ease-drawer) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-fade,
+  .auth-rise,
+  .auth-title-char,
+  .auth-subtitle-char,
+  .auth-suggestion-char,
+  .auth-swap-in,
+  .auth-icon-in,
+  .auth-check-in,
+  .auth-check-draw,
+  .auth-message-in,
+  .auth-collapse,
+  .auth-drawer-overlay,
+  .auth-drawer-backdrop,
+  .auth-drawer-panel {
+    animation: none !important;
+  }
+}

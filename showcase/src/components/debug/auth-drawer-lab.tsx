@@ -24,7 +24,7 @@ import {
   type OAuthProvider,
   type AuthTriggerConfig,
 } from "@/components/auth/auth-drawer";
-import { createAuthTriggerStore } from "@remcostoeten/auth-drawer";
+import { createAuthTriggerStore } from "@remcostoeten/auth-drawer/react";
 import { WindowsXpScene } from "@/components/debug/scenes/windows-xp";
 import { AUTH_SCENARIOS, type AuthScenarioId, createScenarioAdapter } from "./auth-scenarios";
 

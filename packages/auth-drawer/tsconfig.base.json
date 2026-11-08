@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "isolatedModules": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "strict": true,
+    "target": "ES2022",
+    "skipLibCheck": true,
+    "paths": {
+      "@remcostoeten/auth-drawer/core": ["./src/core/index.ts"],
+      "@remcostoeten/auth-drawer/core/adapters/*": ["./src/core/adapters/*.ts"]
+    }
+  }
+}

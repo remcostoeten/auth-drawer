@@ -1,11 +1,11 @@
-# Triggers — auto-opening the surface
+# Triggers, auto-opening the surface
 
 Triggers let something other than a click open the auth surface: page load, a
 scroll threshold, idle time, an expired session, or any custom app event. They
 split into two roles:
 
-1. **Config** (`config.triggers.*`) — declares which rules are active + their policy.
-2. **Events** (`triggerStore.emit(...)`) — tells the store something happened.
+1. **Config** (`config.triggers.*`), declares which rules are active + their policy.
+2. **Events** (`triggerStore.emit(...)`), tells the store something happened.
 
 `AuthDrawer` registers every configured rule against a trigger store and opens
 the surface when the store decides a rule fires.
@@ -21,7 +21,7 @@ the surface when the store decides a rule fires.
 | Idle | `idle` | Host app (your idle detector) | Yes |
 | Custom | `custom` | Host app (any named channel) | Yes |
 
-`pageLoad` and `click` work with no `triggerStore` prop — `AuthDrawer` makes one
+`pageLoad` and `click` work with no `triggerStore` prop, `AuthDrawer` makes one
 internally. For scroll/state/idle/custom, create one store and pass it to both
 the drawer and the emitting code.
 
@@ -55,7 +55,7 @@ default `once` to `false`.
 ```tsx
 import {
   AuthDrawer, createAuthTriggerStore, useScrollOpenTrigger, type AuthConfig,
-} from "@remcostoeten/auth-drawer";
+} from "@remcostoeten/auth-drawer/react";
 import { useRef } from "react";
 
 const triggerStore = createAuthTriggerStore();

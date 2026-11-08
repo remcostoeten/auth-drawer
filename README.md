@@ -79,20 +79,29 @@ bun --cwd showcase run dev
 npm install @remcostoeten/auth-drawer
 ```
 
-Peer dependencies:
+The package has three entry points: `/react`, `/solid` and the framework-free
+`/core`. Every peer dependency is optional, so install the ones your entry point
+needs.
 
 ```bash
+# React
 npm install react react-dom framer-motion lucide-react
+
+# SolidJS
+npm install solid-js
 ```
 
-Styles ship with the package import. For most apps there is no separate CSS file
-to wire.
+Styles ship with the `/react` and `/solid` entry points. For most apps there is
+no separate CSS file to wire. The package README has a
+[Frameworks section](./packages/auth-drawer/README.md#frameworks) with React and
+Solid examples and the table of deprecated import paths, and the core API is in
+[packages/auth-drawer/docs/core.md](./packages/auth-drawer/docs/core.md).
 
 ## LLM-guided setup
 
 This repo ships an [Agent Skill](https://skills.sh/) so coding agents (Cursor,
 Claude Code, Codex, and [60+ others](https://github.com/vercel-labs/skills#supported-agents))
-can wire up Auth Drawer end-to-end — pick an adapter, create `auth-adapter.ts`,
+can wire up Auth Drawer end-to-end, pick an adapter, create `auth-adapter.ts`,
 mount `AuthProvider` / `AuthDrawer`, and configure triggers or theming without
 you spelling out every file.
 
@@ -125,10 +134,10 @@ an agent session when combined with `--agent`):
 npx skills use remcostoeten/auth-drawer@auth-drawer
 ```
 
-After install, ask your agent in plain language — for example:
+After install, ask your agent in plain language, for example:
 
 - *"Add auth drawer with Better Auth to this Next.js app."*
-- *"Wire up Passport cookie sessions with auth drawer — API is on port 4000."*
+- *"Wire up Passport cookie sessions with auth drawer, API is on port 4000."*
 - *"Add a Supabase login drawer with GitHub and Google OAuth."*
 
 The skill lives in [`skills/auth-drawer/`](./skills/auth-drawer/) and includes
@@ -144,7 +153,7 @@ Browse more skills at [skills.sh](https://skills.sh/) or search:
 
 ## What `adapter={adapter}` means
 
-`AuthDrawer` is UI only — forms, OAuth buttons, validation, motion, and error
+`AuthDrawer` is UI only, forms, OAuth buttons, validation, motion, and error
 display. It does **not** talk to your auth backend by itself.
 
 An **adapter** is the object that connects that UI to your auth stack. You build
@@ -183,7 +192,7 @@ export const authClient = createAuthClient();
 **`lib/auth-adapter.ts`**
 
 ```ts
-import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
+import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/better-auth";
 import { authClient } from "@/lib/auth-client";
 
 export const authAdapter = createBetterAuthAdapter({
@@ -200,7 +209,7 @@ export const authAdapter = createBetterAuthAdapter({
 ```tsx
 "use client";
 
-import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
+import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer/react";
 import { authAdapter } from "@/lib/auth-adapter";
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
@@ -233,7 +242,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 Open the drawer from anywhere under `AuthProvider`:
 
 ```tsx
-import { useAuth } from "@remcostoeten/auth-drawer";
+import { useAuth } from "@remcostoeten/auth-drawer/react";
 
 function Header() {
   const { user, signOut, openDrawer } = useAuth();
@@ -263,7 +272,7 @@ request uses `credentials: "include"` so session cookies flow between origins.
 **`lib/auth-adapter.ts`**
 
 ```ts
-import { createPassportAdapter } from "@remcostoeten/auth-drawer/adapters/passport";
+import { createPassportAdapter } from "@remcostoeten/auth-drawer/react/adapters/passport";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -278,7 +287,7 @@ export const authAdapter = createPassportAdapter({
 ```
 
 The `AuthShell` / `AuthProvider` / `AuthDrawer` wiring is identical to Better
-Auth — only the adapter factory and its options change.
+Auth, only the adapter factory and its options change.
 
 Runnable reference: [`examples/passport-express`](./examples/passport-express)
 (Express + Passport.js backend, Next.js frontend). Also see
@@ -290,25 +299,25 @@ JWT REST API in the same Next.js app.
 Import only the adapter you need:
 
 ```tsx
-import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/adapters/supabase";
-import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
-import { createNextAuthAdapter } from "@remcostoeten/auth-drawer/adapters/next-auth";
-import { createClerkAdapter } from "@remcostoeten/auth-drawer/adapters/clerk";
-import { createPassportAdapter } from "@remcostoeten/auth-drawer/adapters/passport";
-import { createCustomJwtAdapter } from "@remcostoeten/auth-drawer/adapters/custom-jwt";
-import { createMockAdapter } from "@remcostoeten/auth-drawer/adapters/mock";
+import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/react/adapters/supabase";
+import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/better-auth";
+import { createNextAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/next-auth";
+import { createClerkAdapter } from "@remcostoeten/auth-drawer/react/adapters/clerk";
+import { createPassportAdapter } from "@remcostoeten/auth-drawer/react/adapters/passport";
+import { createCustomJwtAdapter } from "@remcostoeten/auth-drawer/react/adapters/custom-jwt";
+import { createMockAdapter } from "@remcostoeten/auth-drawer/react/adapters/mock";
 ```
 
 | Auth backend | Import path | Typical adapter input |
 | --- | --- | --- |
-| Better Auth | `@remcostoeten/auth-drawer/adapters/better-auth` | `better-auth/react` client |
-| Supabase | `@remcostoeten/auth-drawer/adapters/supabase` | Browser Supabase client |
-| Auth.js / NextAuth | `@remcostoeten/auth-drawer/adapters/next-auth` | `signIn` / `signOut` / `useSession` from `next-auth/react` |
-| Clerk | `@remcostoeten/auth-drawer/adapters/clerk` | Clerk hooks wired into a `client` object |
-| Firebase Auth | `@remcostoeten/auth-drawer/adapters/firebase` | Modular Firebase auth functions |
-| Custom JWT / REST | `@remcostoeten/auth-drawer/adapters/custom-jwt` | `baseUrl` + REST endpoint paths |
-| Passport sessions | `@remcostoeten/auth-drawer/adapters/passport` | Login/register/logout/user URLs |
-| Mock adapter | `@remcostoeten/auth-drawer/adapters/mock` | In-memory demo handlers |
+| Better Auth | `@remcostoeten/auth-drawer/react/adapters/better-auth` | `better-auth/react` client |
+| Supabase | `@remcostoeten/auth-drawer/react/adapters/supabase` | Browser Supabase client |
+| Auth.js / NextAuth | `@remcostoeten/auth-drawer/react/adapters/next-auth` | `signIn` / `signOut` / `useSession` from `next-auth/react` |
+| Clerk | `@remcostoeten/auth-drawer/react/adapters/clerk` | Clerk hooks wired into a `client` object |
+| Firebase Auth | `@remcostoeten/auth-drawer/react/adapters/firebase` | Modular Firebase auth functions |
+| Custom JWT / REST | `@remcostoeten/auth-drawer/react/adapters/custom-jwt` | `baseUrl` + REST endpoint paths |
+| Passport sessions | `@remcostoeten/auth-drawer/react/adapters/passport` | Login/register/logout/user URLs |
+| Mock adapter | `@remcostoeten/auth-drawer/react/adapters/mock` | In-memory demo handlers |
 
 Provider-specific setup guides live in the [live docs](https://auth-drawer.remcostoeten.nl/docs#sdk-adapters)
 and in [`specs/`](./specs/).
@@ -346,9 +355,16 @@ generate a starter config from the docs UI.
 ## Monorepo layout
 
 ```text
-packages/auth-drawer/          Published React package (adapters, UI, styles)
+packages/auth-drawer/          The one published package
+  src/core/                    Framework-free core: controllers, config, copy, validation, adapters
+  src/react/                   React renderer (UI, hooks, adapters)
+  src/solid/                   SolidJS renderer (UI, adapters)
+  styles/                      Shared tokens and the React and Solid stylesheets
+  __tests__/                   core, react and solid tests
+  docs/core.md                 Core API reference
 showcase/                      Next.js docs site, configurator, and playground
 examples/
+  solid-vite/                  Solid + Vite demo of @remcostoeten/auth-drawer/solid
   better-auth-nextjs/          Better Auth + Drizzle + PostgreSQL (same-app auth)
   custom-jwt-nextjs/             Hand-rolled JWT REST API + Drizzle + PostgreSQL
   passport-express/            Express + Passport.js API + Next.js client (split stack)
@@ -371,7 +387,7 @@ Common commands:
 
 ```bash
 bun run dev          # run workspace dev tasks
-bun run build        # build package and showcase
+bun run build        # build the package, the examples and the showcase
 bun run typecheck    # typecheck workspaces
 bun run test         # package tests
 bun run lint         # lint workspaces
@@ -387,7 +403,8 @@ bun --cwd showcase run dev
 
 ## Publishing Boundary
 
-The npm package ships from `packages/auth-drawer` and includes `dist`, `styles`,
-`README.md`, `CHANGELOG.md`, and `LICENSE`. The showcase is a separate Next.js
+The only npm package is `@remcostoeten/auth-drawer`. It ships from
+`packages/auth-drawer` and includes `dist`, `styles`, `docs`, `README.md`,
+`CHANGELOG.md`, and `LICENSE`. The showcase is a separate Next.js
 workspace used for docs and visual testing; it is not part of the published
 package.

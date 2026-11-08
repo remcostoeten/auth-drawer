@@ -75,7 +75,7 @@ export const SDK_DOCS: SdkDoc[] = [
     id: "supabase",
     name: "Supabase",
     install: "bun add @remcostoeten/auth-drawer @supabase/supabase-js @supabase/ssr",
-    importPath: "@remcostoeten/auth-drawer/adapters/supabase",
+    importPath: "@remcostoeten/auth-drawer/react/adapters/supabase",
     supports: ["email/password", "signup", "OAuth", "forgot password", "reset password", "session", "magic link"],
     clientShape: `{
   auth: {
@@ -107,8 +107,8 @@ export const SDK_DOCS: SdkDoc[] = [
     ),
     snippet: `"use client";
 
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/adapters/supabase";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/react/adapters/supabase";
 import { createClient } from "@/lib/supabase/client";
 import { useMemo } from "react";
 
@@ -132,7 +132,7 @@ export function Login() {
     id: "better-auth",
     name: "Better Auth",
     install: "bun add @remcostoeten/auth-drawer better-auth",
-    importPath: "@remcostoeten/auth-drawer/adapters/better-auth",
+    importPath: "@remcostoeten/auth-drawer/react/adapters/better-auth",
     supports: ["email/password", "signup", "OAuth", "forgot password", "session", "magic link", "email OTP", "anonymous"],
     clientShape: `better-auth/react client with:
   signIn.email
@@ -163,8 +163,8 @@ export function Login() {
       </>
     ),
     snippet: `import { createAuthClient } from "better-auth/react";
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/adapters/better-auth";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createBetterAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/better-auth";
 
 const betterAuthClient = createAuthClient();
 
@@ -185,7 +185,7 @@ export function Login() {
     id: "next-auth",
     name: "NextAuth / Auth.js",
     install: "bun add @remcostoeten/auth-drawer next-auth@beta",
-    importPath: "@remcostoeten/auth-drawer/adapters/next-auth",
+    importPath: "@remcostoeten/auth-drawer/react/adapters/next-auth",
     supports: ["credentials", "OAuth", "sign out", "session"],
     clientShape: `{
   signIn: (provider, options) => Promise<...>,
@@ -212,8 +212,8 @@ export function Login() {
     snippet: `"use client";
 
 import { signIn, signOut, useSession } from "next-auth/react";
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createNextAuthAdapter } from "@remcostoeten/auth-drawer/adapters/next-auth";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createNextAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/next-auth";
 import { useMemo, useState } from "react";
 
 export function Login() {
@@ -235,7 +235,7 @@ export function Login() {
     id: "clerk",
     name: "Clerk",
     install: "bun add @remcostoeten/auth-drawer @clerk/nextjs",
-    importPath: "@remcostoeten/auth-drawer/adapters/clerk",
+    importPath: "@remcostoeten/auth-drawer/react/adapters/clerk",
     supports: ["email/password", "signup", "OAuth redirect", "sign out", "session"],
     clientShape: `{
   signIn.create?,
@@ -264,8 +264,8 @@ export function Login() {
     snippet: `"use client";
 
 import { useClerk, useSignIn, useSignUp, useUser } from "@clerk/nextjs";
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createClerkAdapter } from "@remcostoeten/auth-drawer/adapters/clerk";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createClerkAdapter } from "@remcostoeten/auth-drawer/react/adapters/clerk";
 import { useMemo } from "react";
 
 export function Login() {
@@ -319,7 +319,7 @@ export function Login() {
     id: "firebase",
     name: "Firebase Auth",
     install: "bun add @remcostoeten/auth-drawer firebase",
-    importPath: "@remcostoeten/auth-drawer/adapters/firebase",
+    importPath: "@remcostoeten/auth-drawer/react/adapters/firebase",
     supports: ["email/password", "signup", "OAuth redirect", "forgot password", "reset password", "session"],
     clientShape: `{
   auth: {
@@ -360,8 +360,8 @@ export function Login() {
   signOut,
   updatePassword,
 } from "firebase/auth";
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createFirebaseAdapter } from "@remcostoeten/auth-drawer/adapters/firebase";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createFirebaseAdapter } from "@remcostoeten/auth-drawer/react/adapters/firebase";
 
 const auth = getAuth();
 
@@ -391,7 +391,7 @@ export function Login() {
     id: "custom-jwt",
     name: "Custom JWT / REST",
     install: "bun add @remcostoeten/auth-drawer",
-    importPath: "@remcostoeten/auth-drawer/adapters/custom-jwt",
+    importPath: "@remcostoeten/auth-drawer/react/adapters/custom-jwt",
     supports: ["email/password", "signup", "OAuth redirect", "forgot password", "reset password", "session"],
     clientShape: `{
   POST /login
@@ -418,8 +418,8 @@ export function Login() {
         endpoint. The adapter stores the token in localStorage by default.
       </>
     ),
-    snippet: `import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createCustomJwtAdapter } from "@remcostoeten/auth-drawer/adapters/custom-jwt";
+    snippet: `import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createCustomJwtAdapter } from "@remcostoeten/auth-drawer/react/adapters/custom-jwt";
 
 const adapter = createCustomJwtAdapter({
   baseUrl: "/api/auth",
@@ -443,7 +443,7 @@ export function Login() {
     id: "passport",
     name: "Passport / cookie sessions",
     install: "bun add @remcostoeten/auth-drawer",
-    importPath: "@remcostoeten/auth-drawer/adapters/passport",
+    importPath: "@remcostoeten/auth-drawer/react/adapters/passport",
     supports: ["email/password", "signup", "sign out", "session"],
     clientShape: `{
   POST /login
@@ -467,8 +467,8 @@ export function Login() {
         <code className="font-mono text-[0.72rem]">credentials: "include"</code>.
       </>
     ),
-    snippet: `import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createPassportAdapter } from "@remcostoeten/auth-drawer/adapters/passport";
+    snippet: `import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createPassportAdapter } from "@remcostoeten/auth-drawer/react/adapters/passport";
 
 const adapter = createPassportAdapter({
   loginUrl: "/login",
@@ -486,7 +486,7 @@ export function Login() {
     id: "mock",
     name: "createMockAdapter",
     install: "bun add @remcostoeten/auth-drawer",
-    importPath: "@remcostoeten/auth-drawer/adapters/mock",
+    importPath: "@remcostoeten/auth-drawer/react/adapters/mock",
     supports: ["email/password", "signup", "OAuth", "forgot password", "reset password", "session"],
     clientShape: `createMockAdapter options:
   signIn
@@ -513,8 +513,8 @@ export function Login() {
         and <code className="font-mono text-[0.72rem]">password</code>.
       </>
     ),
-    snippet: `import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createMockAdapter } from "@remcostoeten/auth-drawer/adapters/mock";
+    snippet: `import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createMockAdapter } from "@remcostoeten/auth-drawer/react/adapters/mock";
 
 const adapter = createMockAdapter({
   latencyMs: 500,
@@ -603,8 +603,8 @@ export function createClient() {
       lang: "tsx",
       code: `"use client";
 
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/adapters/supabase";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/react/adapters/supabase";
 import { createClient } from "@/lib/supabase/client";
 import { useMemo } from "react";
 
@@ -637,8 +637,8 @@ export function Login() {
       lang: "tsx",
       code: `"use client";
 
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/adapters/supabase";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createSupabaseAdapter } from "@remcostoeten/auth-drawer/react/adapters/supabase";
 import { createClient } from "@/lib/supabase/client";
 import { useMemo } from "react";
 
@@ -788,8 +788,8 @@ export function Providers({ children }: { children: ReactNode }) {
       lang: "tsx",
       code: `"use client";
 
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createNextAuthAdapter } from "@remcostoeten/auth-drawer/adapters/next-auth";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createNextAuthAdapter } from "@remcostoeten/auth-drawer/react/adapters/next-auth";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
 
@@ -924,8 +924,8 @@ http://localhost:3000/dashboard`,
       code: `"use client";
 
 import { useClerk, useSignIn, useSignUp, useUser } from "@clerk/nextjs";
-import { AuthDrawer } from "@remcostoeten/auth-drawer";
-import { createClerkAdapter } from "@remcostoeten/auth-drawer/adapters/clerk";
+import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
+import { createClerkAdapter } from "@remcostoeten/auth-drawer/react/adapters/clerk";
 import { useMemo } from "react";
 
 export function Login() {
@@ -1148,7 +1148,7 @@ export const authClient = createAuthClient();`,
       lang: "tsx",
       code: `"use client";
 
-import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer";
+import { AuthDrawer, AuthProvider } from "@remcostoeten/auth-drawer/react";
 import { authAdapter } from "@/lib/auth-adapter";
 import { authDrawerConfig } from "@/lib/auth-drawer-config";
 

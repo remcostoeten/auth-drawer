@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ChevronDown, Hand, MessageCircle, MoreHorizontal, Share } from "lucide-react";
 import { AuthDrawer, DEFAULT_CONFIG } from "@/components/auth/auth-drawer";
-import { createAuthTriggerStore, useScrollOpenTrigger } from "@remcostoeten/auth-drawer";
+import { createAuthTriggerStore, useScrollOpenTrigger } from "@remcostoeten/auth-drawer/react";
 import { AUTH_SCENARIOS, createScenarioAdapter, type AuthScenarioId } from "@/components/debug/auth-scenarios";
 import type { AuthConfig } from "@/components/auth/auth-drawer";
 import { AppNav } from "@/components/app-nav";

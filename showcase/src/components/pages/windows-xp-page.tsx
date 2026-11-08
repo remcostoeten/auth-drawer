@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AuthDrawer, DEFAULT_CONFIG } from "@/components/auth/auth-drawer";
-import { createAuthTriggerStore } from "@remcostoeten/auth-drawer";
+import { createAuthTriggerStore } from "@remcostoeten/auth-drawer/react";
 import { WindowsXpScene } from "@/components/debug/scenes/windows-xp";
 import { createScenarioAdapter } from "@/components/debug/auth-scenarios";
 import { AppNav } from "@/components/app-nav";

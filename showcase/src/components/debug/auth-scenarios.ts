@@ -1,9 +1,10 @@
+import { createAdapter } from "@remcostoeten/auth-drawer/react";
 import type { AuthAdapter, OAuthProvider } from "@/components/auth/auth-drawer";
 import type {
   AuthErrorCode,
   AuthErrorTarget,
   AuthUiError,
-} from "../../../../packages/auth-drawer/src/auth-errors";
+} from "../../../../packages/auth-drawer/src/react/auth-errors";
 
 export type AuthScenarioId =
   | "success"
@@ -152,7 +153,7 @@ function oauthErrorForScenario(scenario: AuthScenarioId, provider: OAuthProvider
 }
 
 export function createScenarioAdapter(scenario: AuthScenarioId): AuthAdapter {
-  return {
+  return createAdapter({
     id: "scenario",
     providers: ["github", "google", "discord"],
     requiresName: false,
@@ -183,5 +184,5 @@ export function createScenarioAdapter(scenario: AuthScenarioId): AuthAdapter {
     useSession() {
       return { data: null, isPending: false, error: null };
     },
-  };
+  });
 }

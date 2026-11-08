@@ -19,7 +19,7 @@ type AuthUiError = {
 };
 ```
 
-`target` decides which field shows the message — e.g. `email` for "already
+`target` decides which field shows the message, e.g. `email` for "already
 taken", `form` for invalid credentials, `oauth` for provider failures.
 
 ## Error codes
@@ -44,11 +44,11 @@ type AuthErrorCode =
 ```
 
 Each code has built-in user-facing copy, so you usually only pick the code and
-target — the drawer supplies the message.
+target, the drawer supplies the message.
 
 ## Producing errors in a custom adapter
 
-The `AuthUiError` is a plain object — construct it inline. `message` is required;
+The `AuthUiError` is a plain object, construct it inline. `message` is required;
 the drawer also has built-in copy per code if you keep messages generic. Prefer
 returning a failure result over throwing:
 
@@ -65,13 +65,13 @@ async signIn({ email, password }) {
 ```
 
 > The package's internal `createAdapterError(code, target, rawError?)` helper
-> (used by the prebuilt adapters) is **not** part of the public export surface —
+> (used by the prebuilt adapters) is **not** part of the public export surface , 
 > only the main export and the `adapters/*` subpaths are. So in a consumer app,
 > build the `AuthUiError` literal yourself rather than importing that helper. Set
 > `retryable: true` for transient codes (`network_error`, `server_error`,
 > `rate_limited`) if you want the UI to offer a retry.
 
-## `normalizeError` — handling thrown errors
+## `normalizeError`, handling thrown errors
 
 If an adapter action **throws** (instead of returning a failure result), the
 drawer routes the thrown value through `adapter.normalizeError` (or
@@ -105,5 +105,5 @@ can throw.
 
 `AuthProvider` and `AuthDrawer` accept `onSuccess(action)` and
 `onError(error, action)` where `action` is `"signIn" | "signUp" | "signOut" |
-"oauth"`. Use them for toasts, route transitions, and analytics — not for error
+"oauth"`. Use them for toasts, route transitions, and analytics, not for error
 display, which the drawer handles from the `AuthUiError`.

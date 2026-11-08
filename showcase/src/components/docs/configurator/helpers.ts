@@ -13,7 +13,7 @@ import {
 
 export const CONFIGURATOR_DEFAULTS = DEFAULT_CONFIG.ui;
 
-export const DEFAULT_USAGE_CODE = `import { AuthDrawer } from "@remcostoeten/auth-drawer";
+export const DEFAULT_USAGE_CODE = `import { AuthDrawer } from "@remcostoeten/auth-drawer/react";
 
 export function App() {
   return (
